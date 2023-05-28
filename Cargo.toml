@@ -1,5 +1,5 @@
 [package]
-name = "text_test"
+name = "bevy_message_window"
 version = "0.0.1"
 edition = "2021"
 workspace = "../../bevy"
