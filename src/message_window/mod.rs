@@ -8,10 +8,14 @@ use bevy::{
 };
 
 mod message_writer;
+mod page_scroller;
 mod utility;
+mod window_controller;
 
 use crate::read_script::*;
 use message_writer::*;
+use page_scroller::*;
+use window_controller::*;
 
 pub struct MessageWindowPlugin;
 

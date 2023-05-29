@@ -35,10 +35,7 @@ impl AssetLoader for BMWScriptLoader {
     }
 }
 
-pub fn script_on_load(
-    mut loaded_text: ResMut<LoadedText>,
-    script_assets: Res<Assets<BMWScript>>,
-) {
+pub fn script_on_load(mut loaded_text: ResMut<LoadedText>, script_assets: Res<Assets<BMWScript>>) {
     let script_opt = script_assets.get(&loaded_text.base_bms);
     if loaded_text.loading && script_opt.is_some() {
         loaded_text.char_list = script_opt.unwrap().script.chars().rev().collect::<String>();
