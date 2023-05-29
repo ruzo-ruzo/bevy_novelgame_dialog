@@ -2,7 +2,6 @@
 name = "bevy_message_window"
 version = "0.0.1"
 edition = "2021"
-workspace = "../../bevy"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
@@ -13,4 +12,4 @@ serde = "1.0.163"
 nom = "7.1.3"
 
 #bevy
-bevy = { path = "../../bevy", version = "0.11.0-dev" }
+bevy = { version = "0.11.0-dev" }
