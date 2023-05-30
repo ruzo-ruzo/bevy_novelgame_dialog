@@ -102,9 +102,9 @@ fn setup_config(
     ];
     config.font_handles = font_paths
         .iter()
-        .map(|s| asset_server.load(String::from("fonts/") + s))
+        .map(|s| asset_server.load(String::from("../../text_test/assets/fonts/") + s))
         .collect::<Vec<Handle<Font>>>();
-    let pict_path = "2d_picture/messageframe/material/messageframe_non_line/message_001.png";
+    let pict_path = "../../text_test/assets/2d_picture/messageframe/material/messageframe_non_line/message_001.png";
     config.background_pict = asset_server.load(pict_path);
     config.layers = RenderLayers::layer(2);
     config.current_text_style = TextStyle {

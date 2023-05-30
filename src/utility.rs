@@ -2,7 +2,6 @@ use ab_glyph::Font as AFont;
 use bevy::prelude::*;
 use rand::{distributions::uniform::SampleRange, Rng};
 
-
 pub fn get_child_entities<'a, 'b, T: Iterator<Item = &'a Children>>(
     mut parent_query: T,
 ) -> Vec<Entity> {

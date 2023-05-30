@@ -30,7 +30,8 @@ pub fn update_message(
     mta_children_query: Query<&Children, With<MessageTextArea>>,
     lines_children_query: Query<&Children, With<MessageTextLine>>,
     mta_query: Query<&MessageTextArea>,
-    lines_query: Query<(Entity, &MessageTextLine, &Transform)>,
+    lines_query: Query<(Entity, &MessageTextLine)>,
+    lines_query_transform: Query<(Entity, &MessageTextLine, &Transform)>,
     chars_query: Query<(&MessageTextChar, &Transform, &Text)>,
     loded_text: ResMut<LoadedText>,
     time: Res<Time>,
@@ -55,8 +56,12 @@ pub fn update_message(
             }
             _ => {
                 let current_mta_entity = get_current_mta_entity(window_children_query);
-                let last_line_entity = get_last_line_entity(current_mta_entity, lines_query.iter(), mta_children_query);
-                let is_new_char_added = add_character(
+                let last_line_entity = get_last_line_entity(
+                    current_mta_entity,
+                    lines_query.iter(),
+                    mta_children_query,
+                );
+                let is_new_char_added = type_character(
                     commands,
                     sub_commands,
                     fonts,
@@ -65,7 +70,7 @@ pub fn update_message(
                     last_line_entity,
                     lines_children_query,
                     mta_query,
-                    lines_query,
+                    lines_query_transform,
                     chars_query,
                     new_char,
                 );
@@ -84,21 +89,25 @@ pub fn update_message(
 fn get_current_mta_entity(
     window_children_query: Query<&Children, With<CurrentMessageWindow>>,
 ) -> Option<Entity> {
-    get_child_entities(window_children_query.iter()).first().copied()
+    get_child_entities(window_children_query.iter())
+        .first()
+        .copied()
 }
 
-fn get_last_line_entity<'a, 'b, I: Iterator<Item=(Entity, &'a MessageTextLine, &'b Transform)>>(
+fn get_last_line_entity<'a, I: Iterator<Item = (Entity, &'a MessageTextLine)>>(
     current_mta_entity: Option<Entity>,
     lines_query: I,
     mta_children_query: Query<&Children, With<MessageTextArea>>,
 ) -> Option<Entity> {
-    let current_lines_entities = current_mta_entity.map(|e|entity_get_children(&e, &mta_children_query)).unwrap_or_default();
+    let current_lines_entities = current_mta_entity
+        .map(|e| entity_get_children(&e, &mta_children_query))
+        .unwrap_or_default();
     let current_lines = lines_query.filter(|l| current_lines_entities.iter().any(|e| l.0 == *e));
     current_lines.max_by_key(|x| x.1.row_index).map(|x| x.0)
 }
 
-fn add_character(
-    mut commands: Commands,
+fn type_character(
+    commands: Commands,
     sub_commands: Commands,
     fonts: Res<Assets<Font>>,
     mut config: Mut<'_, MessageWindowConfig>,
@@ -122,23 +131,24 @@ fn add_character(
     let area_width = current_mta_entity
         .and_then(|e| mta_query.get(e).ok())
         .map(|a| a.area_size.x);
+    let is_linefeed = new_char == '\n';
     let is_overflow = left_end > area_width.unwrap_or(0.) || last_line_entity.is_none();
-    let is_linefeed = is_overflow || new_char == '\n';
 
-    let last_char_x = if is_linefeed {
+    print!("{}", new_char);
+    let last_char_x = if is_overflow || is_linefeed {
         0.
     } else {
         last_char
             .map(|c| c.1.translation.x + config.current_text_style.font_size)
             .unwrap_or(0.)
     };
-    let next_line_index = if is_linefeed {
+    let next_line_index = if is_overflow || is_linefeed {
         1
     } else {
         last_char.map(|c| c.0.line_index).unwrap_or(0) + 1
     };
 
-    let next_line = if is_linefeed {
+    let next_line = if is_overflow || is_linefeed {
         add_empty_line(
             sub_commands,
             config.reborrow(),
@@ -155,31 +165,50 @@ fn add_character(
         return false;
     };
 
+    if !is_linefeed {
+        add_new_char(
+            commands,
+            fonts,
+            config.reborrow(),
+            new_char,
+            last_char_x,
+            next_line_index,
+            next_line,
+        );
+    }
+    true
+}
+
+fn add_new_char(
+    mut commands: Commands,
+    fonts: Res<Assets<Font>>,
+    config: Mut<'_, MessageWindowConfig>,
+    new_char: char,
+    last_char_x: f32,
+    next_line_index: usize,
+    next_line: Option<Entity>,
+) {
     let text_style = TextStyle {
         font: choice_font(&config.font_handles, new_char, fonts).unwrap_or_default(),
         ..config.current_text_style
     };
-
-    if !is_linefeed {
-        let new_message_char = commands
-            .spawn((
-                Text2dBundle {
-                    text: Text::from_section(new_char.to_string(), text_style),
-                    transform: Transform::from_translation(Vec3::new(last_char_x, 0., 1.)),
-                    text_anchor: Anchor::TopLeft,
-                    ..default()
-                },
-                config.layers,
-                MessageTextChar {
-                    line_index: next_line_index,
-                },
-            ))
-            .id();
-        if let Some(e) = next_line {
-            commands.entity(e).add_child(new_message_char);
-        }
+    let new_message_char = commands
+        .spawn((
+            Text2dBundle {
+                text: Text::from_section(new_char.to_string(), text_style),
+                transform: Transform::from_translation(Vec3::new(last_char_x, 0., 1.)),
+                text_anchor: Anchor::TopLeft,
+                ..default()
+            },
+            config.layers,
+            MessageTextChar {
+                line_index: next_line_index,
+            },
+        ))
+        .id();
+    if let Some(e) = next_line {
+        commands.entity(e).add_child(new_message_char);
     }
-    true
 }
 
 fn add_empty_line(
@@ -227,14 +256,13 @@ pub fn update_line_height(
     mta_children_query: Query<&Children, With<MessageTextArea>>,
     lines_children_query: Query<&Children, With<MessageTextLine>>,
     char_query: Query<&Text, With<MessageTextChar>>,
-    mut lines_query: Query<&mut MessageTextLine>,
+    mut lines_query: Query<(Entity, &mut MessageTextLine)>,
 ) {
     let current_mta_entity = get_current_mta_entity(window_children_query);
-    let current_lines_entities = current_mta_entity.map(|e|entity_get_children(&e, &mta_children_query)).unwrap_or_default();
-    let last_line_entity = current_lines_entities
-        .iter()
-        .max_by_key(|x| lines_query.get(**x).map(|y| y.row_index).unwrap_or(0));
+    let last_line_entity =
+        get_last_line_entity(current_mta_entity, lines_query.iter(), mta_children_query);
     let last_text_entities = last_line_entity
+        .as_ref()
         .map(|x| entity_get_children(x, &lines_children_query))
         .unwrap_or_default();
 
@@ -244,7 +272,8 @@ pub fn update_line_height(
         .collect::<Vec<f32>>()
         .iter()
         .fold(0., |acc: f32, e| acc.min(-*e));
-    if let Some(mut line) = last_line_entity.and_then(|e| lines_query.get_mut(*e).ok()) {
+    if let Some(mut line) = last_line_entity.and_then(|e| lines_query.get_mut(e).ok().map(|x| x.1))
+    {
         line.max_char_height = max_size;
     }
 }
