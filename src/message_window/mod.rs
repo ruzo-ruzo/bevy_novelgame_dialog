@@ -9,7 +9,6 @@ use bevy::{
 
 mod message_writer;
 mod page_scroller;
-mod utility;
 mod window_controller;
 
 use crate::read_script::*;

@@ -5,6 +5,7 @@ use bevy::prelude::*;
 mod fox_background;
 mod message_window;
 mod read_script;
+mod utility;
 
 fn main() {
     App::new()

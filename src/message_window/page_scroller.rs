@@ -1,7 +1,6 @@
-use bevy::{ ecs::component::Component, time::Timer};
 use super::*;
-use utility::*;
-
+use crate::utility::*;
+use bevy::{ecs::component::Component, time::Timer};
 
 #[derive(Component, Debug)]
 pub struct ScrollUp {
