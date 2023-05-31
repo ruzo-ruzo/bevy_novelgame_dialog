@@ -134,7 +134,6 @@ fn type_character(
     let is_linefeed = new_char == '\n';
     let is_overflow = left_end > area_width.unwrap_or(0.) || last_line_entity.is_none();
 
-    print!("{}", new_char);
     let last_char_x = if is_overflow || is_linefeed {
         0.
     } else {

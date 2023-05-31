@@ -28,9 +28,9 @@ fn setup(
 ) {
     // Insert a resource with the current scene information
     commands.insert_resource(Animations(vec![
-        asset_server.load("models/animated/Fox.glb#Animation2"),
-        asset_server.load("models/animated/Fox.glb#Animation1"),
-        asset_server.load("models/animated/Fox.glb#Animation0"),
+        asset_server.load("../../text_test/assets/models/animated/Fox.glb#Animation2"),
+        asset_server.load("../../text_test/assets/models/animated/Fox.glb#Animation1"),
+        asset_server.load("../../text_test/assets/models/animated/Fox.glb#Animation0"),
     ]));
 
     // Camera
@@ -65,7 +65,7 @@ fn setup(
 
     // Fox
     commands.spawn(SceneBundle {
-        scene: asset_server.load("models/animated/Fox.glb#Scene0"),
+        scene: asset_server.load("../../text_test/assets/models/animated/Fox.glb#Scene0"),
         ..default()
     });
 }
