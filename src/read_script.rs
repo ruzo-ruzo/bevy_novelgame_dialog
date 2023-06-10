@@ -1,13 +1,26 @@
-use crate::message_window::*;
 use bevy::{
     asset::{AssetLoader, LoadContext, LoadedAsset},
     prelude::*,
-    reflect::TypeUuid,
+    reflect::{TypePath, TypeUuid},
     utils::BoxedFuture,
 };
 use serde::Deserialize;
 
-#[derive(Debug, Deserialize, TypeUuid)]
+#[derive(Debug, Clone)]
+pub enum Order {
+    Type { character: char },
+    CarriageReturn,
+    PageFeed,
+    ThroghEvent { ron: String },
+}
+
+#[derive(Component, Debug)]
+pub struct LoadedScript {
+    pub bms_handle: Handle<BMWScript>,
+    pub order_list: Option<Vec<Order>>,
+}
+
+#[derive(Debug, Deserialize, TypeUuid, TypePath)]
 #[uuid = "edb6ad8f-ca38-189e-9dce-ae1fb5031888"]
 pub struct BMWScript {
     pub script: String,
@@ -35,10 +48,27 @@ impl AssetLoader for BMWScriptLoader {
     }
 }
 
-pub fn script_on_load(mut loaded_text: ResMut<LoadedText>, script_assets: Res<Assets<BMWScript>>) {
-    let script_opt = script_assets.get(&loaded_text.base_bms);
-    if let (true, Some(s)) = (loaded_text.loading, script_opt) {
-        loaded_text.char_list = s.script.chars().rev().collect::<String>();
-        loaded_text.loading = false;
+pub fn perse_script(base: String) -> Vec<Order> {
+    base.chars()
+        .map(|c| match c {
+            '\t' => Order::PageFeed,
+            '\n' => Order::CarriageReturn,
+            _ => Order::Type { character: c },
+        })
+        .rev()
+        .collect()
+}
+
+pub fn script_on_load(
+    mut loaded_script_query: Query<&mut LoadedScript>,
+    script_assets: Res<Assets<BMWScript>>,
+) {
+    for mut loaded_script in &mut loaded_script_query {
+        if loaded_script.order_list.is_none() {
+            let script_opt = script_assets.get(&loaded_script.bms_handle);
+            if let Some(bms) = script_opt {
+                loaded_script.order_list = Some(perse_script(bms.script.clone()));
+            }
+        }
     }
 }

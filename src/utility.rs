@@ -2,36 +2,7 @@ use ab_glyph::Font as AFont;
 use bevy::prelude::*;
 use rand::{distributions::uniform::SampleRange, Rng};
 
-pub fn get_child_entities<'a, 'b, T: Iterator<Item = &'a Children>>(
-    mut parent_query: T,
-) -> Vec<Entity> {
-    let children = parent_query.next();
-    children
-        .map(|x| x.iter().copied().collect::<Vec<Entity>>())
-        .unwrap_or_default()
-}
-
-pub fn entity_get_children<Q>(base: &Entity, query: &Query<&Children, Q>) -> Vec<Entity>
-where
-    Q: bevy::ecs::query::ReadOnlyWorldQuery,
-{
-    query
-        .get(*base)
-        .map(|x| get_child_entities([x].into_iter()))
-        .unwrap_or_default()
-}
-
-pub fn down_children_entity<'a, 'b, 'c, E, Q>(
-    entities: E,
-    from: &'c Query<&'b Children, Q>,
-) -> Vec<Entity>
-where
-    E: Iterator<Item = &'a Entity>,
-    Q: bevy::ecs::query::ReadOnlyWorldQuery,
-{
-    get_child_entities(from.iter_many(entities))
-}
-
+#[allow(dead_code)]
 pub fn get_random<T, R: AsRef<[T]>>(list: &R) -> Option<&T> {
     let list_ref: &[T] = list.as_ref();
     list_ref.get(rand::thread_rng().gen_range(0..list_ref.len()))
@@ -40,7 +11,7 @@ pub fn get_random<T, R: AsRef<[T]>>(list: &R) -> Option<&T> {
 pub fn choice_font<R: AsRef<[Handle<Font>]>>(
     list: &R,
     target: char,
-    fonts: Res<Assets<Font>>,
+    fonts: &Assets<Font>,
 ) -> Option<Handle<Font>> {
     let finded = list
         .as_ref()
