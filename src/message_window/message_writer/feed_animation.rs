@@ -84,25 +84,27 @@ pub fn start_feeding(
             .iter()
             .filter(|q| parent_query.iter_ancestors(q.0).any(|e| e == w_entity))
             .collect::<Vec<(Entity, &FeedingStyle)>>();
+        // info!("{} : {}", target_lines.len(), line_query.iter().len());
         for (l_entity, fs) in target_lines.iter() {
             match fs {
                 FeedingStyle::Scroll {
                     size: fs_size,
                     sec: fs_sec,
                 } => {
-                    let line_count = if *fs_size == 0 {
-                        line_query.iter().count()
+                    let line_size = line_query.iter().count();
+                    let line_count = if *fs_size == 0 || line_size < *fs_size {
+                        0
                     } else {
-                        *fs_size
+                        info!("{line_size:?} : {:?}", *fs_size);
+                        line_size - *fs_size
                     };
                     commands.entity(*l_entity).insert(ScrollFeed {
-                        line_per_sec: line_count as f32 / fs_sec,
+                        line_per_sec: *fs_sec,
                         count: line_count,
                     })
                 }
             };
             *ws = WindowState::Feeding;
-            start_feeding_event.clear();
         }
     }
 }
@@ -120,20 +122,25 @@ pub fn scroll_lines(
                 .iter_mut()
                 .filter(|q| parent_query.iter_ancestors(q.0).any(|e| e == w_entity))
                 .collect::<Vec<(Entity, Mut<Transform>, &Sprite, Mut<ScrollFeed>)>>();
-            let height = target_lines
-                .iter()
-                .find(|x| x.1.translation.y <= 0.)
-                .and_then(|x| x.2.custom_size.map(|s| s.y))
-                .unwrap_or_default();
-            if target_lines.len() == 0 {
-                *ws = WindowState::Typing
-            }
-            for (l_entity, ref mut tf, _, ref mut sf) in target_lines.iter_mut() {
-                tf.translation.y += height * sf.line_per_sec * time.delta_seconds();
-                if tf.translation.y >= -height {
-                    tf.scale.y -= time.delta_seconds() * sf.line_per_sec;
-                    if tf.scale.y <= 0. {
-                        commands.entity(*l_entity).despawn_recursive();
+            target_lines.sort_by(|a, b| a.1.translation.y.partial_cmp(&b.1.translation.y).unwrap());
+            let targets_size = target_lines.len();
+            if targets_size == target_lines.first().map(|l| l.3.count).unwrap_or_default() {
+                *ws = WindowState::Typing;
+                for (l_entity, _, _, _) in target_lines.iter() {
+                    commands.entity(*l_entity).remove::<ScrollFeed>();
+                }
+            } else {
+                let height = target_lines
+                    .first()
+                    .and_then(|x| x.2.custom_size.map(|s| s.y))
+                    .unwrap_or_default();
+                for (l_entity, ref mut tf, _, ref mut sf) in target_lines.iter_mut() {
+                    tf.translation.y += height * sf.line_per_sec * time.delta_seconds();
+                    if tf.translation.y >= -height {
+                        tf.scale.y -= time.delta_seconds() * sf.line_per_sec;
+                        if tf.scale.y <= 0. {
+                            commands.entity(*l_entity).despawn_recursive();
+                        }
                     }
                 }
             }

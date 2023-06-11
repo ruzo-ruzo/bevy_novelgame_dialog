@@ -6,7 +6,7 @@ use bevy::{
 };
 use serde::Deserialize;
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 pub enum Order {
     Type { character: char },
     CarriageReturn,

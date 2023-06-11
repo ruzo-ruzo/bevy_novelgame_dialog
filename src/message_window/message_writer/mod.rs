@@ -21,7 +21,7 @@ pub struct MessageTextLine {
 #[derive(Component, Debug)]
 pub struct MessageTextChar;
 
-#[derive(Bundle)]
+#[derive(Bundle, Debug)]
 struct CharBundle {
     text_char: MessageTextChar,
     timer: TypingTimer,
@@ -36,12 +36,12 @@ struct LineBundle {
     sprites: SpriteBundle,
 }
 
-#[derive(Component, Clone)]
+#[derive(Component, Clone, Debug)]
 pub struct TypingTimer {
     timer: Timer,
 }
 
-#[derive(SystemParam)]
+#[derive(SystemParam, Debug)]
 #[allow(clippy::type_complexity)]
 pub struct LastTextData<'w, 's> {
     text: Query<
@@ -130,7 +130,6 @@ pub fn add_new_text(
                             make_empty_line(config, &mut last_x, &mut last_y, max_height);
                         let Some(new_line) = new_line_opt else {
                             send_feed_event(&mut ps_event, w_ent, &last_timer, &mut ws);
-                            *pending = next_order;
                             break;
                         };
                         let new_line_entity = commands.spawn((new_line, Current)).id();
@@ -140,10 +139,14 @@ pub fn add_new_text(
                         last_line_opt = Some(new_line_entity);
                         commands.entity(tb_ent).add_child(new_line_entity);
                         in_cr = false;
+                        if *pending == Some(Order::CarriageReturn) {
+                            *pending = None;
+                        }
                         continue;
                     }
                     Some(Order::PageFeed) => {
                         send_feed_event(&mut ps_event, w_ent, &last_timer, &mut ws);
+                        *pending = Some(Order::CarriageReturn);
                         break;
                     }
                     _ => break,
@@ -153,6 +156,7 @@ pub fn add_new_text(
     }
 }
 
+//そもそも何もかんも間違えてるなコレ
 fn initialize_typing_data(
     last_data: &LastTextData,
     text_box_entity: Entity,
@@ -164,12 +168,14 @@ fn initialize_typing_data(
         .iter()
         .find(|x| Some(x.4.get()) == last_line_opt);
     let last_text_opt = last_text_data_opt.map(|x| x.0);
-    let new_timer = TypingTimer {
-        timer: Timer::from_seconds(0., TimerMode::Once),
+    let last_timer = TypingTimer {
+        timer: Timer::from_seconds(
+            last_text_data_opt
+                .map(|x| x.3.timer.remaining_secs())
+                .unwrap_or_default(),
+            TimerMode::Once,
+        ),
     };
-    let last_timer = last_text_data_opt
-        .map(|x| (*x.3).clone())
-        .unwrap_or(new_timer);
     let last_x = last_text_data_opt
         .and_then(|t| {
             t.2.sections
@@ -178,7 +184,7 @@ fn initialize_typing_data(
         })
         .unwrap_or_default();
     let last_y = last_line_data_opt
-        .and_then(|l| l.2.custom_size.map(|c| l.1.translation.y + c.y))
+        .map(|l| l.1.translation.y )
         .unwrap_or_default();
     (last_line_opt, last_text_opt, last_x, last_y, last_timer)
 }
@@ -268,11 +274,11 @@ fn make_empty_line(
     config: &TypeTextConfig,
     last_x: &mut f32,
     last_y: &mut f32,
-    max_height: f32,
+    min_height: f32,
 ) -> Option<LineBundle> {
     *last_x = 0.;
     *last_y -= config.text_style.font_size;
-    if *last_y < -max_height {
+    if *last_y < -min_height {
         None
     } else {
         let sprite_bundle = SpriteBundle {
@@ -304,7 +310,7 @@ pub fn settle_lines(
         Without<TextBox>,
     >,
     text_char: Query<&Text, With<MessageTextChar>>,
-    text_box: Query<&Sprite, With<TextBox>>,
+    text_box_query: Query<(&Sprite, &TypeTextConfig), With<TextBox>>,
 ) {
     for (mtl, mut l_tf, mut sprite, children, parent) in &mut targets {
         let text_size_list: Vec<f32> = text_char
@@ -316,16 +322,20 @@ pub fn settle_lines(
                     .unwrap_or_default()
             })
             .collect();
+        let text_box = text_box_query.get(parent.get()).ok();
+        let base_hight = sprite.custom_size.map(|x| x.y).unwrap_or(
+            text_box
+                .map(|x| x.1.text_style.font_size)
+                .unwrap_or_default(),
+        );
         let line_width: f32 = text_size_list.iter().sum();
         let line_hight = text_size_list
             .into_iter()
             .reduce(|x, y| if x > y { x } else { y })
-            .unwrap_or_default();
+            .unwrap_or(base_hight);
         sprite.custom_size = Some(Vec2::new(line_width, line_hight));
         let box_width = text_box
-            .get(parent.get())
-            .ok()
-            .and_then(|b| b.custom_size.map(|s| s.x))
+            .and_then(|b| b.0.custom_size.map(|s| s.x))
             .unwrap_or_default();
         l_tf.translation.x = match mtl.alignment {
             TextAlignment::Center => (box_width - line_width) / 2.,
