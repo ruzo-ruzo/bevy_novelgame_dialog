@@ -23,7 +23,7 @@ fn start_message(mut ow_event: EventWriter<OpenWindowEvent>, mut is_started: Loc
             ].iter().map(|s| String::from("../../text_test/assets/fonts/".to_owned() + s)).collect(),
             background_path: "../../text_test/assets/2d_picture/messageframe/material/messageframe_non_line/message_001.png".to_string(),
             position: Vec2::new(0., -200.),
-            feeding: FeedingStyle::Scroll { size: 2, sec: 1.5 },
+            feeding: FeedingStyle::Scroll { size: 0, sec: 1.5 },
             script_path: "scripts/test.bms".to_string(),
             main_box_origin: Vec2::new(-540.0, 70.0),
             main_box_size: Vec2::new(1060.0, 140.0),

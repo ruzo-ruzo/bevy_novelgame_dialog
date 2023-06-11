@@ -130,6 +130,7 @@ pub fn add_new_text(
                             make_empty_line(config, &mut last_x, &mut last_y, max_height);
                         let Some(new_line) = new_line_opt else {
                             send_feed_event(&mut ps_event, w_ent, &last_timer, &mut ws);
+                            *pending = Some(Order::CarriageReturn);
                             break;
                         };
                         let new_line_entity = commands.spawn((new_line, Current)).id();

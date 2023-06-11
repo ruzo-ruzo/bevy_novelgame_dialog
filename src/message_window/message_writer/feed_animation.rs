@@ -74,7 +74,7 @@ pub fn start_feeding(
     mut window_query: Query<(Entity, &mut WindowState)>,
     parent_query: Query<&Parent>,
     line_query: Query<(Entity, &FeedingStyle), With<MessageTextLine>>,
-    mut start_feeding_event: EventReader<StartFeedingEvent>,
+    start_feeding_event: EventReader<StartFeedingEvent>,
 ) {
     if start_feeding_event.is_empty() {
         return;
@@ -84,7 +84,6 @@ pub fn start_feeding(
             .iter()
             .filter(|q| parent_query.iter_ancestors(q.0).any(|e| e == w_entity))
             .collect::<Vec<(Entity, &FeedingStyle)>>();
-        // info!("{} : {}", target_lines.len(), line_query.iter().len());
         for (l_entity, fs) in target_lines.iter() {
             match fs {
                 FeedingStyle::Scroll {
@@ -95,7 +94,6 @@ pub fn start_feeding(
                     let line_count = if *fs_size == 0 || line_size < *fs_size {
                         0
                     } else {
-                        info!("{line_size:?} : {:?}", *fs_size);
                         line_size - *fs_size
                     };
                     commands.entity(*l_entity).insert(ScrollFeed {
