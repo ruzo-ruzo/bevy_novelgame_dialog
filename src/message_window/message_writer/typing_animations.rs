@@ -36,7 +36,6 @@ pub fn trigger_type_animation(
                 WritingStyle::Put => (),
             }
             *visibility = Visibility::Inherited;
-            // commands.entity(entity).remove::<TypingTimer>();
         }
     }
 }

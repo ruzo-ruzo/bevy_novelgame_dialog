@@ -157,7 +157,6 @@ pub fn add_new_text(
     }
 }
 
-//そもそも何もかんも間違えてるなコレ
 fn initialize_typing_data(
     last_data: &LastTextData,
     text_box_entity: Entity,
