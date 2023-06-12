@@ -84,6 +84,7 @@ pub fn add_new_text(
     mut ps_event: EventWriter<FeedWaitingEvent>,
     fonts: Res<Assets<Font>>,
     mut pending: Local<Option<Order>>,
+    mut in_cr: Local<bool>,
 ) {
     for (w_ent, mut script, mut ws) in &mut window_query {
         for (tb_ent, tb_spr, config, parent) in &text_box_query {
@@ -96,9 +97,8 @@ pub fn add_new_text(
                 x: max_width,
                 y: max_height,
             } = tb_spr.custom_size.unwrap_or_default();
-            let mut in_cr = false;
             loop {
-                let next_order = get_next_order(&pending, &mut script.order_list, in_cr);
+                let next_order = get_next_order(&pending, &mut script.order_list, *in_cr);
                 match next_order {
                     Some(Order::Type {
                         character: new_word,
@@ -114,7 +114,7 @@ pub fn add_new_text(
                         );
                         let (Some(new_text), Some(last_line)) = (new_text_opt, last_line_opt) else {
                             *pending = next_order;
-                            in_cr = true;
+                            *in_cr = true;
                             continue;
                         };
                         let new_text_entity = commands.spawn((new_text, Current)).id();
@@ -124,13 +124,14 @@ pub fn add_new_text(
                         last_text_opt = Some(new_text_entity);
                         commands.entity(last_line).add_child(new_text_entity);
                         *pending = None;
+                        *in_cr = false;
                     }
                     Some(Order::CarriageReturn) => {
                         let new_line_opt =
                             make_empty_line(config, &mut last_x, &mut last_y, max_height);
                         let Some(new_line) = new_line_opt else {
                             send_feed_event(&mut ps_event, w_ent, &last_timer, &mut ws);
-                            *pending = Some(Order::CarriageReturn);
+                            *in_cr = true;
                             break;
                         };
                         let new_line_entity = commands.spawn((new_line, Current)).id();
@@ -139,15 +140,12 @@ pub fn add_new_text(
                         }
                         last_line_opt = Some(new_line_entity);
                         commands.entity(tb_ent).add_child(new_line_entity);
-                        in_cr = false;
-                        if *pending == Some(Order::CarriageReturn) {
-                            *pending = None;
-                        }
+                        *in_cr = false;
                         continue;
                     }
                     Some(Order::PageFeed) => {
                         send_feed_event(&mut ps_event, w_ent, &last_timer, &mut ws);
-                        *pending = Some(Order::CarriageReturn);
+                        *in_cr = true;
                         break;
                     }
                     _ => break,
