@@ -4,9 +4,7 @@ use super::super::*;
 
 #[derive(Component, Debug)]
 pub enum TypingStyle {
-    Wiping {
-        wipe_per_sec: f32,
-    },
+    Wiping { wipe_per_sec: f32 },
     Typed,
 }
 
@@ -46,7 +44,7 @@ pub fn text_wipe(
     time: Res<Time>,
 ) {
     for (entity, ts, mut tf) in &mut target {
-        if let TypingStyle::Wiping{ wipe_per_sec: sec } = ts {
+        if let TypingStyle::Wiping { wipe_per_sec: sec } = ts {
             tf.scale.x += time.delta_seconds() * sec;
             if tf.scale.x > 1. {
                 tf.scale.x = 1.0;

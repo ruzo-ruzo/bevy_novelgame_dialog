@@ -81,6 +81,8 @@ pub fn add_new_text(
     mut window_query: Query<(Entity, &mut LoadedScript, &mut WindowState)>,
     text_box_query: TextBoxData,
     last_data: LastTextData,
+    app_type_registry: Res<AppTypeRegistry>,
+    mut wrapper: EventWriter<BMSEvent>,
     mut ps_event: EventWriter<FeedWaitingEvent>,
     fonts: Res<Assets<Font>>,
     mut pending: Local<Option<Order>>,
@@ -148,7 +150,14 @@ pub fn add_new_text(
                         *in_cr = true;
                         break;
                     }
-                    _ => break,
+                    Some(Order::ThroghEvent {ron: r}) => {
+                        let event_opt = read_ron(&app_type_registry, r);
+                        if let Ok(reflect_value) = event_opt {
+                            wrapper.send(BMSEvent { value: reflect_value } )
+                        }
+                        break
+                    }
+                    None => break,
                 }
             }
         }
@@ -182,7 +191,7 @@ fn initialize_typing_data(
         })
         .unwrap_or_default();
     let last_y = last_line_data_opt
-        .map(|l| l.1.translation.y )
+        .map(|l| l.1.translation.y)
         .unwrap_or_default();
     (last_line_opt, last_text_opt, last_x, last_y, last_timer)
 }

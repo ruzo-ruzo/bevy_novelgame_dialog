@@ -4,6 +4,7 @@ use bevy::prelude::*;
 mod message_writer;
 mod setup;
 pub mod window_controller;
+mod bms_event;
 
 use message_writer::feed_animation::*;
 use message_writer::typing_animations::*;
@@ -11,6 +12,7 @@ use message_writer::*;
 use setup::*;
 use window_controller::popup::*;
 use window_controller::*;
+use bms_event::*;
 
 pub struct MessageWindowPlugin {
     pub layer_num: u8,
@@ -41,9 +43,11 @@ impl Plugin for MessageWindowPlugin {
                 render_layer: self.layer_num,
                 render_order: self.render_order,
             })
+            .register_type::<FontSizeChange>()
             .add_event::<OpenWindowEvent>()
             .add_event::<FeedWaitingEvent>()
             .add_event::<StartFeedingEvent>()
+            .add_event::<BMSEvent>()
             .configure_sets(
                 Update,
                 (PhaseSet::Progress, PhaseSet::Setting, PhaseSet::Change).chain(),
@@ -52,6 +56,7 @@ impl Plugin for MessageWindowPlugin {
             .add_systems(Update, script_on_load.in_set(PhaseSet::Setting))
             .add_systems(Update, trigger_type_animation.in_set(PhaseSet::Setting))
             .add_systems(Update, setup_feed_starter.in_set(PhaseSet::Setting))
+            .add_systems(Update, change_font_size.in_set(PhaseSet::Setting))
             .add_systems(Update, settle_lines.in_set(PhaseSet::Progress))
             .add_systems(Update, text_wipe.in_set(PhaseSet::Progress))
             .add_systems(Update, scaling_up.in_set(PhaseSet::Progress))

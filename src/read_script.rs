@@ -1,10 +1,31 @@
 use bevy::{
     asset::{AssetLoader, LoadContext, LoadedAsset},
     prelude::*,
-    reflect::{TypePath, TypeUuid},
+    reflect::{serde::UntypedReflectDeserializer, TypePath, TypeUuid},
     utils::BoxedFuture,
 };
-use serde::Deserialize;
+use serde::{de::DeserializeSeed, Deserialize};
+
+#[derive(Event)]
+pub struct BMSEvent {
+    pub value: Box<dyn Reflect>,
+}
+
+impl BMSEvent {
+    pub fn get<T: Default + Reflect>(&self) -> T {
+        let mut my_data = <T>::default();
+        my_data.apply(&*self.value);
+        my_data
+    }
+
+    pub fn get_opt<T: Default + Reflect>(&self) -> Option<T> {
+        if self.value.represents::<T>() {
+            Some(self.get::<T>())
+        } else {
+            None
+        }
+    }
+}
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum Order {
@@ -48,17 +69,6 @@ impl AssetLoader for BMWScriptLoader {
     }
 }
 
-pub fn perse_script(base: String) -> Vec<Order> {
-    base.chars()
-        .map(|c| match c {
-            '\t' => Order::PageFeed,
-            '\n' => Order::CarriageReturn,
-            _ => Order::Type { character: c },
-        })
-        .rev()
-        .collect()
-}
-
 pub fn script_on_load(
     mut loaded_script_query: Query<&mut LoadedScript>,
     script_assets: Res<Assets<BMWScript>>,
@@ -71,4 +81,35 @@ pub fn script_on_load(
             }
         }
     }
+}
+
+pub fn read_ron<S: AsRef<str>>(
+    type_registry: &AppTypeRegistry,
+    ron: S,
+) -> Result<Box<dyn Reflect>, ron::Error> {
+    let ron_string = ron.as_ref().to_string();
+    let reg = type_registry.read();
+    let reflect_deserializer = UntypedReflectDeserializer::new(&reg);
+    let mut deserializer = ron::de::Deserializer::from_str(&ron_string)?;
+    reflect_deserializer.deserialize(&mut deserializer)
+}
+
+//-- 以下は仮設定
+pub fn perse_script(base: String) -> Vec<Order> {
+    base.chars()
+        .map(|c| match c {
+            '\t' => Order::PageFeed,
+            '\n' => Order::CarriageReturn,
+            '-' => Order::ThroghEvent { ron: r#"{
+    "bevy_message_window::message_window::bms_event::FontSizeChange": (
+        size: 27.0,
+)}"#.to_string()},
+            '+' => Order::ThroghEvent { ron: r#"{
+    "bevy_message_window::message_window::bms_event::FontSizeChange": (
+        size: 40.0,
+),}}"#.to_string()},
+            _ => Order::Type { character: c },
+        })
+        .rev()
+        .collect()
 }
