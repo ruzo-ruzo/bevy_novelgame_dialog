@@ -150,12 +150,14 @@ pub fn add_new_text(
                         *in_cr = true;
                         break;
                     }
-                    Some(Order::ThroghEvent {ron: r}) => {
+                    Some(Order::ThroghEvent { ron: r }) => {
                         let event_opt = read_ron(&app_type_registry, r);
                         if let Ok(reflect_value) = event_opt {
-                            wrapper.send(BMSEvent { value: reflect_value } )
+                            wrapper.send(BMSEvent {
+                                value: reflect_value,
+                            })
                         }
-                        break
+                        break;
                     }
                     None => break,
                 }
@@ -184,11 +186,7 @@ fn initialize_typing_data(
         ),
     };
     let last_x = last_text_data_opt
-        .and_then(|t| {
-            t.2.sections
-                .first()
-                .map(|s| t.1.translation.x + s.style.font_size)
-        })
+        .map(|t| t.1.translation.x)
         .unwrap_or_default();
     let last_y = last_line_data_opt
         .map(|l| l.1.translation.y)
@@ -317,10 +315,16 @@ pub fn settle_lines(
         Without<TextBox>,
     >,
     text_char: Query<&Text, With<MessageTextChar>>,
-    text_box_query: Query<(&Sprite, &TypeTextConfig), With<TextBox>>,
+    text_box_query: Query<(&Sprite, &TypeTextConfig, &Parent), With<TextBox>>,
+    window_query: Query<&WindowState>,
 ) {
-    let mut sorted =targets.iter_mut()
-        .collect::<Vec<(&MessageTextLine,  Mut<Transform>, Mut<Sprite>, &Children, &Parent)>>() ;
+    let mut sorted = targets.iter_mut().collect::<Vec<(
+        &MessageTextLine,
+        Mut<Transform>,
+        Mut<Sprite>,
+        &Children,
+        &Parent,
+    )>>();
     sorted.sort_by(|a, b| b.1.translation.y.partial_cmp(&a.1.translation.y).unwrap());
     let mut prev_height = 0f32;
     for (mtl, ref mut l_tf, ref mut sprite, children, parent) in sorted.iter_mut() {
@@ -334,11 +338,8 @@ pub fn settle_lines(
             })
             .collect();
         let text_box = text_box_query.get(parent.get()).ok();
-        let base_hight = sprite.custom_size.map(|x| x.y).unwrap_or(
-            text_box
-                .map(|x| x.1.text_style.font_size)
-                .unwrap_or_default(),
-        );
+        let window = text_box.and_then(|x| window_query.get(x.2.get()).ok());
+        let base_hight = sprite.custom_size.map(|x| x.y).unwrap_or_default();
         let line_width: f32 = text_size_list.iter().sum();
         let line_hight = text_size_list
             .into_iter()
@@ -354,6 +355,8 @@ pub fn settle_lines(
             TextAlignment::Right => box_width - line_width,
             _ => 0.,
         };
-        l_tf.translation.y = prev_height;
+        if let Some(WindowState::Typing) = window {
+            l_tf.translation.y = prev_height
+        };
     }
 }

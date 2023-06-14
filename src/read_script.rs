@@ -110,7 +110,7 @@ pub fn perse_script(base: String) -> Vec<Order> {
             '+' => Order::ThroghEvent {
                 ron: r#"{
     "bevy_message_window::message_window::bms_event::FontSizeChange": (
-        size: 40.0,
+        size: 35.0,
 ),}}"#
                     .to_string(),
             },
