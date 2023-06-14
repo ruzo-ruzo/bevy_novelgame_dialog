@@ -100,14 +100,20 @@ pub fn perse_script(base: String) -> Vec<Order> {
         .map(|c| match c {
             '\t' => Order::PageFeed,
             '\n' => Order::CarriageReturn,
-            '-' => Order::ThroghEvent { ron: r#"{
+            '-' => Order::ThroghEvent {
+                ron: r#"{
     "bevy_message_window::message_window::bms_event::FontSizeChange": (
         size: 27.0,
-)}"#.to_string()},
-            '+' => Order::ThroghEvent { ron: r#"{
+)}"#
+                .to_string(),
+            },
+            '+' => Order::ThroghEvent {
+                ron: r#"{
     "bevy_message_window::message_window::bms_event::FontSizeChange": (
         size: 40.0,
-),}}"#.to_string()},
+),}}"#
+                    .to_string(),
+            },
             _ => Order::Type { character: c },
         })
         .rev()

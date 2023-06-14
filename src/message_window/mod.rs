@@ -1,18 +1,18 @@
 use crate::read_script::*;
 use bevy::prelude::*;
 
+mod bms_event;
 mod message_writer;
 mod setup;
 pub mod window_controller;
-mod bms_event;
 
+use bms_event::*;
 use message_writer::feed_animation::*;
 use message_writer::typing_animations::*;
 use message_writer::*;
 use setup::*;
 use window_controller::popup::*;
 use window_controller::*;
-use bms_event::*;
 
 pub struct MessageWindowPlugin {
     pub layer_num: u8,

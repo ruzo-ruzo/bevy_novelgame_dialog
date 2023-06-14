@@ -319,9 +319,13 @@ pub fn settle_lines(
     text_char: Query<&Text, With<MessageTextChar>>,
     text_box_query: Query<(&Sprite, &TypeTextConfig), With<TextBox>>,
 ) {
-    for (mtl, mut l_tf, mut sprite, children, parent) in &mut targets {
+    let mut sorted =targets.iter_mut()
+        .collect::<Vec<(&MessageTextLine,  Mut<Transform>, Mut<Sprite>, &Children, &Parent)>>() ;
+    sorted.sort_by(|a, b| b.1.translation.y.partial_cmp(&a.1.translation.y).unwrap());
+    let mut prev_height = 0f32;
+    for (mtl, ref mut l_tf, ref mut sprite, children, parent) in sorted.iter_mut() {
         let text_size_list: Vec<f32> = text_char
-            .iter_many(children)
+            .iter_many(*children)
             .map(|c| {
                 c.sections
                     .first()
@@ -340,6 +344,7 @@ pub fn settle_lines(
             .into_iter()
             .reduce(|x, y| if x > y { x } else { y })
             .unwrap_or(base_hight);
+        prev_height -= line_hight;
         sprite.custom_size = Some(Vec2::new(line_width, line_hight));
         let box_width = text_box
             .and_then(|b| b.0.custom_size.map(|s| s.x))
@@ -348,6 +353,7 @@ pub fn settle_lines(
             TextAlignment::Center => (box_width - line_width) / 2.,
             TextAlignment::Right => box_width - line_width,
             _ => 0.,
-        }
+        };
+        l_tf.translation.y = prev_height;
     }
 }
