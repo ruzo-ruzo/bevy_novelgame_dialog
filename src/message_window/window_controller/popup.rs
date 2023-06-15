@@ -6,6 +6,7 @@ pub struct ScalingUp {
     pub add_per_sec: f32,
 }
 
+#[allow(clippy::type_complexity)]
 pub fn window_popper(
     mut commands: Commands,
     mut mw_query: Query<
@@ -16,7 +17,7 @@ pub fn window_popper(
             &mut Visibility,
             &mut Transform,
         ),
-        With<MessageWindow>,
+        (With<Current>, With<MessageWindow>),
     >,
 ) {
     for (ent, mut ws, pt, mut vis, mut tf) in &mut mw_query {

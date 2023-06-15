@@ -38,7 +38,7 @@ struct LineBundle {
 
 #[derive(Component, Clone, Debug)]
 pub struct TypingTimer {
-    timer: Timer,
+    pub timer: Timer,
 }
 
 #[derive(SystemParam, Debug)]

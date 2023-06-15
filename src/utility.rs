@@ -1,5 +1,6 @@
 use ab_glyph::Font as AFont;
 use bevy::prelude::*;
+use bevy::reflect::serde::ReflectSerializer;
 use rand::{distributions::uniform::SampleRange, Rng};
 
 #[allow(dead_code)]
@@ -46,4 +47,14 @@ pub fn random_char() -> Option<char> {
     let alphabet_small = range_to_char(0x61..0x7A)?;
     let mixed = &[_kanji, hiragana, alphabet_large, alphabet_small];
     get_random(mixed).copied()
+}
+
+#[allow(dead_code)]
+pub fn write_ron<R: Reflect>(
+    type_registry_ref: &AppTypeRegistry,
+    value: R,
+) -> Result<String, ron::Error> {
+    let type_registry = type_registry_ref.read();
+    let serializer = ReflectSerializer::new(&value, &type_registry);
+    ron::ser::to_string_pretty(&serializer, ron::ser::PrettyConfig::default())
 }

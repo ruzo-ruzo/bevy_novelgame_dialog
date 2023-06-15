@@ -114,6 +114,17 @@ pub fn perse_script(base: String) -> Vec<Order> {
 ),}}"#
                     .to_string(),
             },
+            '!' => Order::ThroghEvent {
+                ron: r#"{
+    "bevy_message_window::message_window::window_controller::sinkdown::SinkDownWindow": (
+	sink_type: Scale(
+			sec: 0.8,
+		),
+        wait_sec: 1.5,
+    ),
+}"#
+                .to_string(),
+            },
             _ => Order::Type { character: c },
         })
         .rev()

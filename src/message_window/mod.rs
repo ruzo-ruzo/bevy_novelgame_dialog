@@ -12,6 +12,7 @@ use message_writer::typing_animations::*;
 use message_writer::*;
 use setup::*;
 use window_controller::popup::*;
+use window_controller::sinkdown::*;
 use window_controller::*;
 
 pub struct MessageWindowPlugin {
@@ -44,6 +45,8 @@ impl Plugin for MessageWindowPlugin {
                 render_order: self.render_order,
             })
             .register_type::<FontSizeChange>()
+            .register_type::<SinkDownWindow>()
+            .register_type::<SinkDownType>()
             .add_event::<OpenWindowEvent>()
             .add_event::<FeedWaitingEvent>()
             .add_event::<StartFeedingEvent>()
@@ -57,12 +60,15 @@ impl Plugin for MessageWindowPlugin {
             .add_systems(Update, trigger_type_animation.in_set(PhaseSet::Setting))
             .add_systems(Update, setup_feed_starter.in_set(PhaseSet::Setting))
             .add_systems(Update, change_font_size.in_set(PhaseSet::Setting))
+            .add_systems(Update, setup_window_sinker.in_set(PhaseSet::Setting))
             .add_systems(Update, settle_lines.in_set(PhaseSet::Progress))
             .add_systems(Update, text_wipe.in_set(PhaseSet::Progress))
             .add_systems(Update, scaling_up.in_set(PhaseSet::Progress))
+            .add_systems(Update, scaling_down.in_set(PhaseSet::Progress))
             .add_systems(Update, scroll_lines.in_set(PhaseSet::Progress))
             .add_systems(Update, open_window.in_set(PhaseSet::Change))
             .add_systems(Update, window_popper.in_set(PhaseSet::Change))
+            .add_systems(Update, window_sinker.in_set(PhaseSet::Change))
             .add_systems(Update, add_new_text.in_set(PhaseSet::Change))
             .add_systems(Update, trigger_feeding_by_time.in_set(PhaseSet::Change))
             .add_systems(Update, start_feeding.in_set(PhaseSet::Change));

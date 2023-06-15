@@ -9,6 +9,7 @@ use bevy::{
 };
 
 pub mod popup;
+pub mod sinkdown;
 
 use super::setup::SetupConfig;
 use crate::read_script::*;
@@ -60,11 +61,21 @@ pub enum WindowState {
     Waiting,
     Feeding,
     SinkingDown,
+    Fixed,
 }
 
 #[derive(Component, Debug, Clone, Copy, PartialEq)]
 pub enum PopupType {
     Scale { sec: f32 },
+}
+
+#[derive(Component, Debug, Clone, Copy, PartialEq, Default, Reflect)]
+pub enum SinkDownType {
+    #[default]
+    Fix,
+    Scale {
+        sec: f32,
+    },
 }
 
 #[derive(Component, Debug, Clone, Copy, PartialEq)]
@@ -138,6 +149,7 @@ impl Default for OpenWindowEvent {
 
 pub fn open_window(
     mut commands: Commands,
+    mut mw_query: Query<Entity, With<Current>>,
     mut ow_event: EventReader<OpenWindowEvent>,
     asset_server: Res<AssetServer>,
     setup_config: Res<SetupConfig>,
@@ -193,8 +205,11 @@ pub fn open_window(
             transform: Transform::from_translation(window_config.main_box_origin.extend(0.0)),
             ..default()
         };
+        for entity in &mut mw_query {
+            commands.entity(entity).remove::<Current>();
+        }
         let layer = RenderLayers::layer(setup_config.render_layer);
-        let mw = commands.spawn((mwb, mw_spirte, layer)).id();
+        let mw = commands.spawn((mwb, mw_spirte, layer, Current)).id();
         let tb = commands.spawn((tbb, tb_sprite, layer, Current)).id();
         commands.entity(mw).add_child(tb);
     }
