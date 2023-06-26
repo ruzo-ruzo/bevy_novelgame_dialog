@@ -111,6 +111,7 @@ pub struct OpenWindowEvent {
     pub font_size: f32,
     pub font_color: Color,
     pub background_path: String,
+    pub message_window_entity: Option<Entity>,
     pub position: Vec2,
     pub box_name: String,
     pub popup: PopupType,
@@ -132,6 +133,7 @@ impl Default for OpenWindowEvent {
             font_size: 27.0,
             font_color: Color::ANTIQUE_WHITE,
             background_path: "texture/ui/text_box.png".to_string(),
+            message_window_entity: None,
             position: Vec2::new(0., 0.),
             box_name: "Main Box".to_string(),
             popup: PopupType::Scale { sec: 0.8 },
@@ -209,7 +211,11 @@ pub fn open_window(
             commands.entity(entity).remove::<Current>();
         }
         let layer = RenderLayers::layer(setup_config.render_layer);
-        let mw = commands.spawn((mwb, mw_spirte, layer, Current)).id();
+        let mw = match window_config.message_window_entity {
+            Some(entity) => entity,
+            None => commands.spawn(mw_spirte).id()
+        };
+        commands.entity(mw).insert((mwb, layer, Current));
         let tb = commands.spawn((tbb, tb_sprite, layer, Current)).id();
         commands.entity(mw).add_child(tb);
     }
