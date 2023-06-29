@@ -51,7 +51,6 @@ pub fn go_selected(
             gamepad: x,
             button_type: GamepadButtonType::South,
         });
-        // info!("area: {:?}, point: {:?}, pointed: {}",wig.area, pointed_opt, is_pointed);
         if (keys.any_just_pressed([KeyCode::Space, KeyCode::Return]) && is_selected)
             || (gamepad_go_button.is_some_and(|x| gamepad_buttons.just_pressed(x)) && is_selected)
             || (mouse_buttons.just_pressed(MouseButton::Left) && is_pointed)

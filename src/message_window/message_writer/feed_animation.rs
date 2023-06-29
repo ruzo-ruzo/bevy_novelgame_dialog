@@ -1,6 +1,5 @@
 use super::super::*;
 use super::skip_typing::*;
-use bevy::prelude::*;
 
 #[derive(Event, Debug)]
 pub struct FeedWaitingEvent {

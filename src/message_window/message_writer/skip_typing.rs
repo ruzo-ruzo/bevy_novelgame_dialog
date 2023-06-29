@@ -1,6 +1,5 @@
 use super::super::*;
 use super::feed_animation::*;
-use bevy::prelude::*;
 
 #[derive(Reflect, Default, Debug)]
 pub struct InputForFeeding {
@@ -10,11 +9,11 @@ pub struct InputForFeeding {
 #[allow(clippy::type_complexity)]
 pub fn skip_or_next(
     mut commands: Commands,
-    mut waiting_text_query: Query<(Entity, &mut Visibility), With<MessageTextChar>>,
-    mut typing_texts_query: Query<
-        (Entity, &mut TypingStyle, &mut Transform, &Parent),
+    mut waiting_text_query: Query<
+        (Entity, &mut Visibility, &mut Transform, &Parent),
         With<MessageTextChar>,
     >,
+    mut typing_texts_query: Query<(Entity, &mut TypingStyle, &Parent), With<MessageTextChar>>,
     text_box_query: Query<(&GlobalTransform, &Sprite)>,
     line_query: Query<(Entity, &Parent), With<MessageTextLine>>,
     mut icon_query: Query<(Entity, &mut Visibility), (With<WatingIcon>, Without<MessageTextChar>)>,
@@ -29,16 +28,15 @@ pub fn skip_or_next(
         {
             let mut typed_count = 0usize;
             let mut text_count = 0usize;
-            for (text_entity, ts, mut tf, t_parent) in &mut typing_texts_query {
+            for (text_entity, ts, t_parent) in &mut typing_texts_query {
                 if line_query.get(t_parent.get()).map(|x| x.1.get()) == Ok(tb_entity) {
                     match *ts {
-                        TypingStyle::Wiping { .. } => {
-                            tf.scale.x = 1.0;
-                            commands.entity(text_entity).remove::<TypingStyle>();
-                            commands.entity(text_entity).insert(TypingStyle::Typed);
-                        }
                         TypingStyle::Typed => {
                             typed_count += 1;
+                        }
+                        _ => {
+                            commands.entity(text_entity).remove::<TypingStyle>();
+                            commands.entity(text_entity).insert(TypingStyle::Typed);
                         }
                     }
                     text_count += 1;
@@ -64,10 +62,13 @@ pub fn skip_or_next(
                     ));
                 }
             }
-            for (text_entity, mut t_vis) in &mut waiting_text_query {
-                *t_vis = Visibility::Inherited;
-                commands.entity(text_entity).remove::<TypingTimer>();
-                commands.entity(text_entity).insert(TypingStyle::Typed);
+            for (text_entity, mut t_vis, mut tf, t_parent) in &mut waiting_text_query {
+                if line_query.get(t_parent.get()).map(|x| x.1.get()) == Ok(tb_entity) {
+                    tf.scale.x = 1.0;
+                    *t_vis = Visibility::Inherited;
+                    commands.entity(text_entity).remove::<TypingTimer>();
+                    commands.entity(text_entity).insert(TypingStyle::Typed);
+                }
             }
         }
     }
