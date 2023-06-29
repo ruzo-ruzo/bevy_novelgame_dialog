@@ -10,7 +10,7 @@ pub mod window_controller;
 use bms_event::*;
 use input::*;
 use message_writer::feed_animation::*;
-use message_writer::skip_typing::*;
+use message_writer::waiting::*;
 use message_writer::typing_animations::*;
 use message_writer::*;
 use setup::*;
@@ -68,6 +68,7 @@ impl Plugin for MessageWindowPlugin {
             .add_systems(Update, change_font_size.in_set(PhaseSet::Setting))
             .add_systems(Update, setup_window_sinker.in_set(PhaseSet::Setting))
             .add_systems(Update, skip_or_next.in_set(PhaseSet::Setting))
+            .add_systems(Update, waiting_icon_setting.in_set(PhaseSet::Setting))
             .add_systems(Update, settle_lines.in_set(PhaseSet::Progress))
             .add_systems(Update, text_wipe.in_set(PhaseSet::Progress))
             .add_systems(Update, scaling_up.in_set(PhaseSet::Progress))

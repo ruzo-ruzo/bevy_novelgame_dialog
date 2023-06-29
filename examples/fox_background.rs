@@ -29,7 +29,7 @@ fn start_message(
             ].iter().map(|s| String::from("../../text_test/assets/fonts/".to_owned() + s)).collect(),
             background_path: "../../text_test/assets/2d_picture/ui/messageframe/material/messageframe_non_line/message_001.png".to_string(),
             position: Vec2::new(0., -200.),
-            feeding: FeedingStyle::Scroll { size: 0, sec: 6.5 },
+            feeding: FeedingStyle::Scroll { size: 0, sec: 0.5 },
             script_path: "scripts/test.bms".to_string(),
             main_box_origin: Vec2::new(-540.0, 70.0),
             main_box_size: Vec2::new(1060.0, 140.0),
@@ -46,7 +46,6 @@ fn start_message(
 }
 
 //----------
-use bevy::render::view::RenderLayers;
 use bevy::sprite::Anchor;
 
 #[derive(Component)]
@@ -111,13 +110,11 @@ fn waiting_sprite_setup(
             texture_atlas: texture_atlas_handle,
             sprite: sprite,
             transform: Transform::from_scale(Vec3::splat(1.5)),
-            visibility: Visibility::Hidden,
             ..default()
         },
         animation_indices,
         AnimationTimer(Timer::from_seconds(0.5, TimerMode::Repeating)),
         WaitingSprite,
-        RenderLayers::layer(2),
     ));
 }
 

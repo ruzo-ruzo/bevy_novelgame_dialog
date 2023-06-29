@@ -27,24 +27,24 @@ pub fn setup_window_sinker(
     mut events: EventReader<BMSEvent>,
 ) {
     for event_wrapper in events.iter() {
-        if let Ok((tx_entity, tt)) = text_query.get_single() {
-            for (mw_entity, mut ws) in &mut mw_query {
-                if parents.iter_ancestors(tx_entity).any(|x| x == mw_entity) {
-                    if let Some(SinkDownWindow {
-                        sink_type: sdt,
-                        wait_sec: sec,
-                    }) = event_wrapper.get_opt::<SinkDownWindow>()
-                    {
-                        commands.entity(mw_entity).insert(WaitSinkingTrigger {
-                            sink_type: sdt,
-                            timer: Timer::from_seconds(
-                                sec + tt.timer.remaining_secs(),
-                                TimerMode::Once,
-                            ),
-                        });
-                        *ws = WindowState::SinkingDown
-                    }
-                }
+        for (mw_entity, mut ws) in &mut mw_query {
+            let count: f32 = text_query.iter()
+                .filter(|(tx_entity, _)|parents.iter_ancestors(*tx_entity).any(|x| x == mw_entity) )
+                .map(|(_, tt)|tt.timer.remaining_secs())
+                .sum();
+            if let Some(SinkDownWindow {
+                sink_type: sdt,
+                wait_sec: sec,
+            }) = event_wrapper.get_opt::<SinkDownWindow>()
+            {
+                commands.entity(mw_entity).insert(WaitSinkingTrigger {
+                    sink_type: sdt,
+                    timer: Timer::from_seconds(
+                        sec + count,
+                        TimerMode::Once,
+                    ),
+                });
+                *ws = WindowState::SinkingDown
             }
         }
     }

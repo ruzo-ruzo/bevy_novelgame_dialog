@@ -1,5 +1,8 @@
+use bevy::render::view::RenderLayers;
 use super::super::*;
-use super::feed_animation::*;
+
+#[derive(Component, Debug)]
+pub struct WaitingIcon;
 
 #[derive(Reflect, Default, Debug)]
 pub struct InputForFeeding {
@@ -12,6 +15,27 @@ pub struct InputForSkipping {
     pub target_text_box: Option<Entity>,
 }
 
+pub fn waiting_icon_setting(
+    mut commands: Commands,
+    wbs_query: Query<(&RenderLayers, &WaitBrakerStyle)>,
+    no_tag: Query<Entity,Without<WaitingIcon>>,
+){
+    for (layer ,wbs) in &wbs_query {
+        if let  WaitBrakerStyle::Input {icon_entity: Some(ic_entity), ..} = wbs {
+            for no_tag_entity in &no_tag {
+                if *ic_entity == no_tag_entity {
+                    commands.entity(*ic_entity).insert((
+                        WaitingIcon,
+                        WritingStyle::Put,
+                        *layer,
+                        Visibility::Hidden,
+                    ));
+                }
+            }
+        }
+    }
+}
+
 #[allow(clippy::type_complexity)]
 pub fn skip_or_next(
     mut commands: Commands,
@@ -22,7 +46,7 @@ pub fn skip_or_next(
     mut typing_texts_query: Query<(Entity, &mut TypingStyle, &Parent), With<MessageTextChar>>,
     text_box_query: Query<(&GlobalTransform, &Sprite)>,
     line_query: Query<(Entity, &Parent), With<MessageTextLine>>,
-    mut icon_query: Query<(Entity, &mut Visibility), (With<WatingIcon>, Without<MessageTextChar>)>,
+    mut icon_query: Query<(Entity, &mut Visibility), (With<WaitingIcon>, Without<MessageTextChar>)>,
     mut bms_reader: EventReader<BMSEvent>,
     type_registry: Res<AppTypeRegistry>,
 ) {

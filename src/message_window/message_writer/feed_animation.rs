@@ -1,5 +1,5 @@
 use super::super::*;
-use super::skip_typing::*;
+use super::waiting::*;
 
 #[derive(Event, Debug)]
 pub struct FeedWaitingEvent {
@@ -22,9 +22,6 @@ pub struct ScrollFeed {
     pub count: usize,
 }
 
-#[derive(Component, Debug)]
-pub struct WatingIcon;
-
 #[allow(clippy::type_complexity)]
 pub fn setup_feed_starter(
     mut commands: Commands,
@@ -33,7 +30,7 @@ pub fn setup_feed_starter(
         (Entity, &Parent, &TypeTextConfig, &GlobalTransform, &Sprite),
         With<TextBox>,
     >,
-    mut icon_query: Query<&mut Transform>,
+    mut icon_query: Query<&mut Transform, With<WaitingIcon>>,
     selected_query: Query<Entity, With<Selected>>,
     mut waitting_event: EventReader<FeedWaitingEvent>,
     type_registry: Res<AppTypeRegistry>,
@@ -67,11 +64,7 @@ pub fn setup_feed_starter(
                                     let tt = TypingTimer {
                                         timer: Timer::from_seconds(event.wait_sec, TimerMode::Once),
                                     };
-                                    commands.entity(*ic_entity).insert((
-                                        tt,
-                                        WatingIcon,
-                                        WritingStyle::Put,
-                                    ));
+                                    commands.entity(*ic_entity).insert(tt);
                                     commands.entity(*ic_entity).set_parent(tb_entity);
                                 }
                             }
@@ -98,7 +91,7 @@ pub fn trigger_feeding_by_event(
     mut commands: Commands,
     mut line_query: Query<(Entity, &Parent), With<MessageTextLine>>,
     text_box_query: Query<&FeedingStyle>,
-    mut icon_query: Query<(Entity, &mut Visibility), (With<WatingIcon>, Without<MessageTextChar>)>,
+    mut icon_query: Query<(Entity, &mut Visibility), (With<WaitingIcon>, Without<MessageTextChar>)>,
     mut start_feeding_event: EventWriter<StartFeedingEvent>,
     mut events: EventReader<BMSEvent>,
 ) {
@@ -171,7 +164,7 @@ pub fn start_feeding(
                         line_size - *fs_size
                     };
                     commands.entity(*l_entity).insert(ScrollFeed {
-                        line_per_sec: *fs_sec,
+                        line_per_sec:  target_lines.len() as f32 / *fs_sec,
                         count: line_count,
                     })
                 }
