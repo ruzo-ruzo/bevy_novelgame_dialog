@@ -1,7 +1,10 @@
 use bevy::{
     asset::{AssetLoader, LoadContext, LoadedAsset},
     prelude::*,
-    reflect::{serde::UntypedReflectDeserializer, TypePath, TypeUuid},
+    reflect::{
+        serde::{ReflectSerializer, UntypedReflectDeserializer},
+        TypePath, TypeUuid,
+    },
     utils::BoxedFuture,
 };
 use serde::{de::DeserializeSeed, Deserialize};
@@ -94,6 +97,15 @@ pub fn read_ron<S: AsRef<str>>(
     reflect_deserializer.deserialize(&mut deserializer)
 }
 
+pub fn write_ron<R: Reflect>(
+    type_registry: &AppTypeRegistry,
+    value: R,
+) -> Result<String, ron::Error> {
+    let type_registry = type_registry.read();
+    let serializer = ReflectSerializer::new(&value, &type_registry);
+    ron::ser::to_string_pretty(&serializer, ron::ser::PrettyConfig::default())
+}
+
 //-- 以下は仮設定
 pub fn perse_script(base: String) -> Vec<Order> {
     base.chars()
@@ -111,7 +123,7 @@ pub fn perse_script(base: String) -> Vec<Order> {
                 ron: r#"{
     "bevy_message_window::message_window::bms_event::FontSizeChange": (
         size: 35.0,
-),}}"#
+),}"#
                     .to_string(),
             },
             '!' => Order::ThroghEvent {

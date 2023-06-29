@@ -99,9 +99,14 @@ pub enum FeedingStyle {
 
 #[derive(Component, Debug, Clone, Copy, PartialEq)]
 pub enum WaitBrakerStyle {
-    Auto { wait_sec: f32 },
-    // Input,
-    // Fix,
+    Auto {
+        wait_sec: f32,
+    },
+    // icon_entityで登録されるspriteはinvisibleである必要がある
+    Input {
+        icon_entity: Option<Entity>,
+        is_icon_moving_to_last: bool,
+    },
 }
 
 #[derive(Event)]
@@ -171,8 +176,6 @@ pub fn open_window(
         };
         let mw_spirte = SpriteBundle {
             texture: asset_server.load(window_config.background_path.clone()),
-            transform: Transform::from_translation(window_config.position.extend(0.0)),
-            visibility: Hidden,
             ..default()
         };
         let tbb = TextBoxBundle {
@@ -213,9 +216,15 @@ pub fn open_window(
         let layer = RenderLayers::layer(setup_config.render_layer);
         let mw = match window_config.message_window_entity {
             Some(entity) => entity,
-            None => commands.spawn(mw_spirte).id()
+            None => commands.spawn(mw_spirte).id(),
         };
-        commands.entity(mw).insert((mwb, layer, Current));
+        let additional_mw = (
+            Transform::from_translation(window_config.position.extend(0.0)),
+            Hidden,
+        );
+        commands
+            .entity(mw)
+            .insert((mwb, layer, Current, additional_mw));
         let tb = commands.spawn((tbb, tb_sprite, layer, Current)).id();
         commands.entity(mw).add_child(tb);
     }

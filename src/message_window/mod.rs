@@ -4,16 +4,19 @@ use bevy::prelude::*;
 mod bms_event;
 mod message_writer;
 mod setup;
+mod input;
 pub mod window_controller;
 
 use bms_event::*;
 use message_writer::feed_animation::*;
 use message_writer::typing_animations::*;
+use message_writer::skip_typing::*;
 use message_writer::*;
 use setup::*;
 use window_controller::popup::*;
 use window_controller::sinkdown::*;
 use window_controller::*;
+use input::*;
 
 pub struct MessageWindowPlugin {
     pub layer_num: u8,
@@ -46,6 +49,9 @@ impl Plugin for MessageWindowPlugin {
             })
             .register_type::<FontSizeChange>()
             .register_type::<SinkDownWindow>()
+            .register_type::<Option<Entity>>()
+            .register_type::<InputForFeeding>()
+            .register_type::<InputForSkipping>()
             .register_type::<SinkDownType>()
             .add_event::<OpenWindowEvent>()
             .add_event::<FeedWaitingEvent>()
@@ -61,6 +67,7 @@ impl Plugin for MessageWindowPlugin {
             .add_systems(Update, setup_feed_starter.in_set(PhaseSet::Setting))
             .add_systems(Update, change_font_size.in_set(PhaseSet::Setting))
             .add_systems(Update, setup_window_sinker.in_set(PhaseSet::Setting))
+            .add_systems(Update, skip_or_next.in_set(PhaseSet::Setting))
             .add_systems(Update, settle_lines.in_set(PhaseSet::Progress))
             .add_systems(Update, text_wipe.in_set(PhaseSet::Progress))
             .add_systems(Update, scaling_up.in_set(PhaseSet::Progress))
@@ -71,6 +78,8 @@ impl Plugin for MessageWindowPlugin {
             .add_systems(Update, window_sinker.in_set(PhaseSet::Change))
             .add_systems(Update, add_new_text.in_set(PhaseSet::Change))
             .add_systems(Update, trigger_feeding_by_time.in_set(PhaseSet::Change))
+            .add_systems(Update, trigger_feeding_by_event.in_set(PhaseSet::Change))
+            .add_systems(Update, go_selected.in_set(PhaseSet::Change))
             .add_systems(Update, start_feeding.in_set(PhaseSet::Change));
     }
 }

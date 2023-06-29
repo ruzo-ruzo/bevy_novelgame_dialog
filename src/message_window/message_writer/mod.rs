@@ -8,6 +8,7 @@ use bevy::{
 
 pub mod feed_animation;
 pub mod typing_animations;
+pub mod skip_typing;
 
 use super::*;
 use crate::utility::*;
@@ -132,7 +133,7 @@ pub fn add_new_text(
                         let new_line_opt =
                             make_empty_line(config, &mut last_x, &mut last_y, max_height);
                         let Some(new_line) = new_line_opt else {
-                            send_feed_event(&mut ps_event, w_ent, &last_timer, &mut ws);
+                            send_feed_event(&mut ps_event, w_ent, &last_timer, &mut ws, last_x, last_y);
                             *in_cr = true;
                             break;
                         };
@@ -146,7 +147,7 @@ pub fn add_new_text(
                         continue;
                     }
                     Some(Order::PageFeed) => {
-                        send_feed_event(&mut ps_event, w_ent, &last_timer, &mut ws);
+                        send_feed_event(&mut ps_event, w_ent, &last_timer, &mut ws, last_x, last_y);
                         *in_cr = true;
                         break;
                     }
@@ -166,7 +167,7 @@ pub fn add_new_text(
     }
 }
 
-fn initialize_typing_data(
+pub fn initialize_typing_data(
     last_data: &LastTextData,
     text_box_entity: Entity,
 ) -> (Option<Entity>, Option<Entity>, f32, f32, TypingTimer) {
@@ -199,10 +200,13 @@ fn send_feed_event(
     entity: Entity,
     last_timer: &TypingTimer,
     ws: &mut WindowState,
+    last_x: f32,
+    last_y: f32,
 ) {
     fw_event.send(FeedWaitingEvent {
         target_window: entity,
         wait_sec: last_timer.timer.remaining_secs(),
+        last_pos: Vec2::new(last_x, last_y),
     });
     *ws = WindowState::Waiting;
 }

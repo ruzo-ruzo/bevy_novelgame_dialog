@@ -8,11 +8,17 @@ fn main() {
         .add_plugins(DefaultPlugins)
         .add_plugin(message_window::MessageWindowPlugin::default())
         .add_plugin(fox_background::FoxBackgroundPlugin)
+        .add_systems(Startup, waiting_sprite_setup)
         .add_systems(Update, start_message)
+        .add_systems(Update, animate_sprite)
         .run();
 }
 
-fn start_message(mut ow_event: EventWriter<OpenWindowEvent>, mut is_started: Local<bool>) {
+fn start_message(
+    mut ow_event: EventWriter<OpenWindowEvent>,
+    waiting_sprite: Query<Entity, With<WaitingSprite>>, 
+    mut is_started: Local<bool>,
+) {
     if !*is_started {
         ow_event.send( OpenWindowEvent {
             font_paths: [
@@ -21,9 +27,9 @@ fn start_message(mut ow_event: EventWriter<OpenWindowEvent>, mut is_started: Loc
                 "yinghuayunduoxiaohuzi.ttf",
                 "NotoSansJP-Black.ttf",
             ].iter().map(|s| String::from("../../text_test/assets/fonts/".to_owned() + s)).collect(),
-            background_path: "../../text_test/assets/2d_picture/messageframe/material/messageframe_non_line/message_001.png".to_string(),
+            background_path: "../../text_test/assets/2d_picture/ui/messageframe/material/messageframe_non_line/message_001.png".to_string(),
             position: Vec2::new(0., -200.),
-            feeding: FeedingStyle::Scroll { size: 0, sec: 1.5 },
+            feeding: FeedingStyle::Scroll { size: 0, sec: 6.5 },
             script_path: "scripts/test.bms".to_string(),
             main_box_origin: Vec2::new(-540.0, 70.0),
             main_box_size: Vec2::new(1060.0, 140.0),
@@ -32,10 +38,75 @@ fn start_message(mut ow_event: EventWriter<OpenWindowEvent>, mut is_started: Loc
             // writing:WritingStyle::Put,
             // typing_timing: TypingTiming::ByLine { sec: 1.5 },
             // typing_timing: TypingTiming::ByPage,
+            wait_breaker: WaitBrakerStyle::Input {icon_entity: Some(waiting_sprite.single()), is_icon_moving_to_last: true},
             ..default()
         });
         *is_started = true;
     }
+}
+
+//----------
+use bevy::render::view::RenderLayers;
+use bevy::sprite::Anchor;
+
+#[derive(Component)]
+struct WaitingSprite;
+
+#[derive(Component)]
+struct AnimationIndices {
+    first: usize,
+    last: usize,
+    step: usize,
+}
+
+#[derive(Component, Deref, DerefMut)]
+struct AnimationTimer(Timer);
+
+fn animate_sprite(
+    time: Res<Time>,
+    mut query: Query<(
+        &AnimationIndices,
+        &mut AnimationTimer,
+        &mut TextureAtlasSprite,
+    )>,
+) {
+    for (indices, mut timer, mut sprite) in &mut query {
+        timer.tick(time.delta());
+        if timer.just_finished() {
+            sprite.index = if sprite.index >= indices.last {
+                indices.first
+            } else {
+                sprite.index + indices.step
+            };
+        }
+    }
+}
+
+fn waiting_sprite_setup(
+    mut commands: Commands,
+    asset_server: Res<AssetServer>,
+    mut texture_atlases: ResMut<Assets<TextureAtlas>>,
+) {
+    let texture_handle = asset_server.load("../../text_test/assets/2d_picture/ui/kenney_input-prompts-pixel-16/Tilemap/tilemap.png");
+    let texture_atlas =
+        TextureAtlas::from_grid(texture_handle, Vec2::new(16.0, 16.0), 34, 24, Some(Vec2::new(1.0, 1.0)), None);
+    let animation_indices = AnimationIndices { first: 705, last: 739, step: 34 };
+    let texture_atlas_handle = texture_atlases.add(texture_atlas);
+    let mut sprite = TextureAtlasSprite::new(animation_indices.first);
+    sprite.anchor = Anchor::BottomLeft;
+    commands.spawn((
+        SpriteSheetBundle {
+            texture_atlas: texture_atlas_handle,
+            sprite: sprite,
+            transform: Transform::from_scale(Vec3::splat(1.5)),
+            visibility: Visibility::Hidden,
+            ..default()
+        },
+        animation_indices,
+        AnimationTimer(Timer::from_seconds(0.5, TimerMode::Repeating)),
+        WaitingSprite,
+        RenderLayers::layer(2),
+    ));
 }
 
 //----------

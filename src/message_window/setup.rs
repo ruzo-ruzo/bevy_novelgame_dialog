@@ -3,6 +3,9 @@ use bevy::{
     render::view::visibility::RenderLayers, ui::camera_config::UiCameraConfig,
 };
 
+#[derive(Component, Debug)]
+pub struct MessageWindowCamera;
+
 #[derive(Resource, Default)]
 pub struct SetupConfig {
     pub render_layer: u8,
@@ -23,5 +26,6 @@ pub fn setup_camera(mut commands: Commands, config: Res<SetupConfig>) {
         },
         RenderLayers::layer(config.render_layer),
         UiCameraConfig { show_ui: false },
+        MessageWindowCamera,
     ));
 }

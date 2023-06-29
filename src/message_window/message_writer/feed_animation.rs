@@ -1,11 +1,12 @@
 use bevy::prelude::*;
-
 use super::super::*;
+use super::skip_typing::*;
 
 #[derive(Event, Debug)]
 pub struct FeedWaitingEvent {
     pub target_window: Entity,
     pub wait_sec: f32,
+    pub last_pos: Vec2,
 }
 
 #[derive(Event, Debug)]
@@ -16,22 +17,34 @@ pub struct WaitFeedingTrigger {
     pub timer: Timer,
 }
 
+#[derive(Reflect, Default, Debug)]
+pub struct InputForSkipping {
+    pub next_event_ron: String,
+    pub target_text_box: Option<Entity>,
+}
+
 #[derive(Component, Debug)]
 pub struct ScrollFeed {
     pub line_per_sec: f32,
     pub count: usize,
 }
 
+#[derive(Component, Debug)]
+pub struct WatingIcon;
+
 #[allow(clippy::type_complexity)]
 pub fn setup_feed_starter(
     mut commands: Commands,
     window_query: Query<(Entity, &WaitBrakerStyle)>,
-    text_box_query: Query<(Entity, &Parent), (With<Current>, With<TextBox>)>,
+    text_box_query: Query<(Entity, &Parent, &TypeTextConfig, &GlobalTransform, &Sprite), With<TextBox>>,
+    mut icon_query: Query<&mut Transform>,
+    selected_query: Query<Entity, With<Selected>>,
     mut waitting_event: EventReader<FeedWaitingEvent>,
+    type_registry: Res<AppTypeRegistry>,
 ) {
     for event in waitting_event.iter() {
         for (w_entity, wbs) in &window_query {
-            for (tb_entity, parent) in &text_box_query {
+            for (tb_entity, parent, config, tb_tf, tb_sp) in &text_box_query {
                 if event.target_window == w_entity && w_entity == parent.get() {
                     match wbs {
                         WaitBrakerStyle::Auto { wait_sec: break_ws } => {
@@ -41,9 +54,56 @@ pub fn setup_feed_starter(
                                     TimerMode::Once,
                                 ),
                             });
-                        }
+                        },
+                        WaitBrakerStyle::Input { icon_entity: icon_opt, is_icon_moving_to_last: move_flag } => {
+                            if let Some(ic_entity) = icon_opt {
+                                if let Ok(mut ic_tf) = icon_query.get_mut(*ic_entity) {
+                                    if *move_flag {
+                                        ic_tf.translation =
+                                            Vec3::new(event.last_pos.x + config.text_style.font_size, event.last_pos.y, 1.);
+                                    }
+                                    let tt = TypingTimer {
+                                        timer: Timer::from_seconds(event.wait_sec, TimerMode::Once),
+                                    };
+                                    commands.entity(*ic_entity).insert((tt, WatingIcon, WritingStyle::Put));
+                                    commands.entity(*ic_entity).set_parent(tb_entity);
+                                }
+                            }
+                            commands.entity(tb_entity).insert(make_wig_for_textbox(tb_entity, tb_tf, tb_sp, &type_registry));
+                            for s_entity in &selected_query {
+                                commands.entity(s_entity).remove::<Selected>();
+                            }
+                            commands.entity(tb_entity).insert(Selected);
+                        },
                     }
                 }
+            }
+        }
+    }
+}
+
+#[allow(clippy::type_complexity)]
+pub fn trigger_feeding_by_event(
+    mut commands: Commands,
+    mut line_query: Query<(Entity, &Parent), With<MessageTextLine>>,
+    text_box_query: Query<&FeedingStyle>,
+    mut icon_query: Query<(Entity, &mut Visibility), (With<WatingIcon>, Without<MessageTextChar>)>,
+    mut start_feeding_event: EventWriter<StartFeedingEvent>,
+    mut events: EventReader<BMSEvent>,
+){
+    for event_wrapper in events.iter() {
+        if let Some(InputForFeeding{target_text_box: Some(tb_entity)}) = event_wrapper.get_opt::<InputForFeeding>() {
+            for (l_entity, l_parent) in &mut line_query {
+                if l_parent.get() == tb_entity {
+                    if let Ok(fs) = text_box_query.get(tb_entity) {
+                        commands.entity(l_entity).insert(*fs);
+                    }
+                }
+                start_feeding_event.send(StartFeedingEvent);
+            }
+            for (ic_entity, mut ic_vis) in &mut icon_query {
+                *ic_vis = Visibility::Hidden;
+                commands.entity(ic_entity).remove::<TypingTimer>();
             }
         }
     }
