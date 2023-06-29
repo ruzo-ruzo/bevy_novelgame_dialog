@@ -6,6 +6,12 @@ pub struct InputForFeeding {
     pub target_text_box: Option<Entity>,
 }
 
+#[derive(Reflect, Default, Debug)]
+pub struct InputForSkipping {
+    pub next_event_ron: String,
+    pub target_text_box: Option<Entity>,
+}
+
 #[allow(clippy::type_complexity)]
 pub fn skip_or_next(
     mut commands: Commands,

@@ -16,12 +16,6 @@ pub struct WaitFeedingTrigger {
     pub timer: Timer,
 }
 
-#[derive(Reflect, Default, Debug)]
-pub struct InputForSkipping {
-    pub next_event_ron: String,
-    pub target_text_box: Option<Entity>,
-}
-
 #[derive(Component, Debug)]
 pub struct ScrollFeed {
     pub line_per_sec: f32,
