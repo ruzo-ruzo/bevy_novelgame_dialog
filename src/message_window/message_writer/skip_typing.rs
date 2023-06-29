@@ -64,7 +64,7 @@ pub fn skip_or_next(
             }
             for (text_entity, mut t_vis, mut tf, t_parent) in &mut waiting_text_query {
                 if line_query.get(t_parent.get()).map(|x| x.1.get()) == Ok(tb_entity) {
-                    tf.scale.x = 1.0;
+                    tf.scale = Vec3::ONE;
                     *t_vis = Visibility::Inherited;
                     commands.entity(text_entity).remove::<TypingTimer>();
                     commands.entity(text_entity).insert(TypingStyle::Typed);
