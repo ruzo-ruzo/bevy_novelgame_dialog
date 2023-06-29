@@ -2,21 +2,21 @@ use crate::read_script::*;
 use bevy::prelude::*;
 
 mod bms_event;
+mod input;
 mod message_writer;
 mod setup;
-mod input;
 pub mod window_controller;
 
 use bms_event::*;
+use input::*;
 use message_writer::feed_animation::*;
-use message_writer::typing_animations::*;
 use message_writer::skip_typing::*;
+use message_writer::typing_animations::*;
 use message_writer::*;
 use setup::*;
 use window_controller::popup::*;
 use window_controller::sinkdown::*;
 use window_controller::*;
-use input::*;
 
 pub struct MessageWindowPlugin {
     pub layer_num: u8,

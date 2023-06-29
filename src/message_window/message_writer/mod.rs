@@ -7,8 +7,8 @@ use bevy::{
 };
 
 pub mod feed_animation;
-pub mod typing_animations;
 pub mod skip_typing;
+pub mod typing_animations;
 
 use super::*;
 use crate::utility::*;

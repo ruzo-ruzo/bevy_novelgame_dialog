@@ -16,7 +16,7 @@ fn main() {
 
 fn start_message(
     mut ow_event: EventWriter<OpenWindowEvent>,
-    waiting_sprite: Query<Entity, With<WaitingSprite>>, 
+    waiting_sprite: Query<Entity, With<WaitingSprite>>,
     mut is_started: Local<bool>,
 ) {
     if !*is_started {
@@ -87,10 +87,22 @@ fn waiting_sprite_setup(
     asset_server: Res<AssetServer>,
     mut texture_atlases: ResMut<Assets<TextureAtlas>>,
 ) {
-    let texture_handle = asset_server.load("../../text_test/assets/2d_picture/ui/kenney_input-prompts-pixel-16/Tilemap/tilemap.png");
-    let texture_atlas =
-        TextureAtlas::from_grid(texture_handle, Vec2::new(16.0, 16.0), 34, 24, Some(Vec2::new(1.0, 1.0)), None);
-    let animation_indices = AnimationIndices { first: 705, last: 739, step: 34 };
+    let texture_handle = asset_server.load(
+        "../../text_test/assets/2d_picture/ui/kenney_input-prompts-pixel-16/Tilemap/tilemap.png",
+    );
+    let texture_atlas = TextureAtlas::from_grid(
+        texture_handle,
+        Vec2::new(16.0, 16.0),
+        34,
+        24,
+        Some(Vec2::new(1.0, 1.0)),
+        None,
+    );
+    let animation_indices = AnimationIndices {
+        first: 705,
+        last: 739,
+        step: 34,
+    };
     let texture_atlas_handle = texture_atlases.add(texture_atlas);
     let mut sprite = TextureAtlasSprite::new(animation_indices.first);
     sprite.anchor = Anchor::BottomLeft;

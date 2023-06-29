@@ -1,6 +1,6 @@
-use bevy::prelude::*;
 use super::super::*;
 use super::skip_typing::*;
+use bevy::prelude::*;
 
 #[derive(Event, Debug)]
 pub struct FeedWaitingEvent {
@@ -36,7 +36,10 @@ pub struct WatingIcon;
 pub fn setup_feed_starter(
     mut commands: Commands,
     window_query: Query<(Entity, &WaitBrakerStyle)>,
-    text_box_query: Query<(Entity, &Parent, &TypeTextConfig, &GlobalTransform, &Sprite), With<TextBox>>,
+    text_box_query: Query<
+        (Entity, &Parent, &TypeTextConfig, &GlobalTransform, &Sprite),
+        With<TextBox>,
+    >,
     mut icon_query: Query<&mut Transform>,
     selected_query: Query<Entity, With<Selected>>,
     mut waitting_event: EventReader<FeedWaitingEvent>,
@@ -54,27 +57,42 @@ pub fn setup_feed_starter(
                                     TimerMode::Once,
                                 ),
                             });
-                        },
-                        WaitBrakerStyle::Input { icon_entity: icon_opt, is_icon_moving_to_last: move_flag } => {
+                        }
+                        WaitBrakerStyle::Input {
+                            icon_entity: icon_opt,
+                            is_icon_moving_to_last: move_flag,
+                        } => {
                             if let Some(ic_entity) = icon_opt {
                                 if let Ok(mut ic_tf) = icon_query.get_mut(*ic_entity) {
                                     if *move_flag {
-                                        ic_tf.translation =
-                                            Vec3::new(event.last_pos.x + config.text_style.font_size, event.last_pos.y, 1.);
+                                        ic_tf.translation = Vec3::new(
+                                            event.last_pos.x + config.text_style.font_size,
+                                            event.last_pos.y,
+                                            1.,
+                                        );
                                     }
                                     let tt = TypingTimer {
                                         timer: Timer::from_seconds(event.wait_sec, TimerMode::Once),
                                     };
-                                    commands.entity(*ic_entity).insert((tt, WatingIcon, WritingStyle::Put));
+                                    commands.entity(*ic_entity).insert((
+                                        tt,
+                                        WatingIcon,
+                                        WritingStyle::Put,
+                                    ));
                                     commands.entity(*ic_entity).set_parent(tb_entity);
                                 }
                             }
-                            commands.entity(tb_entity).insert(make_wig_for_textbox(tb_entity, tb_tf, tb_sp, &type_registry));
+                            commands.entity(tb_entity).insert(make_wig_for_textbox(
+                                tb_entity,
+                                tb_tf,
+                                tb_sp,
+                                &type_registry,
+                            ));
                             for s_entity in &selected_query {
                                 commands.entity(s_entity).remove::<Selected>();
                             }
                             commands.entity(tb_entity).insert(Selected);
-                        },
+                        }
                     }
                 }
             }
@@ -90,9 +108,12 @@ pub fn trigger_feeding_by_event(
     mut icon_query: Query<(Entity, &mut Visibility), (With<WatingIcon>, Without<MessageTextChar>)>,
     mut start_feeding_event: EventWriter<StartFeedingEvent>,
     mut events: EventReader<BMSEvent>,
-){
+) {
     for event_wrapper in events.iter() {
-        if let Some(InputForFeeding{target_text_box: Some(tb_entity)}) = event_wrapper.get_opt::<InputForFeeding>() {
+        if let Some(InputForFeeding {
+            target_text_box: Some(tb_entity),
+        }) = event_wrapper.get_opt::<InputForFeeding>()
+        {
             for (l_entity, l_parent) in &mut line_query {
                 if l_parent.get() == tb_entity {
                     if let Ok(fs) = text_box_query.get(tb_entity) {
