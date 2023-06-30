@@ -3,19 +3,19 @@ use bevy::prelude::*;
 
 mod bms_event;
 mod input;
-mod message_writer;
+mod text_conroller;
 mod setup;
 pub mod window_controller;
 
 use bms_event::*;
 use input::*;
-use message_writer::feed_animation::*;
-use message_writer::waiting::*;
-use message_writer::typing_animations::*;
-use message_writer::*;
+use text_conroller::feed_animation::*;
+use text_conroller::typing_animations::*;
+use text_conroller::*;
 use setup::*;
 use window_controller::popup::*;
 use window_controller::sinkdown::*;
+use window_controller::waiting::*;
 use window_controller::*;
 
 pub struct MessageWindowPlugin {

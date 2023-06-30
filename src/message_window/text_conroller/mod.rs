@@ -7,7 +7,6 @@ use bevy::{
 };
 
 pub mod feed_animation;
-pub mod waiting;
 pub mod typing_animations;
 
 use super::*;

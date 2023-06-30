@@ -10,6 +10,7 @@ use bevy::{
 
 pub mod popup;
 pub mod sinkdown;
+pub mod waiting;
 
 use super::setup::SetupConfig;
 use crate::read_script::*;

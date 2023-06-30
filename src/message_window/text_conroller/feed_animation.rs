@@ -1,5 +1,5 @@
 use super::super::*;
-use super::waiting::*;
+use super::super::window_controller::waiting::*;
 
 #[derive(Event, Debug)]
 pub struct FeedWaitingEvent {
