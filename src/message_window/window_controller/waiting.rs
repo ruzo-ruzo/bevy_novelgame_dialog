@@ -87,14 +87,15 @@ pub fn settle_wating_icon(
 }
 
 #[allow(clippy::type_complexity)]
-pub fn skip_or_next(
+pub fn skip_typing_or_next(
     mut commands: Commands,
     mut waiting_text_query: Query<
         (Entity, &mut Visibility, &mut Transform, &Parent),
         With<MessageTextChar>,
     >,
     mut typing_texts_query: Query<(Entity, &mut TypingStyle, &Parent), With<MessageTextChar>>,
-    text_box_query: Query<(&GlobalTransform, &Sprite)>,
+    window_query: Query<&WindowState, With<MessageWindow>>,
+    text_box_query: Query<(&GlobalTransform, &Sprite, &Parent)>,
     line_query: Query<(Entity, &Parent), With<MessageTextLine>>,
     mut icon_query: Query<(Entity, &mut Visibility), (With<WaitingIcon>, Without<MessageTextChar>)>,
     mut bms_reader: EventReader<BMSEvent>,
@@ -106,6 +107,11 @@ pub fn skip_or_next(
             target_text_box: Some(tb_entity),
         }) = event_wrapper.get_opt::<InputForSkipping>()
         {
+            if let Ok((_, _, parent)) = text_box_query.get(tb_entity) {
+                if window_query.get(parent.get()) != Ok(&WindowState::Waiting) {
+                    return;
+                }
+            }
             let mut typed_count = 0usize;
             let mut text_count = 0usize;
             for (text_entity, ts, t_parent) in &mut typing_texts_query {
@@ -126,7 +132,7 @@ pub fn skip_or_next(
                 *ic_vis = Visibility::Inherited;
                 commands.entity(ic_entity).remove::<TypingTimer>();
             }
-            if let Ok((tb_tf, tb_sp)) = text_box_query.get(tb_entity) {
+            if let Ok((tb_tf, tb_sp, _)) = text_box_query.get(tb_entity) {
                 if text_count == typed_count {
                     if let Ok(ref_value) = read_ron(&type_registry, ron.clone()) {
                         commands.add(|w: &mut World| {
@@ -144,6 +150,36 @@ pub fn skip_or_next(
                     *t_vis = Visibility::Inherited;
                     commands.entity(text_entity).remove::<TypingTimer>();
                     commands.entity(text_entity).insert(TypingStyle::Typed);
+                }
+            }
+        }
+    }
+}
+
+pub fn skip_feeding(
+    mut commands: Commands,
+    mut window_query: Query<&mut WindowState, With<MessageWindow>>,
+    text_box_query: Query<&Parent, With<TextBox>>,
+    line_query: Query<(Entity, &Parent)>,
+    mut bms_reader: EventReader<BMSEvent>,
+){
+    for event_wrapper in bms_reader.iter() {
+        if let Some(InputForSkipping {
+            next_event_ron: _,
+            target_text_box: Some(tb_entity),
+        }) = event_wrapper.get_opt::<InputForSkipping>()
+        {
+            if let Ok(tb_parent) = text_box_query.get(tb_entity) {
+                if let Ok(mut ws) = window_query.get_mut(tb_parent.get()){
+                    if *ws != WindowState::Feeding {
+                        return;
+                    }
+                    for (l_entity, l_parent) in &line_query {
+                        if l_parent.get() == tb_entity {
+                            commands.entity(l_entity).despawn_recursive();
+                        }
+                    }
+                    *ws = WindowState::Typing;
                 }
             }
         }
