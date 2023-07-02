@@ -66,9 +66,7 @@ pub fn open_window(
             Some(entity) => entity,
             None => commands.spawn(mw_spirte).id(),
         };
-        let additional_mw = (
-            Hidden,
-        );
+        let additional_mw = (Hidden,);
         commands
             .entity(mw)
             .insert((mwb, layer, Current, additional_mw));
@@ -128,4 +126,3 @@ pub fn scaling_up(
         };
     }
 }
-

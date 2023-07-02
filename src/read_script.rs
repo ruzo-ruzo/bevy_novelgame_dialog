@@ -132,7 +132,6 @@ pub fn perse_script(base: String) -> Vec<Order> {
 	sink_type: Scale(
 			sec: 0.8,
 		),
-        wait_sec: 1.5,
     ),
 }"#
                 .to_string(),

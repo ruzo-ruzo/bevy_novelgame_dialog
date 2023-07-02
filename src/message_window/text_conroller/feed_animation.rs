@@ -27,17 +27,16 @@ pub fn setup_feed_starter(
     mut commands: Commands,
     window_query: Query<(Entity, &WaitBrakerStyle)>,
     text_box_query: Query<
-        (Entity, &Parent, &TypeTextConfig, &GlobalTransform, &Sprite),
+        (Entity, &Parent, &GlobalTransform, &Sprite),
         With<TextBox>,
     >,
-    mut icon_query: Query<&mut Transform, With<WaitingIcon>>,
     selected_query: Query<Entity, With<Selected>>,
     mut waitting_event: EventReader<FeedWaitingEvent>,
     type_registry: Res<AppTypeRegistry>,
 ) {
     for event in waitting_event.iter() {
         for (w_entity, wbs) in &window_query {
-            for (tb_entity, parent, config, tb_tf, tb_sp) in &text_box_query {
+            for (tb_entity, parent, tb_tf, tb_sp) in &text_box_query {
                 if event.target_window == w_entity && w_entity == parent.get() {
                     match wbs {
                         WaitBrakerStyle::Auto { wait_sec: break_ws } => {
@@ -48,32 +47,22 @@ pub fn setup_feed_starter(
                                 ),
                             });
                         }
-                        WaitBrakerStyle::Input {
-                            icon_entity: icon_opt,
-                            is_icon_moving_to_last: move_flag,
-                        } => {
+                        WaitBrakerStyle::Input {  icon_entity: icon_opt,  .. } => {
                             if let Some(ic_entity) = icon_opt {
-                                if let Ok(mut ic_tf) = icon_query.get_mut(*ic_entity) {
-                                    if *move_flag {
-                                        ic_tf.translation = Vec3::new(
-                                            event.last_pos.x + config.text_style.font_size,
-                                            event.last_pos.y,
-                                            1.,
-                                        );
-                                    }
-                                    let tt = TypingTimer {
-                                        timer: Timer::from_seconds(event.wait_sec, TimerMode::Once),
-                                    };
-                                    commands.entity(*ic_entity).insert(tt);
-                                    commands.entity(*ic_entity).set_parent(tb_entity);
-                                }
+                                let tt = TypingTimer {
+                                    timer: Timer::from_seconds(event.wait_sec, TimerMode::Once),
+                                };
+                                commands.entity(*ic_entity).insert(tt);
+                                commands.entity(*ic_entity).set_parent(tb_entity);
                             }
-                            commands.entity(tb_entity).insert(make_wig_for_textbox(
-                                tb_entity,
-                                tb_tf,
-                                tb_sp,
+                            let ron_iff = write_ron(
                                 &type_registry,
-                            ));
+                                InputForFeeding {
+                                    target_text_box: Some(tb_entity),
+                                },
+                            ).unwrap_or_default();
+                            let wig = make_wig( tb_entity, tb_tf,  tb_sp,  ron_iff, &type_registry);
+                            commands.entity(tb_entity).insert(wig);
                             for s_entity in &selected_query {
                                 commands.entity(s_entity).remove::<Selected>();
                             }

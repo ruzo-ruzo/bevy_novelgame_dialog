@@ -37,6 +37,38 @@ pub fn waiting_icon_setting(
 }
 
 #[allow(clippy::type_complexity)]
+pub fn settle_wating_icon(
+    window_query: Query<(Entity, &WindowState, &WaitBrakerStyle), With<MessageWindow>>,
+    text_box_query: Query<(Entity, &Parent, &TypeTextConfig), With<TextBox>>,
+    mut icon_query: Query<&mut Transform, (With<WaitingIcon>, Without<MessageTextLine>, Without<MessageTextChar>)>,
+    last_data: LastTextData,
+    mut is_settled: Local<bool>,
+){
+    for (mw_entity, ws, wbs) in &window_query {
+        if *ws == WindowState::Waiting {
+            if *is_settled {
+                return;
+            }
+            if let WaitBrakerStyle::Input {icon_entity: ic_ent_opt, is_icon_moving_to_last: move_flag} = wbs {
+                if let Some((tb_entity, _, config)) = text_box_query.iter().find(|(_, p, _)| p.get() == mw_entity) {
+                    let (_, _, last_x, last_y, _) = initialize_typing_data(&last_data, tb_entity);
+                    if let Some(ic_entity) = ic_ent_opt {
+                        if let Ok(mut ic_tf) = icon_query.get_mut(*ic_entity) {
+                            if *move_flag {
+                                ic_tf.translation = Vec3::new( last_x + config.text_style.font_size, last_y, 1.);
+                            }
+                        }
+                    }
+                }
+            }
+            *is_settled = true;
+        } else {
+            *is_settled = false;
+        }
+    }
+}
+
+#[allow(clippy::type_complexity)]
 pub fn skip_or_next(
     mut commands: Commands,
     mut waiting_text_query: Query<
@@ -84,12 +116,7 @@ pub fn skip_or_next(
                         })
                     }
                 } else {
-                    commands.entity(tb_entity).insert(make_wig_for_textbox(
-                        tb_entity,
-                        tb_tf,
-                        tb_sp,
-                        &type_registry,
-                    ));
+                    commands.entity(tb_entity).insert(make_wig(tb_entity, tb_tf, tb_sp, ron, &type_registry));
                 }
             }
             for (text_entity, mut t_vis, mut tf, t_parent) in &mut waiting_text_query {
@@ -104,25 +131,20 @@ pub fn skip_or_next(
     }
 }
 
-pub fn make_wig_for_textbox(
+pub fn make_wig(
     tb_entity: Entity,
     tb_tf: &GlobalTransform,
     tb_sp: &Sprite,
+    ron: String,
     type_registry: &AppTypeRegistry,
 ) -> WaitInputGo {
     let base_size = tb_sp.custom_size.unwrap_or_default();
     let bottom_left = Vec2::new(tb_tf.translation().x, tb_tf.translation().y - base_size.y);
     let top_right = Vec2::new(bottom_left.x + base_size.x, tb_tf.translation().y);
-    let ron_iff_opt = write_ron(
-        type_registry,
-        InputForFeeding {
-            target_text_box: Some(tb_entity),
-        },
-    );
     let ron_ifs_opt = write_ron(
         type_registry,
         InputForSkipping {
-            next_event_ron: ron_iff_opt.unwrap_or_default(),
+            next_event_ron: ron,
             target_text_box: Some(tb_entity),
         },
     );

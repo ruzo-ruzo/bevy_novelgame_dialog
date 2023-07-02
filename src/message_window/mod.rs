@@ -52,10 +52,12 @@ impl Plugin for MessageWindowPlugin {
             .register_type::<Option<Entity>>()
             .register_type::<InputForFeeding>()
             .register_type::<InputForSkipping>()
+            .register_type::<GoSinking>()
             .register_type::<SinkDownType>()
             .add_event::<OpenWindowEvent>()
             .add_event::<FeedWaitingEvent>()
             .add_event::<StartFeedingEvent>()
+            .add_event::<GoSinking>()
             .add_event::<BMSEvent>()
             .configure_sets(
                 Update,
@@ -66,9 +68,10 @@ impl Plugin for MessageWindowPlugin {
             .add_systems(Update, trigger_type_animation.in_set(PhaseSet::Setting))
             .add_systems(Update, setup_feed_starter.in_set(PhaseSet::Setting))
             .add_systems(Update, change_font_size.in_set(PhaseSet::Setting))
-            .add_systems(Update, setup_window_sinker.in_set(PhaseSet::Setting))
+            .add_systems(Update, setup_window_sink.in_set(PhaseSet::Setting))
             .add_systems(Update, skip_or_next.in_set(PhaseSet::Setting))
             .add_systems(Update, waiting_icon_setting.in_set(PhaseSet::Setting))
+            .add_systems(Update, settle_wating_icon.in_set(PhaseSet::Progress))
             .add_systems(Update, settle_lines.in_set(PhaseSet::Progress))
             .add_systems(Update, text_wipe.in_set(PhaseSet::Progress))
             .add_systems(Update, scaling_up.in_set(PhaseSet::Progress))
@@ -76,11 +79,13 @@ impl Plugin for MessageWindowPlugin {
             .add_systems(Update, scroll_lines.in_set(PhaseSet::Progress))
             .add_systems(Update, open_window.in_set(PhaseSet::Change))
             .add_systems(Update, window_popper.in_set(PhaseSet::Change))
-            .add_systems(Update, window_sinker.in_set(PhaseSet::Change))
+            .add_systems(Update, start_window_sink.in_set(PhaseSet::Change))
             .add_systems(Update, add_new_text.in_set(PhaseSet::Change))
             .add_systems(Update, trigger_feeding_by_time.in_set(PhaseSet::Change))
             .add_systems(Update, trigger_feeding_by_event.in_set(PhaseSet::Change))
             .add_systems(Update, go_selected.in_set(PhaseSet::Change))
+            .add_systems(Update, trigger_window_sink_by_time.in_set(PhaseSet::Change))
+            .add_systems(Update, trigger_window_sink_by_event.in_set(PhaseSet::Change))
             .add_systems(Update, start_feeding.in_set(PhaseSet::Change));
     }
 }
