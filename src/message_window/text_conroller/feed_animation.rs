@@ -1,5 +1,5 @@
-use super::super::*;
 use super::super::window_controller::waiting::*;
+use super::super::*;
 
 #[derive(Event, Debug)]
 pub struct FeedWaitingEvent {
@@ -26,10 +26,7 @@ pub struct ScrollFeed {
 pub fn setup_feed_starter(
     mut commands: Commands,
     window_query: Query<(Entity, &WaitBrakerStyle)>,
-    text_box_query: Query<
-        (Entity, &Parent, &GlobalTransform, &Sprite),
-        With<TextBox>,
-    >,
+    text_box_query: Query<(Entity, &Parent, &GlobalTransform, &Sprite), With<TextBox>>,
     selected_query: Query<Entity, With<Selected>>,
     mut waitting_event: EventReader<FeedWaitingEvent>,
     type_registry: Res<AppTypeRegistry>,
@@ -47,7 +44,10 @@ pub fn setup_feed_starter(
                                 ),
                             });
                         }
-                        WaitBrakerStyle::Input {  icon_entity: icon_opt,  .. } => {
+                        WaitBrakerStyle::Input {
+                            icon_entity: icon_opt,
+                            ..
+                        } => {
                             if let Some(ic_entity) = icon_opt {
                                 let tt = TypingTimer {
                                     timer: Timer::from_seconds(event.wait_sec, TimerMode::Once),
@@ -60,8 +60,10 @@ pub fn setup_feed_starter(
                                 InputForFeeding {
                                     target_text_box: Some(tb_entity),
                                 },
-                            ).unwrap_or_default();
-                            let wig = make_wig( tb_entity, tb_tf,  tb_sp,  ron_iff, &type_registry);
+                            )
+                            .unwrap_or_default();
+                            let wig =
+                                make_wig_for_skip(tb_entity, tb_tf, tb_sp, ron_iff, &type_registry);
                             commands.entity(tb_entity).insert(wig);
                             for s_entity in &selected_query {
                                 commands.entity(s_entity).remove::<Selected>();
@@ -153,7 +155,7 @@ pub fn start_feeding(
                         line_size - *fs_size
                     };
                     commands.entity(*l_entity).insert(ScrollFeed {
-                        line_per_sec:  target_lines.len() as f32 / *fs_sec,
+                        line_per_sec: target_lines.len() as f32 / *fs_sec,
                         count: line_count,
                     })
                 }

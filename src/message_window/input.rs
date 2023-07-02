@@ -12,6 +12,7 @@ pub struct WaitInputGo {
     pub area: Rect,
 }
 
+// ToDo: 長押しで連続スキップできるようにしときたい
 #[allow(clippy::nonminimal_bool)]
 pub fn go_selected(
     mut commands: Commands,

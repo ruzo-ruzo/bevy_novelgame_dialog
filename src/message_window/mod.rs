@@ -3,16 +3,16 @@ use bevy::prelude::*;
 
 mod bms_event;
 mod input;
-mod text_conroller;
 mod setup;
+mod text_conroller;
 pub mod window_controller;
 
 use bms_event::*;
 use input::*;
+use setup::*;
 use text_conroller::feed_animation::*;
 use text_conroller::typing_animations::*;
 use text_conroller::*;
-use setup::*;
 use window_controller::popup::*;
 use window_controller::sinkdown::*;
 use window_controller::waiting::*;
@@ -85,7 +85,10 @@ impl Plugin for MessageWindowPlugin {
             .add_systems(Update, trigger_feeding_by_event.in_set(PhaseSet::Change))
             .add_systems(Update, go_selected.in_set(PhaseSet::Change))
             .add_systems(Update, trigger_window_sink_by_time.in_set(PhaseSet::Change))
-            .add_systems(Update, trigger_window_sink_by_event.in_set(PhaseSet::Change))
+            .add_systems(
+                Update,
+                trigger_window_sink_by_event.in_set(PhaseSet::Change),
+            )
             .add_systems(Update, start_feeding.in_set(PhaseSet::Change));
     }
 }

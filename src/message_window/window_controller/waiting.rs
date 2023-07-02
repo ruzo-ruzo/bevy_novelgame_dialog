@@ -1,5 +1,5 @@
-use bevy::render::view::RenderLayers;
 use super::super::*;
+use bevy::render::view::RenderLayers;
 
 #[derive(Component, Debug)]
 pub struct WaitingIcon;
@@ -18,10 +18,14 @@ pub struct InputForSkipping {
 pub fn waiting_icon_setting(
     mut commands: Commands,
     wbs_query: Query<(&RenderLayers, &WaitBrakerStyle)>,
-    no_tag: Query<Entity,Without<WaitingIcon>>,
-){
-    for (layer ,wbs) in &wbs_query {
-        if let  WaitBrakerStyle::Input {icon_entity: Some(ic_entity), ..} = wbs {
+    no_tag: Query<Entity, Without<WaitingIcon>>,
+) {
+    for (layer, wbs) in &wbs_query {
+        if let WaitBrakerStyle::Input {
+            icon_entity: Some(ic_entity),
+            ..
+        } = wbs
+        {
             for no_tag_entity in &no_tag {
                 if *ic_entity == no_tag_entity {
                     commands.entity(*ic_entity).insert((
@@ -40,22 +44,36 @@ pub fn waiting_icon_setting(
 pub fn settle_wating_icon(
     window_query: Query<(Entity, &WindowState, &WaitBrakerStyle), With<MessageWindow>>,
     text_box_query: Query<(Entity, &Parent, &TypeTextConfig), With<TextBox>>,
-    mut icon_query: Query<&mut Transform, (With<WaitingIcon>, Without<MessageTextLine>, Without<MessageTextChar>)>,
+    mut icon_query: Query<
+        &mut Transform,
+        (
+            With<WaitingIcon>,
+            Without<MessageTextLine>,
+            Without<MessageTextChar>,
+        ),
+    >,
     last_data: LastTextData,
     mut is_settled: Local<bool>,
-){
+) {
     for (mw_entity, ws, wbs) in &window_query {
         if *ws == WindowState::Waiting {
             if *is_settled {
                 return;
             }
-            if let WaitBrakerStyle::Input {icon_entity: ic_ent_opt, is_icon_moving_to_last: move_flag} = wbs {
-                if let Some((tb_entity, _, config)) = text_box_query.iter().find(|(_, p, _)| p.get() == mw_entity) {
+            if let WaitBrakerStyle::Input {
+                icon_entity: ic_ent_opt,
+                is_icon_moving_to_last: move_flag,
+            } = wbs
+            {
+                if let Some((tb_entity, _, config)) =
+                    text_box_query.iter().find(|(_, p, _)| p.get() == mw_entity)
+                {
                     let (_, _, last_x, last_y, _) = initialize_typing_data(&last_data, tb_entity);
                     if let Some(ic_entity) = ic_ent_opt {
                         if let Ok(mut ic_tf) = icon_query.get_mut(*ic_entity) {
                             if *move_flag {
-                                ic_tf.translation = Vec3::new( last_x + config.text_style.font_size, last_y, 1.);
+                                ic_tf.translation =
+                                    Vec3::new(last_x + config.text_style.font_size, last_y, 1.);
                             }
                         }
                     }
@@ -116,7 +134,8 @@ pub fn skip_or_next(
                         })
                     }
                 } else {
-                    commands.entity(tb_entity).insert(make_wig(tb_entity, tb_tf, tb_sp, ron, &type_registry));
+                    let wig = make_wig_for_skip(tb_entity, tb_tf, tb_sp, ron, &type_registry);
+                    commands.entity(tb_entity).insert(wig);
                 }
             }
             for (text_entity, mut t_vis, mut tf, t_parent) in &mut waiting_text_query {
@@ -131,7 +150,7 @@ pub fn skip_or_next(
     }
 }
 
-pub fn make_wig(
+pub fn make_wig_for_skip(
     tb_entity: Entity,
     tb_tf: &GlobalTransform,
     tb_sp: &Sprite,
