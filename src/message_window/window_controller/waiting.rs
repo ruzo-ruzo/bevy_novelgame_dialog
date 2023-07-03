@@ -160,7 +160,7 @@ pub fn skip_feeding(
     mut commands: Commands,
     mut window_query: Query<&mut WindowState, With<MessageWindow>>,
     text_box_query: Query<&Parent, With<TextBox>>,
-    line_query: Query<(Entity, &Parent)>,
+    line_query: Query<(Entity, &Parent), With<MessageTextLine>>,
     mut bms_reader: EventReader<BMSEvent>,
 ){
     for event_wrapper in bms_reader.iter() {
@@ -176,6 +176,7 @@ pub fn skip_feeding(
                     }
                     for (l_entity, l_parent) in &line_query {
                         if l_parent.get() == tb_entity {
+                            info!("remove {l_entity:?}");
                             commands.entity(l_entity).despawn_recursive();
                         }
                     }
@@ -186,11 +187,11 @@ pub fn skip_feeding(
     }
 }
 
-pub fn make_wig_for_skip(
+pub fn make_wig_for_skip<S: AsRef<str>>(
     tb_entity: Entity,
     tb_tf: &GlobalTransform,
     tb_sp: &Sprite,
-    ron: String,
+    ron: S,
     type_registry: &AppTypeRegistry,
 ) -> WaitInputGo {
     let base_size = tb_sp.custom_size.unwrap_or_default();
@@ -199,7 +200,7 @@ pub fn make_wig_for_skip(
     let ron_ifs_opt = write_ron(
         type_registry,
         InputForSkipping {
-            next_event_ron: ron,
+            next_event_ron: ron.as_ref().to_string(),
             target_text_box: Some(tb_entity),
         },
     );

@@ -129,15 +129,17 @@ pub fn trigger_feeding_by_time(
 
 pub fn start_feeding(
     mut commands: Commands,
-    mut window_query: Query<(Entity, &mut WindowState)>,
+    mut window_query: Query<(Entity, &mut WindowState, &WaitBrakerStyle)>,
+    text_box_query: Query<(Entity, &GlobalTransform, &Sprite, &Parent), With<TextBox>>,
     parent_query: Query<&Parent>,
     line_query: Query<(Entity, &FeedingStyle), With<MessageTextLine>>,
     start_feeding_event: EventReader<StartFeedingEvent>,
+    type_registry: Res<AppTypeRegistry>,
 ) {
     if start_feeding_event.is_empty() {
         return;
     };
-    for (w_entity, mut ws) in &mut window_query {
+    for (w_entity, mut ws, wbs) in &mut window_query {
         let target_lines = line_query
             .iter()
             .filter(|q| parent_query.iter_ancestors(q.0).any(|e| e == w_entity))
@@ -160,7 +162,15 @@ pub fn start_feeding(
                     })
                 }
             };
-            *ws = WindowState::Feeding;
+        }
+        *ws = WindowState::Feeding;
+        for (tb_entity, tb_tf, tb_sp, tb_parent) in &text_box_query {
+            if tb_parent.get() == w_entity {
+                if let WaitBrakerStyle::Input {..} = wbs {
+                    let wig = make_wig_for_skip(tb_entity, tb_tf, tb_sp, "", &type_registry);
+                    commands.entity(tb_entity).insert(wig);
+                }
+            }
         }
     }
 }
