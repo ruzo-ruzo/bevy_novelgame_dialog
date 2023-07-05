@@ -246,6 +246,7 @@ pub fn skip_feeding(
                     }
                     for (l_entity, l_parent) in &line_query {
                         if l_parent.get() == tb_entity {
+                            info!("remove {l_entity:?}");
                             commands.entity(l_entity).despawn_recursive();
                         }
                     }

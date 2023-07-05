@@ -166,7 +166,11 @@ pub fn start_feeding(
         *ws = WindowState::Feeding;
         for (tb_entity, tb_tf, tb_sp, tb_parent) in &text_box_query {
             if tb_parent.get() == w_entity {
+<<<<<<< HEAD
                 if let WaitBrakerStyle::Input { .. } = wbs {
+=======
+                if let WaitBrakerStyle::Input {..} = wbs {
+>>>>>>> 901cd792f9d148729183bfc3a0530a404ff4180e
                     let wig = make_wig_for_skip(tb_entity, tb_tf, tb_sp, "", &type_registry);
                     commands.entity(tb_entity).insert(wig);
                 }
