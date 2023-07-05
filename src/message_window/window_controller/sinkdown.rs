@@ -121,7 +121,6 @@ pub fn start_window_sink(
         sink_type: st,
     } in &mut events
     {
-        info!("go sink");
         for (mw_entity, mut ws) in &mut mw_query {
             if let Some(entity) = *entity_opt {
                 if entity == mw_entity {
