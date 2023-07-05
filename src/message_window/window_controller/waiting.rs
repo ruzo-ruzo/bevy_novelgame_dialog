@@ -66,9 +66,12 @@ pub fn restart_typing(
     text_box_query: Query<&Parent, With<TextBox>>,
     mut icon_query: Query<(&mut Visibility, &mut WaitingIcon)>,
     mut bms_reader: EventReader<BMSEvent>,
-){
+) {
     for event_wrapper in bms_reader.iter() {
-        if let Some(BreakWait { target_text_box: Some(tb_entity)}) = event_wrapper.get_opt::<BreakWait>() {
+        if let Some(BreakWait {
+            target_text_box: Some(tb_entity),
+        }) = event_wrapper.get_opt::<BreakWait>()
+        {
             for (mw_entity, mut ws, wbs) in &mut window_query {
                 if let Ok(tb_parent) = text_box_query.get(tb_entity) {
                     if tb_parent.get() == mw_entity {
@@ -81,7 +84,7 @@ pub fn restart_typing(
                 } = wbs
                 {
                     if let Ok((mut ic_vis, mut wi)) = icon_query.get_mut(*ic_entity) {
-                        *wi = WaitingIcon{ is_settled:  false };
+                        *wi = WaitingIcon { is_settled: false };
                         *ic_vis = Visibility::Hidden;
                     }
                 }
@@ -132,7 +135,9 @@ pub fn settle_wating_icon(
         } = wbs
         {
             if let Ok((mut ic_tf, mut wi)) = icon_query.get_mut(*ic_entity) {
-                let WaitingIcon {is_settled: settled } = &mut *wi;
+                let WaitingIcon {
+                    is_settled: settled,
+                } = &mut *wi;
                 if *ws == WindowState::Waiting {
                     if *settled {
                         return;
@@ -140,7 +145,8 @@ pub fn settle_wating_icon(
                     if let Some((tb_entity, _, config)) =
                         text_box_query.iter().find(|(_, p, _)| p.get() == mw_entity)
                     {
-                        let (_, _, last_x, last_y, _) = initialize_typing_data(&last_data, tb_entity);
+                        let (_, _, last_x, last_y, _) =
+                            initialize_typing_data(&last_data, tb_entity);
                         if *move_flag {
                             ic_tf.translation =
                                 Vec3::new(last_x + config.text_style.font_size, last_y, 1.);

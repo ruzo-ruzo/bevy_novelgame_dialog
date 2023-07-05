@@ -74,10 +74,7 @@ impl Plugin for MessageWindowPlugin {
             .add_systems(Update, skip_typing_or_next.in_set(PhaseSet::Setting))
             .add_systems(Update, waiting_icon_setting.in_set(PhaseSet::Setting))
             .add_systems(Update, start_feeding.in_set(PhaseSet::Setting))
-<<<<<<< HEAD
             .add_systems(Update, restart_typing.in_set(PhaseSet::Setting))
-=======
->>>>>>> 901cd792f9d148729183bfc3a0530a404ff4180e
             .add_systems(Update, settle_wating_icon.in_set(PhaseSet::Progress))
             .add_systems(Update, settle_lines.in_set(PhaseSet::Progress))
             .add_systems(Update, text_wipe.in_set(PhaseSet::Progress))
