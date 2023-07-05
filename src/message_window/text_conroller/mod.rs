@@ -152,6 +152,7 @@ pub fn add_new_text(
                     }
                     Some(Order::ThroghEvent { ron: r }) => {
                         let event_opt = read_ron(&app_type_registry, r);
+                        // info!("{:?}", event_opt);
                         if let Ok(reflect_value) = event_opt {
                             wrapper.send(BMSEvent {
                                 value: reflect_value,

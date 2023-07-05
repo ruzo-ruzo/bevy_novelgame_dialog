@@ -136,6 +136,12 @@ pub fn perse_script(base: String) -> Vec<Order> {
 }"#
                 .to_string(),
             },
+            '?' => Order::ThroghEvent {
+                ron: r#"{
+    "bevy_message_window::message_window::window_controller::waiting::SimpleWait":(),
+}"#
+                .to_string(),
+            },
             _ => Order::Type { character: c },
         })
         .rev()

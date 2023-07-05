@@ -15,7 +15,7 @@ pub fn change_font_size(
     for event_wrapper in events.iter() {
         if let Some(FontSizeChange { size: s }) = event_wrapper.get_opt::<FontSizeChange>() {
             if let Ok(mut config) = tb_query.get_single_mut() {
-                info!("change font size to {}", s);
+                // info!("change font size to {}", s);
                 config.text_style.font_size = s;
             }
         }
