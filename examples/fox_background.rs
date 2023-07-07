@@ -5,9 +5,11 @@ use bevy_message_window::*;
 
 fn main() {
     App::new()
-        .add_plugins(DefaultPlugins)
-        .add_plugin(message_window::MessageWindowPlugin::default())
-        .add_plugin(fox_background::FoxBackgroundPlugin)
+        .add_plugins((
+            DefaultPlugins,
+            message_window::MessageWindowPlugin::default(),
+            fox_background::FoxBackgroundPlugin
+        ))
         .add_systems(Startup, waiting_sprite_setup)
         .add_systems(Update, start_message)
         .add_systems(Update, animate_sprite)
