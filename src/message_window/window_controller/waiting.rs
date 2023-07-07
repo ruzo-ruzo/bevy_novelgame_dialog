@@ -75,7 +75,9 @@ pub fn restart_typing(
             for (mw_entity, mut ws, wbs) in &mut window_query {
                 if let Ok(tb_parent) = text_box_query.get(tb_entity) {
                     if tb_parent.get() == mw_entity {
-                        *ws = WindowState::Typing;
+                        if WindowState::Waiting == *ws {
+                            *ws = WindowState::Typing;
+                        }
                     }
                 }
                 if let WaitBrakerStyle::Input {
@@ -161,7 +163,6 @@ pub fn settle_wating_icon(
     }
 }
 
-// bug: 連打してるとなんか行が下にズレる場合があるけど、詳細不明
 #[allow(clippy::type_complexity)]
 pub fn skip_typing_or_next(
     mut commands: Commands,

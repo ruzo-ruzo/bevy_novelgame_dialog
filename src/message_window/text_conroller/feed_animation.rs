@@ -190,7 +190,7 @@ pub fn scroll_lines(
                 .collect::<Vec<(Entity, Mut<Transform>, &Sprite, Mut<ScrollFeed>)>>();
             target_lines.sort_by(|a, b| a.1.translation.y.partial_cmp(&b.1.translation.y).unwrap());
             let targets_size = target_lines.len();
-            if targets_size == target_lines.first().map(|l| l.3.count).unwrap_or_default() {
+            if targets_size <= target_lines.first().map(|l| l.3.count).unwrap_or_default() {
                 *ws = WindowState::Typing;
                 for (l_entity, _, _, _) in target_lines.iter() {
                     commands.entity(*l_entity).remove::<ScrollFeed>();
