@@ -1,3 +1,5 @@
+mod parse_bms;
+
 use bevy::{
     asset::{AssetLoader, LoadContext, LoadedAsset},
     prelude::*,
@@ -80,7 +82,7 @@ pub fn script_on_load(
         if loaded_script.order_list.is_none() {
             let script_opt = script_assets.get(&loaded_script.bms_handle);
             if let Some(bms) = script_opt {
-                loaded_script.order_list = Some(perse_script(bms.script.clone()));
+                loaded_script.order_list = Some(parse_script(bms.script.clone()));
             }
         }
     }
@@ -107,7 +109,7 @@ pub fn write_ron<R: Reflect>(
 }
 
 //-- 以下は仮設定
-pub fn perse_script(base: String) -> Vec<Order> {
+pub fn parse_script(base: String) -> Vec<Order> {
     base.chars()
         .map(|c| match c {
             '\t' => Order::PageFeed,

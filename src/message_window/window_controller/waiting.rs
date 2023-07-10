@@ -11,7 +11,7 @@ pub struct InputForFeeding {
     pub target_text_box: Option<Entity>,
 }
 
-#[derive(Reflect, Default, Debug)]
+#[derive(Reflect, Default, Clone, Debug)]
 pub struct InputForSkipping {
     pub next_event_ron: String,
     pub target_text_box: Option<Entity>,
@@ -74,10 +74,8 @@ pub fn restart_typing(
         {
             for (mw_entity, mut ws, wbs) in &mut window_query {
                 if let Ok(tb_parent) = text_box_query.get(tb_entity) {
-                    if tb_parent.get() == mw_entity {
-                        if WindowState::Waiting == *ws {
-                            *ws = WindowState::Typing;
-                        }
+                    if tb_parent.get() == mw_entity && WindowState::Waiting == *ws {
+                        *ws = WindowState::Typing;
                     }
                 }
                 if let WaitBrakerStyle::Input {
@@ -248,15 +246,21 @@ pub fn skip_feeding(
         {
             if let Ok(tb_parent) = text_box_query.get(tb_entity) {
                 if let Ok(mut ws) = window_query.get_mut(tb_parent.get()) {
-                    if *ws != WindowState::Feeding {
-                        return;
-                    }
-                    for (l_entity, l_parent) in &line_query {
-                        if l_parent.get() == tb_entity {
-                            commands.entity(l_entity).despawn_recursive();
+                    if *ws == WindowState::Feeding {
+                        for (l_entity, l_parent) in &line_query {
+                            if l_parent.get() == tb_entity {
+                                commands.entity(l_entity).despawn_recursive();
+                            }
                         }
+                        *ws = WindowState::Typing;
+                        // } else {
+                        // let bmse = BMSEvent{
+                        // value: Box::new(ifs.clone())
+                        // };
+                        // commands.add(move |w: &mut World| {
+                        // w.send_event(bmse);
+                        // });
                     }
-                    *ws = WindowState::Typing;
                 }
             }
         }
