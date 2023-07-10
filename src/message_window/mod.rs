@@ -81,7 +81,7 @@ impl Plugin for MessageWindowPlugin {
             .add_systems(Update, scaling_up.in_set(PhaseSet::Progress))
             .add_systems(Update, scaling_down.in_set(PhaseSet::Progress))
             .add_systems(Update, scroll_lines.in_set(PhaseSet::Progress))
-            .add_systems(Update, simple_wait.in_set(PhaseSet::Progress))
+            .add_systems(Update, simple_wait.in_set(PhaseSet::Progress).after(settle_lines))
             .add_systems(Update, open_window.in_set(PhaseSet::Change))
             .add_systems(Update, window_popper.in_set(PhaseSet::Change))
             .add_systems(Update, start_window_sink.in_set(PhaseSet::Change))

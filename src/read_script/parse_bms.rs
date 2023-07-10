@@ -9,7 +9,7 @@ use std::collections::HashMap;
 
 use super::Order;
 
-#[derive(Clone)]
+#[derive(Clone, Debug, PartialEq)]
 enum ParsedOrder {
     OrderWrapper(Order),
     SectionLine(String),
@@ -26,12 +26,14 @@ fn read_bms<S: AsRef<str>>(input: S) -> HashMap<String, Vec<Order>> {
     for p in parse_bms(input.as_ref()) {
         match p {
             ParsedOrder::SectionLine(s) => {
-                section_map.insert(s, next_list);
+                section_map.insert(next_head, next_list);
+                next_head = s;
                 next_list = vec![]
             }
             ParsedOrder::OrderWrapper(o) => next_list.push(o)
         }
     }
+    section_map.insert(next_head, next_list);
     section_map
 }
 
@@ -47,9 +49,9 @@ fn parse_bms(input: &str) -> Vec<ParsedOrder> {
 fn next_line(input: &str) -> IResult<&str, ParsedOrder> {
     let cr = ParsedOrder::OrderWrapper(Order::CarriageReturn);
     let br_tag = value(cr.clone(), pair(tag("<br"), end_tag_include_slash));
-    let more_then_2_spaces = pair(space1, space1);
+    let more_then_2_spaces = pair(one_of(" \t"), space1);
     let space_end = value(cr, pair(more_then_2_spaces, line_ending));
-    alt((space_end, br_tag))(input)
+    alt((br_tag, space_end))(input)
 }
 
 fn simple_char(input: &str) -> IResult<&str, ParsedOrder> {
@@ -64,12 +66,13 @@ fn simple_char(input: &str) -> IResult<&str, ParsedOrder> {
 }
 
 fn end_tag_include_slash(input: &str) -> IResult<&str, bool> {
-    let end_tag = pair(many0(not(is_a("/>"))), alt((tag(">"), tag("/>"))));
-    value(true, end_tag)(input)
+    let complex_end_tag = value(true, tuple((space1, many0(none_of("/>")), alt((tag("/>"), tag(">"))))));
+    alt((value(true, tag(">")), complex_end_tag))(input)
 }
 
 fn end_tag(input: &str) -> IResult<&str, bool> {
-    value(true, pair(many0(not(char('>'))), char('>')))(input)
+    let complex_end_tag = value(true, tuple((space1, many0(not(tag(">"))), tag(">"))));
+    alt((value(true, tag(">")), complex_end_tag))(input)
 }
 
 fn section_head(input: &str) -> IResult<&str, ParsedOrder> {
@@ -77,21 +80,76 @@ fn section_head(input: &str) -> IResult<&str, ParsedOrder> {
     let h1_close = "</h1>";
     let h1_taged = delimited(h1_open, take_until(h1_close), tag(h1_close));
     let h1 = map(h1_taged, |s| ParsedOrder::SectionLine(s.to_string()));
-    let sharp_head = delimited(pair(char('#'), space1), many0(take(1usize)), line_ending);
-    let sharp = map(sharp_head, |v| ParsedOrder::SectionLine(v.join("")));
-    let under_line = tuple((line_ending, char('='), many1(char('='))));
-    let under_lined = terminated(many0(take(1usize)), under_line);
-    let lined = map(under_lined, |v|ParsedOrder::SectionLine(v.join("")));
+    let sharp_head = preceded(tuple((line_ending, char('#'), space1)), many_till(take(1usize), line_ending));
+    let sharp = map(sharp_head, |(v, _)| ParsedOrder::SectionLine(v.concat()));
+    let under_line = tuple((line_ending, char('='), many1(char('=')), line_ending));
+    let under_lined = preceded(line_ending, many_till(take(1usize), under_line));
+    let lined = map(under_lined, |(v, _)|ParsedOrder::SectionLine(v.concat()));
     alt((h1, sharp, lined))(input)
 }
 
-#[test]
-fn parser_test(){
-    assert_eq!(read_bms("こんにちは"), HashMap::from([("".to_string(), vec![
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    const HELLO: &[Order] = &[
         Order::Type{character: 'こ'},
         Order::Type{character: 'ん'},
         Order::Type{character: 'に'},
         Order::Type{character: 'ち'},
         Order::Type{character: 'は'},
-    ])]));
+        Order::CarriageReturn,
+        Order::Type{character: 'は'},
+        Order::Type{character: 'じ'},
+        Order::Type{character: 'め'},
+        Order::Type{character: 'ま'},
+        Order::Type{character: 'し'},
+        Order::Type{character: 'て'},
+    ];
+
+    const ILL: &[Order] = &[
+        Order::Type{character: 'こ'},
+        Order::Type{character: 'の'},
+        Order::Type{character: '家'},
+        Order::Type{character: 'の'},
+        Order::Type{character: '主'},
+        Order::Type{character: '人'},
+        Order::Type{character: 'は'},
+        Order::Type{character: '病'},
+        Order::Type{character: '気'},
+        Order::Type{character: 'で'},
+        Order::Type{character: 'す'},
+    ];
+
+    #[test]
+    fn hello_br_test(){
+        let hello_po = HELLO.iter().map(|o|ParsedOrder::OrderWrapper(o.clone())).collect::<Vec<_>>();
+        assert_eq!(parse_bms("こんにちは<br />はじめまして"), hello_po);
+    }
+    
+    #[test]
+    fn hello_double_space_end_test(){
+        let hello_vec = HELLO.into();
+        assert_eq!(read_bms("こんにちは  \r\nはじめまして"), HashMap::from([("".to_string(), hello_vec)]));
+    }
+    
+    #[test]
+    fn h1_test(){
+        let sectioned_phrase = HashMap::from([("".to_string(), HELLO.into()), ("二つ目".to_string(), ILL.into())]);
+        assert_eq!(read_bms("こんにちは<br>はじめまして<h1>二つ目</h1>この家の主人は病気です"), sectioned_phrase);
+    }
+
+    #[test]
+    fn under_line_test(){
+        let sectioned_phrase = HashMap::from([("".to_string(), HELLO.into()), ("二つ目".to_string(), ILL.into())]);
+        let read = read_bms("こんにちは<br css='';/>はじめまして\n二つ目\n======\nこの家の主人は病気です");
+        assert_eq!(read, sectioned_phrase);
+    }
+    
+    #[test]
+    fn sharp_head_test(){
+        let sectioned_phrase = HashMap::from([("".to_string(), HELLO.into()), ("二つ目".to_string(), ILL.into())]);
+        let read = read_bms("こんにちは    \r\nはじめまして\r\n# 二つ目\r\nこの家の主人は病気です");
+        assert_eq!(read, sectioned_phrase);
+    }
 }
