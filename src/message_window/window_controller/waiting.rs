@@ -253,13 +253,6 @@ pub fn skip_feeding(
                             }
                         }
                         *ws = WindowState::Typing;
-                        // } else {
-                        // let bmse = BMSEvent{
-                        // value: Box::new(ifs.clone())
-                        // };
-                        // commands.add(move |w: &mut World| {
-                        // w.send_event(bmse);
-                        // });
                     }
                 }
             }

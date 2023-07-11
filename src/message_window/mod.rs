@@ -81,7 +81,7 @@ impl Plugin for MessageWindowPlugin {
             .add_systems(Update, scaling_up.in_set(PhaseSet::Progress))
             .add_systems(Update, scaling_down.in_set(PhaseSet::Progress))
             .add_systems(Update, scroll_lines.in_set(PhaseSet::Progress))
-            .add_systems(Update, simple_wait.in_set(PhaseSet::Progress).after(settle_lines))
+            .add_systems(Update, simple_wait.in_set(PhaseSet::Progress))
             .add_systems(Update, open_window.in_set(PhaseSet::Change))
             .add_systems(Update, window_popper.in_set(PhaseSet::Change))
             .add_systems(Update, start_window_sink.in_set(PhaseSet::Change))
@@ -89,7 +89,10 @@ impl Plugin for MessageWindowPlugin {
             .add_systems(Update, trigger_feeding_by_time.in_set(PhaseSet::Change))
             .add_systems(Update, trigger_feeding_by_event.in_set(PhaseSet::Change))
             .add_systems(Update, go_selected.in_set(PhaseSet::Change))
-            .add_systems(Update, skip_feeding.in_set(PhaseSet::Change))
+            .add_systems(
+                Update,
+                skip_feeding.in_set(PhaseSet::Change).after(add_new_text),
+            )
             .add_systems(Update, trigger_window_sink_by_time.in_set(PhaseSet::Change))
             .add_systems(
                 Update,
