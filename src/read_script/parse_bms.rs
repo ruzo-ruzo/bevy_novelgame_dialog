@@ -8,6 +8,7 @@ use nom::*;
 use std::collections::HashMap;
 
 use super::Order;
+use super::regex::replace_by_template;
 
 #[derive(Clone, Debug, PartialEq)]
 enum ParsedOrder {
@@ -16,8 +17,9 @@ enum ParsedOrder {
     Empty,
 }
 
-pub fn read_script<S: AsRef<str>>(input: S, template: S)  -> HashMap<String, Vec<Order>> {
-    todo!()
+pub fn read_script<S1: AsRef<str>, S2: AsRef<str>>(input: S1, template: S2)  -> HashMap<String, Vec<Order>> {
+    let replaced = replace_by_template(input, template);
+    read_bms(replaced)
 }
 
 pub fn read_bms<S: AsRef<str>>(input: S) -> HashMap<String, Vec<Order>> {
@@ -149,7 +151,7 @@ fn throw_event(input: &str) -> IResult<&str, ParsedOrder> {
 }
 
 #[cfg(test)]
-mod tests {
+mod parse_bms_tests {
     use super::*;
 
     const HELLO: &[Order] = &[

@@ -1,4 +1,5 @@
 mod parse_bms;
+mod regex;
 
 use bevy::{
     asset::{AssetLoader, LoadContext, LoadedAsset},
@@ -10,6 +11,7 @@ use bevy::{
     utils::BoxedFuture,
 };
 use serde::{de::DeserializeSeed, Deserialize};
+use parse_bms::read_script;
 
 #[derive(Event)]
 pub struct BMSEvent {
@@ -109,6 +111,34 @@ pub fn write_ron<R: Reflect>(
 }
 
 //-- 以下は仮設定
+
+pub fn parse_script(base: String) -> Vec<Order> {
+    let template = r#"
+"\*(?<t>.*?)\*", "<script>{
+    "bevy_message_window::message_window::bms_event::FontSizeChange": (
+        size: 35.0,
+),}</script>
+$t
+<script>{
+    "bevy_message_window::message_window::bms_event::FontSizeChange": (
+        size: 27.0,
+)}</script>"
+"\[close\]","<script>{
+    "bevy_message_window::message_window::window_controller::sinkdown::SinkDownWindow": (
+	sink_type: Scale(
+			sec: 0.8,
+		),
+    ),
+}</script>"
+"\[wait\]","<script>{
+    "bevy_message_window::message_window::window_controller::waiting::SimpleWait":(),
+}</script>"
+"#;
+    let orders = read_script(base, template);
+    orders[""].clone().into_iter().rev().collect()
+}
+
+/*
 pub fn parse_script(base: String) -> Vec<Order> {
     base.chars()
         .map(|c| match c {
@@ -149,3 +179,4 @@ pub fn parse_script(base: String) -> Vec<Order> {
         .rev()
         .collect()
 }
+*/
