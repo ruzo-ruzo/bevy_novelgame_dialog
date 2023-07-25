@@ -7,8 +7,8 @@ use nom::sequence::*;
 use nom::*;
 use std::collections::HashMap;
 
-use super::Order;
 use super::regex::replace_by_template;
+use super::Order;
 
 #[derive(Clone, Debug, PartialEq)]
 enum ParsedOrder {
@@ -17,7 +17,10 @@ enum ParsedOrder {
     Empty,
 }
 
-pub fn read_script<S1: AsRef<str>, S2: AsRef<str>>(input: S1, template: S2)  -> HashMap<String, Vec<Order>> {
+pub fn read_script<S1: AsRef<str>, S2: AsRef<str>>(
+    input: S1,
+    template: S2,
+) -> HashMap<String, Vec<Order>> {
     let replaced = replace_by_template(input, template);
     read_bms(replaced)
 }
@@ -52,32 +55,89 @@ fn parse_bms(input: &str) -> Vec<ParsedOrder> {
         simple_char,
     )));
     if let Ok((_, parsed_order_list)) = bms_parser(input) {
-        parsed_order_list.into_iter().filter(|x|*x != ParsedOrder::Empty).collect()
+        parsed_order_list
+            .into_iter()
+            .filter(|x| *x != ParsedOrder::Empty)
+            .collect()
     } else {
         vec![]
     }
 }
 
-fn escape (input: &str) -> IResult<&str, ParsedOrder> {
-    preceded(char('\\'), alt((
-        value(ParsedOrder::OrderWrapper(Order::Type{ character: '\\' }), char('\\')),
-        value(ParsedOrder::OrderWrapper(Order::Type{ character: '<' }), char('<')),
-        value(ParsedOrder::OrderWrapper(Order::Type{ character: '>' }), char('>')),
-        value(ParsedOrder::OrderWrapper(Order::Type{ character: '`' }), char('`')),
-        value(ParsedOrder::OrderWrapper(Order::Type{ character: '{' }), char('{')),
-        value(ParsedOrder::OrderWrapper(Order::Type{ character: '}' }), char('}')),
-        value(ParsedOrder::OrderWrapper(Order::Type{ character: '[' }), char('[')),
-        value(ParsedOrder::OrderWrapper(Order::Type{ character: ']' }), char(']')),
-        value(ParsedOrder::OrderWrapper(Order::Type{ character: '_' }), char('_')),
-        value(ParsedOrder::OrderWrapper(Order::Type{ character: '*' }), char('*')),
-        value(ParsedOrder::OrderWrapper(Order::Type{ character: '+' }), char('+')),
-        value(ParsedOrder::OrderWrapper(Order::Type{ character: '(' }), char('(')),
-        value(ParsedOrder::OrderWrapper(Order::Type{ character: ')' }), char(')')),
-        value(ParsedOrder::OrderWrapper(Order::Type{ character: '#' }), char('#')),
-        value(ParsedOrder::OrderWrapper(Order::Type{ character: '.' }), char('.')),
-        value(ParsedOrder::OrderWrapper(Order::Type{ character: '!' }), char('!')),
-        value(ParsedOrder::OrderWrapper(Order::Type{ character: '|' }), char('|')),
-    )))(input)
+fn escape(input: &str) -> IResult<&str, ParsedOrder> {
+    preceded(
+        char('\\'),
+        alt((
+            value(
+                ParsedOrder::OrderWrapper(Order::Type { character: '\\' }),
+                char('\\'),
+            ),
+            value(
+                ParsedOrder::OrderWrapper(Order::Type { character: '<' }),
+                char('<'),
+            ),
+            value(
+                ParsedOrder::OrderWrapper(Order::Type { character: '>' }),
+                char('>'),
+            ),
+            value(
+                ParsedOrder::OrderWrapper(Order::Type { character: '`' }),
+                char('`'),
+            ),
+            value(
+                ParsedOrder::OrderWrapper(Order::Type { character: '{' }),
+                char('{'),
+            ),
+            value(
+                ParsedOrder::OrderWrapper(Order::Type { character: '}' }),
+                char('}'),
+            ),
+            value(
+                ParsedOrder::OrderWrapper(Order::Type { character: '[' }),
+                char('['),
+            ),
+            value(
+                ParsedOrder::OrderWrapper(Order::Type { character: ']' }),
+                char(']'),
+            ),
+            value(
+                ParsedOrder::OrderWrapper(Order::Type { character: '_' }),
+                char('_'),
+            ),
+            value(
+                ParsedOrder::OrderWrapper(Order::Type { character: '*' }),
+                char('*'),
+            ),
+            value(
+                ParsedOrder::OrderWrapper(Order::Type { character: '+' }),
+                char('+'),
+            ),
+            value(
+                ParsedOrder::OrderWrapper(Order::Type { character: '(' }),
+                char('('),
+            ),
+            value(
+                ParsedOrder::OrderWrapper(Order::Type { character: ')' }),
+                char(')'),
+            ),
+            value(
+                ParsedOrder::OrderWrapper(Order::Type { character: '#' }),
+                char('#'),
+            ),
+            value(
+                ParsedOrder::OrderWrapper(Order::Type { character: '.' }),
+                char('.'),
+            ),
+            value(
+                ParsedOrder::OrderWrapper(Order::Type { character: '!' }),
+                char('!'),
+            ),
+            value(
+                ParsedOrder::OrderWrapper(Order::Type { character: '|' }),
+                char('|'),
+            ),
+        )),
+    )(input)
 }
 
 fn erase_useless_tag(input: &str) -> IResult<&str, ParsedOrder> {
@@ -144,10 +204,14 @@ fn throw_event(input: &str) -> IResult<&str, ParsedOrder> {
     let script_open = pair(tag("<script"), end_tag);
     let script_close = "</script>";
     let mut script_taged = delimited(script_open, take_until(script_close), tag(script_close));
-    script_taged(input).map(|(rem, parsed)| (
-        rem, 
-        ParsedOrder::OrderWrapper(Order::ThroghEvent{ ron: parsed.to_string()})
-    ))
+    script_taged(input).map(|(rem, parsed)| {
+        (
+            rem,
+            ParsedOrder::OrderWrapper(Order::ThroghEvent {
+                ron: parsed.to_string(),
+            }),
+        )
+    })
 }
 
 #[cfg(test)]
@@ -233,36 +297,51 @@ mod parse_bms_tests {
         let read = read_bms("こんにちは    \r\nはじめまして\r\n# 二つ目\r\nこの家の主人は病気です");
         assert_eq!(read, sectioned_phrase);
     }
-    
+
     #[test]
     fn test_double_endline() {
         let pf = &[Order::PageFeed];
-        let paged_phrase = [HELLO, pf, ILL].into_iter().map(|x|x.iter()).flatten().map(|x|x.clone());
+        let paged_phrase = [HELLO, pf, ILL]
+            .into_iter()
+            .map(|x| x.iter())
+            .flatten()
+            .map(|x| x.clone());
         let vec_pp = paged_phrase.collect::<Vec<Order>>();
         let read = read_bms("こんにちは    \r\nはじめまして\r\n\r\nこの家の主人は病気です");
-        assert_eq!(read,  HashMap::from([("".to_string(), vec_pp)]));
+        assert_eq!(read, HashMap::from([("".to_string(), vec_pp)]));
     }
-    
+
     #[test]
     fn test_end_p_tag() {
         let pf = &[Order::PageFeed];
-        let paged_phrase = [HELLO, pf, ILL].into_iter().map(|x|x.iter()).flatten().map(|x|x.clone());
+        let paged_phrase = [HELLO, pf, ILL]
+            .into_iter()
+            .map(|x| x.iter())
+            .flatten()
+            .map(|x| x.clone());
         let vec_pp = paged_phrase.collect::<Vec<Order>>();
         let read = read_bms("<p>こんにちは    \r\nはじめまして</p>この家の主人は病気です");
-        assert_eq!(read,  HashMap::from([("".to_string(), vec_pp)]));
+        assert_eq!(read, HashMap::from([("".to_string(), vec_pp)]));
     }
 
     #[test]
     fn test_script_tag() {
-        let script = &[Order::ThroghEvent { ron: "test".to_string() }];
-        let with_script = [HELLO, script, ILL].into_iter().map(|x|x.iter()).flatten().map(|x|x.clone());
+        let script = &[Order::ThroghEvent {
+            ron: "test".to_string(),
+        }];
+        let with_script = [HELLO, script, ILL]
+            .into_iter()
+            .map(|x| x.iter())
+            .flatten()
+            .map(|x| x.clone());
         let vec_ws = with_script.collect::<Vec<Order>>();
-        let read = read_bms("こんにちは    \r\nはじめまして<script>test</script>この家の主人は病気です");
-        assert_eq!(read,  HashMap::from([("".to_string(), vec_ws)]));
+        let read =
+            read_bms("こんにちは    \r\nはじめまして<script>test</script>この家の主人は病気です");
+        assert_eq!(read, HashMap::from([("".to_string(), vec_ws)]));
     }
-    
+
     #[test]
-    fn test_useless_tag(){
+    fn test_useless_tag() {
         let useless_taged = vec![
             ParsedOrder::OrderWrapper(Order::Type { character: 'a' }),
             ParsedOrder::OrderWrapper(Order::Type { character: 'a' }),
