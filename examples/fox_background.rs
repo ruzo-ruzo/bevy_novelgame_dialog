@@ -8,7 +8,7 @@ fn main() {
         .add_plugins((
             DefaultPlugins,
             message_window::MessageWindowPlugin::default(),
-            fox_background::FoxBackgroundPlugin,
+            // fox_background::FoxBackgroundPlugin,
         ))
         .add_systems(Startup, waiting_sprite_setup)
         .add_systems(Update, start_message)

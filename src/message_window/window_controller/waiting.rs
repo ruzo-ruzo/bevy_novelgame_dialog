@@ -33,13 +33,15 @@ pub fn simple_wait(
         (Entity, &GlobalTransform, &Sprite, &Parent),
         (With<Current>, With<TextBox>),
     >,
+    selected_query: Query<Entity, With<Selected>>,
+    last_data: LastTextData,
     mut bms_reader: EventReader<BMSEvent>,
     type_registry: Res<AppTypeRegistry>,
 ) {
     for event_wrapper in bms_reader.iter() {
         if event_wrapper.get_opt::<SimpleWait>() == Some(SimpleWait) {
             for (mw_entity, mut ws, wbs) in &mut window_query {
-                if let WaitBrakerStyle::Input { .. } = wbs {
+                if let WaitBrakerStyle::Input { icon_entity: icon_opt, .. } = wbs {
                     for (tb_entity, tb_tf, tb_sp, parent) in &text_box_query {
                         if parent.get() == mw_entity {
                             let ron = write_ron(
@@ -53,6 +55,19 @@ pub fn simple_wait(
                                 make_wig_for_skip(tb_entity, tb_tf, tb_sp, ron, &type_registry);
                             commands.entity(tb_entity).insert(wig);
                         }
+                        let (_, _, _, _, last_timer) = initialize_typing_data(&last_data, tb_entity);
+                        if let Some(ic_entity) = icon_opt {
+                            let time = last_timer.timer.remaining_secs();
+                            let tt = TypingTimer {
+                                timer: Timer::from_seconds(time, TimerMode::Once),
+                            };
+                            commands.entity(*ic_entity).insert(tt);
+                            commands.entity(*ic_entity).set_parent(tb_entity);
+                        }
+                        for s_entity in &selected_query {
+                            commands.entity(s_entity).remove::<Selected>();
+                        }
+                        commands.entity(tb_entity).insert(Selected);
                     }
                     *ws = WindowState::Waiting;
                 }
