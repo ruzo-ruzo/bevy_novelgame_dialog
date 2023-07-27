@@ -45,6 +45,7 @@ pub enum Order {
 #[derive(Component, Debug)]
 pub struct LoadedScript {
     pub bms_handle: Handle<BMWScript>,
+    pub bmt_handle: Handle<BMWTemplate>,
     pub order_list: Option<Vec<Order>>,
 }
 
@@ -72,19 +73,50 @@ impl AssetLoader for BMWScriptLoader {
     }
 
     fn extensions(&self) -> &[&str] {
-        &["bms"]
+        &["md", "bms"]
+    }
+}
+
+#[derive(Debug, Deserialize, TypeUuid, TypePath)]
+#[uuid = "82967a68-951e-3f8d-c4ce-8143f7180d33"]
+pub struct BMWTemplate {
+    pub template: String,
+}
+
+#[derive(Default)]
+pub struct BMWTemplateLoader;
+
+impl AssetLoader for BMWTemplateLoader {
+    fn load<'a>(
+        &'a self,
+        bytes: &'a [u8],
+        load_context: &'a mut LoadContext,
+    ) -> BoxedFuture<'a, Result<(), bevy::asset::Error>> {
+        Box::pin(async move {
+            let raw_text = String::from_utf8(bytes.to_vec())?;
+            let bmt = BMWTemplate { template: raw_text };
+            load_context.set_default_asset(LoadedAsset::new(bmt));
+            Ok(())
+        })
+    }
+
+    fn extensions(&self) -> &[&str] {
+        &["csv", "bmt"]
     }
 }
 
 pub fn script_on_load(
     mut loaded_script_query: Query<&mut LoadedScript>,
     script_assets: Res<Assets<BMWScript>>,
+    template_assets: Res<Assets<BMWTemplate>>,
 ) {
     for mut loaded_script in &mut loaded_script_query {
         if loaded_script.order_list.is_none() {
             let script_opt = script_assets.get(&loaded_script.bms_handle);
-            if let Some(bms) = script_opt {
-                loaded_script.order_list = Some(parse_script(bms.script.clone()));
+            let template_opt = template_assets.get(&loaded_script.bmt_handle);
+            if let (Some(bms), Some(bmt)) = (script_opt, template_opt) {
+                let parsed = parse_script(&bms.script, &bmt.template);
+                loaded_script.order_list = Some(parsed);
             }
         }
     }
@@ -111,28 +143,7 @@ pub fn write_ron<R: Reflect>(
 }
 
 //-- 以下は仮設定
-pub fn parse_script(base: String) -> Vec<Order> {
-    let template = r#"
-"\*(?<t>.*?)\*", "<script>{
-    "bevy_message_window::message_window::bms_event::FontSizeChange": (
-        size: 35.0,
-),}</script>
-$t
-<script>{
-    "bevy_message_window::message_window::bms_event::FontSizeChange": (
-        size: 27.0,
-)}</script>"
-"\[close\]","<script>{
-    "bevy_message_window::message_window::window_controller::sinkdown::SinkDownWindow": (
-	sink_type: Scale(
-			sec: 0.8,
-		),
-    ),
-}</script>"
-"\[wait\]","<script>{
-    "bevy_message_window::message_window::window_controller::waiting::SimpleWait":(),
-}</script>"
-"#;
+pub fn parse_script<S1: AsRef<str>, S2: AsRef<str>>(base: S1, template: S2) -> Vec<Order> {
     let orders = read_script(base, template);
     orders[""].clone().into_iter().rev().collect()
 }

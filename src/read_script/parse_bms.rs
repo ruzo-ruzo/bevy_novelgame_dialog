@@ -162,12 +162,14 @@ fn next_paragraph(input: &str) -> IResult<&str, ParsedOrder> {
 
 fn simple_char(input: &str) -> IResult<&str, ParsedOrder> {
     take(1usize)(input).map(|(rem, c)| {
-        (
-            rem,
+        let order = if c == "\n" || c == "\r" {
+            ParsedOrder::Empty
+        } else {
             ParsedOrder::OrderWrapper(Order::Type {
                 character: c.chars().next().unwrap(),
-            }),
-        )
+            })
+        };
+        (rem, order)
     })
 }
 

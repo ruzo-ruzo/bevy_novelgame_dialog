@@ -1,0 +1,19 @@
+"\*(?<t>.*?)\*", "<script>{
+    "bevy_message_window::message_window::bms_event::FontSizeChange": (
+        size: 35.0,
+),}</script>
+$t
+<script>{
+    "bevy_message_window::message_window::bms_event::FontSizeChange": (
+        size: 27.0,
+)}</script>"
+"\[close\]","<script>{
+    "bevy_message_window::message_window::window_controller::sinkdown::SinkDownWindow": (
+	sink_type: Scale(
+			sec: 0.8,
+		),
+    ),
+}</script>"
+"\[wait\]","<script>{
+    "bevy_message_window::message_window::window_controller::waiting::SimpleWait":(),
+}</script>"

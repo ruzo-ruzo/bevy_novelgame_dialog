@@ -7,7 +7,6 @@ use nom::sequence::*;
 use nom::*;
 use regex::Regex;
 
-
 //エラー処理がちょっと雑
 pub fn replace_by_template<S1: AsRef<str>, S2: AsRef<str>>(input: S1, template: S2) -> String {
     let template_vec = read_template(template.as_ref());

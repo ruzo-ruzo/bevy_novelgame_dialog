@@ -41,7 +41,11 @@ pub fn simple_wait(
     for event_wrapper in bms_reader.iter() {
         if event_wrapper.get_opt::<SimpleWait>() == Some(SimpleWait) {
             for (mw_entity, mut ws, wbs) in &mut window_query {
-                if let WaitBrakerStyle::Input { icon_entity: icon_opt, .. } = wbs {
+                if let WaitBrakerStyle::Input {
+                    icon_entity: icon_opt,
+                    ..
+                } = wbs
+                {
                     for (tb_entity, tb_tf, tb_sp, parent) in &text_box_query {
                         if parent.get() == mw_entity {
                             let ron = write_ron(
@@ -55,7 +59,8 @@ pub fn simple_wait(
                                 make_wig_for_skip(tb_entity, tb_tf, tb_sp, ron, &type_registry);
                             commands.entity(tb_entity).insert(wig);
                         }
-                        let (_, _, _, _, last_timer) = initialize_typing_data(&last_data, tb_entity);
+                        let (_, _, _, _, last_timer) =
+                            initialize_typing_data(&last_data, tb_entity);
                         if let Some(ic_entity) = icon_opt {
                             let time = last_timer.timer.remaining_secs();
                             let tt = TypingTimer {

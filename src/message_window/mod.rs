@@ -42,7 +42,9 @@ enum PhaseSet {
 impl Plugin for MessageWindowPlugin {
     fn build(&self, app: &mut App) {
         app.add_asset::<BMWScript>()
+            .add_asset::<BMWTemplate>()
             .init_asset_loader::<BMWScriptLoader>()
+            .init_asset_loader::<BMWTemplateLoader>()
             .insert_resource(SetupConfig {
                 render_layer: self.layer_num,
                 render_order: self.render_order,

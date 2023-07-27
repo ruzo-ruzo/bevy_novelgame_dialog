@@ -17,6 +17,7 @@ pub fn open_window(
             waitting: window_config.wait_breaker,
             script: LoadedScript {
                 bms_handle: asset_server.load(window_config.script_path.clone()),
+                bmt_handle: asset_server.load(window_config.template_path.clone()),
                 order_list: None,
             },
             popup_type: window_config.popup,

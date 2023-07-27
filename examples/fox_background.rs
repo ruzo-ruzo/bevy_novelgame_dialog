@@ -8,7 +8,7 @@ fn main() {
         .add_plugins((
             DefaultPlugins,
             message_window::MessageWindowPlugin::default(),
-            // fox_background::FoxBackgroundPlugin,
+            fox_background::FoxBackgroundPlugin,
         ))
         .add_systems(Startup, waiting_sprite_setup)
         .add_systems(Update, start_message)
@@ -33,6 +33,7 @@ fn start_message(
             position: Vec2::new(0., -200.),
             feeding: FeedingStyle::Scroll { size: 0, sec: 0.5 },
             script_path: "scripts/test.bms".to_string(),
+            template_path: "scripts/test.bmt".to_string(),
             main_box_origin: Vec2::new(-540.0, 70.0),
             main_box_size: Vec2::new(1060.0, 140.0),
             // main_alignment: TextAlignment::Center,
