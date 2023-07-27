@@ -146,8 +146,14 @@ fn backslash(input: &str) -> IResult<&str, ParsedOrder> {
 }
 
 fn ampersand(input: &str) -> IResult<&str, ParsedOrder> {
-    let nbsp = value(ParsedOrder::OrderWrapper(Order::Type { character: ' ' }), tag("&nbsp;"));
-    let emsp = value(ParsedOrder::OrderWrapper(Order::Type { character: '　' }), tag("&emsp;"));
+    let nbsp = value(
+        ParsedOrder::OrderWrapper(Order::Type { character: ' ' }),
+        tag("&nbsp;"),
+    );
+    let emsp = value(
+        ParsedOrder::OrderWrapper(Order::Type { character: '　' }),
+        tag("&emsp;"),
+    );
     alt((nbsp, emsp))(input)
 }
 
