@@ -46,7 +46,8 @@ pub fn read_bms<S: AsRef<str>>(input: S) -> HashMap<String, Vec<Order>> {
 
 fn parse_bms(input: &str) -> Vec<ParsedOrder> {
     let mut bms_parser = many0(alt((
-        escape,
+        backslash,
+        ampersand,
         section_head,
         next_paragraph,
         throw_event,
@@ -64,7 +65,7 @@ fn parse_bms(input: &str) -> Vec<ParsedOrder> {
     }
 }
 
-fn escape(input: &str) -> IResult<&str, ParsedOrder> {
+fn backslash(input: &str) -> IResult<&str, ParsedOrder> {
     preceded(
         char('\\'),
         alt((
@@ -136,8 +137,18 @@ fn escape(input: &str) -> IResult<&str, ParsedOrder> {
                 ParsedOrder::OrderWrapper(Order::Type { character: '|' }),
                 char('|'),
             ),
+            value(
+                ParsedOrder::OrderWrapper(Order::Type { character: '&' }),
+                char('&'),
+            ),
         )),
     )(input)
+}
+
+fn ampersand(input: &str) -> IResult<&str, ParsedOrder> {
+    let nbsp = value(ParsedOrder::OrderWrapper(Order::Type { character: ' ' }), tag("&nbsp;"));
+    let emsp = value(ParsedOrder::OrderWrapper(Order::Type { character: '　' }), tag("&emsp;"));
+    alt((nbsp, emsp))(input)
 }
 
 fn erase_useless_tag(input: &str) -> IResult<&str, ParsedOrder> {
@@ -162,7 +173,7 @@ fn next_paragraph(input: &str) -> IResult<&str, ParsedOrder> {
 
 fn simple_char(input: &str) -> IResult<&str, ParsedOrder> {
     take(1usize)(input).map(|(rem, c)| {
-        let order = if c == "\n" || c == "\r" {
+        let order = if c == "\n" || c == "\r" || c == "\t" || c == " " {
             ParsedOrder::Empty
         } else {
             ParsedOrder::OrderWrapper(Order::Type {
