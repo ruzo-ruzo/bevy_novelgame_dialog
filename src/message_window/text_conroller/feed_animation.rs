@@ -140,6 +140,9 @@ pub fn start_feeding(
         return;
     };
     for (w_entity, mut ws, wbs) in &mut window_query {
+        if *ws != WindowState::Waiting {
+            return;
+        }
         let target_lines = line_query
             .iter()
             .filter(|q| parent_query.iter_ancestors(q.0).any(|e| e == w_entity))

@@ -191,7 +191,7 @@ pub fn skip_typing_or_next(
             &mut Visibility,
             &mut Transform,
             &Parent,
-            &mut TypingTimer
+            &mut TypingTimer,
         ),
         With<MessageTextChar>,
     >,
