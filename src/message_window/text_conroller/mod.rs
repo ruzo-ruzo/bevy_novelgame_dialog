@@ -44,18 +44,7 @@ pub struct TypingTimer {
 #[derive(SystemParam, Debug)]
 #[allow(clippy::type_complexity)]
 pub struct LastTextData<'w, 's> {
-    text: Query<
-        'w,
-        's,
-        (
-            Entity,
-            &'static Transform,
-            &'static Text,
-            &'static TypingTimer,
-            &'static Parent,
-        ),
-        (With<Current>, With<MessageTextChar>),
-    >,
+    text: Query<'w, 's, LastText, (With<Current>, With<MessageTextChar>)>,
     line: Query<
         'w,
         's,
@@ -63,6 +52,14 @@ pub struct LastTextData<'w, 's> {
         (With<Current>, With<MessageTextLine>),
     >,
 }
+
+type LastText = (
+    Entity,
+    &'static Transform,
+    &'static Text,
+    &'static TypingTimer,
+    &'static Parent,
+);
 
 type TextBoxData<'w, 's> = Query<
     'w,
@@ -175,7 +172,14 @@ pub fn initialize_typing_data(
     let last_text_data_opt = last_data
         .text
         .iter()
-        .find(|x| Some(x.4.get()) == last_line_opt);
+        .filter(|x| Some(x.4.get()) == last_line_opt)
+        .max_by(|x, y| {
+            if x.1.translation.x >= y.1.translation.x {
+                std::cmp::Ordering::Greater
+            } else {
+                std::cmp::Ordering::Less
+            }
+        });
     let last_text_opt = last_text_data_opt.map(|x| x.0);
     let last_timer = TypingTimer {
         timer: Timer::from_seconds(

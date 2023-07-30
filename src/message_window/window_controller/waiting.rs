@@ -1,5 +1,6 @@
 use super::super::*;
 use bevy::render::view::RenderLayers;
+// use bevy::utils::Duration;
 
 #[derive(Component, Debug)]
 pub struct WaitingIcon {
@@ -185,7 +186,13 @@ pub fn settle_wating_icon(
 pub fn skip_typing_or_next(
     mut commands: Commands,
     mut waiting_text_query: Query<
-        (Entity, &mut Visibility, &mut Transform, &Parent),
+        (
+            Entity,
+            &mut Visibility,
+            &mut Transform,
+            &Parent,
+            &mut TypingTimer
+        ),
         With<MessageTextChar>,
     >,
     mut typing_texts_query: Query<(Entity, &mut TypingStyle, &Parent), With<MessageTextChar>>,
@@ -216,7 +223,6 @@ pub fn skip_typing_or_next(
                             typed_count += 1;
                         }
                         _ => {
-                            commands.entity(text_entity).remove::<TypingStyle>();
                             commands.entity(text_entity).insert(TypingStyle::Typed);
                         }
                     }
@@ -239,11 +245,12 @@ pub fn skip_typing_or_next(
                     commands.entity(tb_entity).insert(wig);
                 }
             }
-            for (text_entity, mut t_vis, mut tf, t_parent) in &mut waiting_text_query {
+            for (text_entity, mut t_vis, mut tf, t_parent, mut tt) in &mut waiting_text_query {
                 if line_query.get(t_parent.get()).map(|x| x.1.get()) == Ok(tb_entity) {
                     tf.scale = Vec3::ONE;
                     *t_vis = Visibility::Inherited;
-                    commands.entity(text_entity).remove::<TypingTimer>();
+                    let rem = tt.timer.duration();
+                    tt.timer.tick(rem);
                     commands.entity(text_entity).insert(TypingStyle::Typed);
                 }
             }
