@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 
-use crate::read_script::BMSEvent;
+use crate::read_script::BdsEvent;
 use crate::*;
 
 #[derive(Reflect, Default, Debug)]
@@ -9,7 +9,7 @@ pub struct FontSizeChange {
 }
 
 pub fn change_font_size(
-    mut events: EventReader<BMSEvent>,
+    mut events: EventReader<BdsEvent>,
     mut tb_query: Query<&mut TypeTextConfig, (With<Current>, With<TextBox>)>,
 ) {
     for event_wrapper in events.iter() {

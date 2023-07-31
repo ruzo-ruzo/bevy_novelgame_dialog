@@ -9,15 +9,15 @@ pub fn open_window(
     setup_config: Res<SetupConfig>,
 ) {
     for window_config in &mut ow_event {
-        let mwb = MessageWindowBundle {
-            message_window: MessageWindow {
+        let mwb = DialogBoxBundle {
+            dialog_box: DialogBox {
                 name: window_config.window_name.clone(),
             },
             state: WindowState::Preparing,
             waitting: window_config.wait_breaker,
             script: LoadedScript {
-                bms_handle: asset_server.load(window_config.script_path.clone()),
-                bmt_handle: asset_server.load(window_config.template_path.clone()),
+                bds_handle: asset_server.load(window_config.script_path.clone()),
+                bdt_handle: asset_server.load(window_config.template_path.clone()),
                 order_list: None,
             },
             popup_type: window_config.popup,
@@ -63,7 +63,7 @@ pub fn open_window(
             commands.entity(entity).remove::<Current>();
         }
         let layer = RenderLayers::layer(setup_config.render_layer);
-        let mw = match window_config.message_window_entity {
+        let mw = match window_config.dialog_box_entity {
             Some(entity) => entity,
             None => commands.spawn(mw_spirte).id(),
         };
@@ -92,7 +92,7 @@ pub fn window_popper(
             &mut Visibility,
             &mut Transform,
         ),
-        (With<Current>, With<MessageWindow>),
+        (With<Current>, With<DialogBox>),
     >,
 ) {
     for (ent, mut ws, pt, mut vis, mut tf) in &mut mw_query {

@@ -1,5 +1,5 @@
 [package]
-name = "bevy_message_window"
+name = "bevy_dialog_box"
 version = "0.0.1"
 edition = "2021"
 

@@ -29,17 +29,17 @@ pub struct BreakWait {
 #[allow(clippy::type_complexity)]
 pub fn simple_wait(
     mut commands: Commands,
-    mut window_query: Query<(Entity, &mut WindowState, &WaitBrakerStyle), With<MessageWindow>>,
+    mut window_query: Query<(Entity, &mut WindowState, &WaitBrakerStyle), With<DialogBox>>,
     text_box_query: Query<
         (Entity, &GlobalTransform, &Sprite, &Parent),
         (With<Current>, With<TextBox>),
     >,
     selected_query: Query<Entity, With<Selected>>,
     last_data: LastTextData,
-    mut bms_reader: EventReader<BMSEvent>,
+    mut bds_reader: EventReader<BdsEvent>,
     type_registry: Res<AppTypeRegistry>,
 ) {
-    for event_wrapper in bms_reader.iter() {
+    for event_wrapper in bds_reader.iter() {
         if event_wrapper.get_opt::<SimpleWait>() == Some(SimpleWait) {
             for (mw_entity, mut ws, wbs) in &mut window_query {
                 if let WaitBrakerStyle::Input {
@@ -83,12 +83,12 @@ pub fn simple_wait(
 }
 
 pub fn restart_typing(
-    mut window_query: Query<(Entity, &mut WindowState, &WaitBrakerStyle), With<MessageWindow>>,
+    mut window_query: Query<(Entity, &mut WindowState, &WaitBrakerStyle), With<DialogBox>>,
     text_box_query: Query<&Parent, With<TextBox>>,
     mut icon_query: Query<(&mut Visibility, &mut WaitingIcon)>,
-    mut bms_reader: EventReader<BMSEvent>,
+    mut bds_reader: EventReader<BdsEvent>,
 ) {
-    for event_wrapper in bms_reader.iter() {
+    for event_wrapper in bds_reader.iter() {
         if let Some(BreakWait {
             target_text_box: Some(tb_entity),
         }) = event_wrapper.get_opt::<BreakWait>()
@@ -141,7 +141,7 @@ pub fn waiting_icon_setting(
 
 #[allow(clippy::type_complexity)]
 pub fn settle_wating_icon(
-    window_query: Query<(Entity, &WindowState, &WaitBrakerStyle), With<MessageWindow>>,
+    window_query: Query<(Entity, &WindowState, &WaitBrakerStyle), With<DialogBox>>,
     text_box_query: Query<(Entity, &Parent, &TypeTextConfig), With<TextBox>>,
     mut icon_query: Query<
         (&mut Transform, &mut WaitingIcon),
@@ -196,14 +196,14 @@ pub fn skip_typing_or_next(
         With<MessageTextChar>,
     >,
     mut typing_texts_query: Query<(Entity, &mut TypingStyle, &Parent), With<MessageTextChar>>,
-    window_query: Query<&WindowState, With<MessageWindow>>,
+    window_query: Query<&WindowState, With<DialogBox>>,
     text_box_query: Query<(&GlobalTransform, &Sprite, &Parent), With<TextBox>>,
     line_query: Query<(Entity, &Parent), With<MessageTextLine>>,
     mut icon_query: Query<(Entity, &mut Visibility), (With<WaitingIcon>, Without<MessageTextChar>)>,
-    mut bms_reader: EventReader<BMSEvent>,
+    mut bds_reader: EventReader<BdsEvent>,
     type_registry: Res<AppTypeRegistry>,
 ) {
-    for event_wrapper in bms_reader.iter() {
+    for event_wrapper in bds_reader.iter() {
         if let Some(InputForSkipping {
             next_event_ron: ron,
             target_text_box: Some(tb_entity),
@@ -237,7 +237,7 @@ pub fn skip_typing_or_next(
                 if text_count == typed_count {
                     if let Ok(ref_value) = read_ron(&type_registry, ron.clone()) {
                         commands.add(|w: &mut World| {
-                            w.send_event(BMSEvent { value: ref_value });
+                            w.send_event(BdsEvent { value: ref_value });
                         })
                     }
                 } else {
@@ -260,12 +260,12 @@ pub fn skip_typing_or_next(
 
 pub fn skip_feeding(
     mut commands: Commands,
-    mut window_query: Query<&mut WindowState, With<MessageWindow>>,
+    mut window_query: Query<&mut WindowState, With<DialogBox>>,
     text_box_query: Query<&Parent, With<TextBox>>,
     line_query: Query<(Entity, &Parent), With<MessageTextLine>>,
-    mut bms_reader: EventReader<BMSEvent>,
+    mut bds_reader: EventReader<BdsEvent>,
 ) {
-    for event_wrapper in bms_reader.iter() {
+    for event_wrapper in bds_reader.iter() {
         if let Some(InputForSkipping {
             next_event_ron: _,
             target_text_box: Some(tb_entity),

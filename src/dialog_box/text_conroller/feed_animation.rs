@@ -84,7 +84,7 @@ pub fn trigger_feeding_by_event(
     text_box_query: Query<&FeedingStyle>,
     mut icon_query: Query<(Entity, &mut Visibility), (With<WaitingIcon>, Without<MessageTextChar>)>,
     mut start_feeding_event: EventWriter<StartFeedingEvent>,
-    mut events: EventReader<BMSEvent>,
+    mut events: EventReader<BdsEvent>,
 ) {
     for event_wrapper in events.iter() {
         if let Some(InputForFeeding {

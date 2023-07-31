@@ -1,5 +1,5 @@
 use super::*;
-use crate::message_window::*;
+use crate::dialog_box::*;
 
 #[derive(Component, Debug)]
 pub struct ScalingDown {
@@ -30,10 +30,10 @@ pub fn setup_window_sink(
     text_box_query: Query<(Entity, &GlobalTransform, &Sprite), (With<Current>, With<TextBox>)>,
     mut mw_query: Query<
         (Entity, &mut WindowState, &WaitBrakerStyle),
-        (With<Current>, With<MessageWindow>),
+        (With<Current>, With<DialogBox>),
     >,
     parents: Query<&Parent>,
-    mut events: EventReader<BMSEvent>,
+    mut events: EventReader<BdsEvent>,
     type_registry: Res<AppTypeRegistry>,
 ) {
     for event_wrapper in events.iter() {
@@ -84,10 +84,10 @@ pub fn setup_window_sink(
 }
 
 pub fn trigger_window_sink_by_event(
-    mut bms_reader: EventReader<BMSEvent>,
+    mut bds_reader: EventReader<BdsEvent>,
     mut gs_writer: EventWriter<GoSinking>,
 ) {
-    for event_wrapper in bms_reader.iter() {
+    for event_wrapper in bds_reader.iter() {
         if let Some(gs @ GoSinking { .. }) = event_wrapper.get_opt::<GoSinking>() {
             gs_writer.send(gs)
         }
@@ -96,7 +96,7 @@ pub fn trigger_window_sink_by_event(
 
 pub fn trigger_window_sink_by_time(
     mut commands: Commands,
-    mut mw_query: Query<(Entity, &mut WaitSinkingTrigger), With<MessageWindow>>,
+    mut mw_query: Query<(Entity, &mut WaitSinkingTrigger), With<DialogBox>>,
     time: Res<Time>,
     mut events: EventWriter<GoSinking>,
 ) {
@@ -113,7 +113,7 @@ pub fn trigger_window_sink_by_time(
 
 pub fn start_window_sink(
     mut commands: Commands,
-    mut mw_query: Query<(Entity, &mut WindowState), With<MessageWindow>>,
+    mut mw_query: Query<(Entity, &mut WindowState), With<DialogBox>>,
     mut events: EventReader<GoSinking>,
 ) {
     for GoSinking {

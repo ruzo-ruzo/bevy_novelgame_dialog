@@ -79,7 +79,7 @@ pub fn add_new_text(
     text_box_query: TextBoxData,
     last_data: LastTextData,
     app_type_registry: Res<AppTypeRegistry>,
-    mut wrapper: EventWriter<BMSEvent>,
+    mut wrapper: EventWriter<BdsEvent>,
     mut ps_event: EventWriter<FeedWaitingEvent>,
     fonts: Res<Assets<Font>>,
     mut pending: Local<Option<Order>>,
@@ -150,7 +150,7 @@ pub fn add_new_text(
                     Some(Order::ThroghEvent { ron: r }) => {
                         let event_opt = read_ron(&app_type_registry, r);
                         if let Ok(reflect_value) = event_opt {
-                            wrapper.send(BMSEvent {
+                            wrapper.send(BdsEvent {
                                 value: reflect_value,
                             })
                         }

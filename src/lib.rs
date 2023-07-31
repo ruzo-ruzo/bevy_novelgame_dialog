@@ -1,6 +1,6 @@
 #![allow(clippy::too_many_arguments)]
-pub mod message_window;
+pub mod dialog_box;
 mod read_script;
 mod utility;
 
-pub use message_window::window_controller::*;
+pub use dialog_box::window_controller::*;

@@ -1,13 +1,13 @@
 use crate::read_script::*;
 use bevy::prelude::*;
 
-mod bms_event;
+mod bds_event;
 mod input;
 mod setup;
 mod text_conroller;
 pub mod window_controller;
 
-use bms_event::*;
+use bds_event::*;
 use input::*;
 use setup::*;
 use text_conroller::feed_animation::*;
@@ -18,14 +18,14 @@ use window_controller::sinkdown::*;
 use window_controller::waiting::*;
 use window_controller::*;
 
-pub struct MessageWindowPlugin {
+pub struct DialogBoxPlugin {
     pub layer_num: u8,
     pub render_order: isize,
 }
 
-impl Default for MessageWindowPlugin {
+impl Default for DialogBoxPlugin {
     fn default() -> Self {
-        MessageWindowPlugin {
+        DialogBoxPlugin {
             layer_num: 2,
             render_order: 1,
         }
@@ -39,7 +39,7 @@ enum PhaseSet {
     Change,
 }
 
-impl Plugin for MessageWindowPlugin {
+impl Plugin for DialogBoxPlugin {
     fn build(&self, app: &mut App) {
         app.add_asset::<BMWScript>()
             .add_asset::<BMWTemplate>()
@@ -62,7 +62,7 @@ impl Plugin for MessageWindowPlugin {
             .add_event::<FeedWaitingEvent>()
             .add_event::<StartFeedingEvent>()
             .add_event::<GoSinking>()
-            .add_event::<BMSEvent>()
+            .add_event::<BdsEvent>()
             .configure_sets(
                 Update,
                 (PhaseSet::Progress, PhaseSet::Setting, PhaseSet::Change).chain(),

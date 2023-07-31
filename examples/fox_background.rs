@@ -1,13 +1,13 @@
 use bevy::prelude::*;
 #[allow(unused_imports)]
 use bevy::text::TextAlignment;
-use bevy_message_window::*;
+use bevy_dialog_box::*;
 
 fn main() {
     App::new()
         .add_plugins((
             DefaultPlugins,
-            message_window::MessageWindowPlugin::default(),
+            dialog_box::DialogBoxPlugin::default(),
             fox_background::FoxBackgroundPlugin,
         ))
         .add_systems(Startup, waiting_sprite_setup)
@@ -32,8 +32,8 @@ fn start_message(
             background_path: "../../text_test/assets/2d_picture/ui/messageframe/material/messageframe_non_line/message_001.png".to_string(),
             position: Vec2::new(0., -200.),
             feeding: FeedingStyle::Scroll { size: 0, sec: 0.5 },
-            script_path: "scripts/test.bms".to_string(),
-            template_path: "scripts/test.bmt".to_string(),
+            script_path: "scripts/test.bds".to_string(),
+            template_path: "scripts/test.bdt".to_string(),
             main_box_origin: Vec2::new(-540.0, 70.0),
             main_box_size: Vec2::new(1060.0, 140.0),
             // main_alignment: TextAlignment::Center,

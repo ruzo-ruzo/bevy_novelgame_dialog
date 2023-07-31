@@ -1,4 +1,4 @@
-use crate::message_window::MessageWindowCamera;
+use crate::dialog_box::DialogBoxCamera;
 use crate::read_script::*;
 use bevy::prelude::*;
 use bevy::window::PrimaryWindow;
@@ -19,12 +19,12 @@ pub fn go_selected(
     target_query: Query<(Entity, &WaitInputGo)>,
     selected_query: Query<Entity, With<Selected>>,
     window_query: Query<&Window, With<PrimaryWindow>>,
-    camera_query: Query<(&Camera, &GlobalTransform), With<MessageWindowCamera>>,
+    camera_query: Query<(&Camera, &GlobalTransform), With<DialogBoxCamera>>,
     keys: Res<Input<KeyCode>>,
     mouse_buttons: Res<Input<MouseButton>>,
     touches: Res<Touches>,
     gamepad_buttons: Res<Input<GamepadButton>>,
-    mut bms_event: EventWriter<BMSEvent>,
+    mut bds_event: EventWriter<BdsEvent>,
     gamepads: Res<Gamepads>,
     type_registry: Res<AppTypeRegistry>,
 ) {
@@ -58,7 +58,7 @@ pub fn go_selected(
             || touched_position_list.any(|t| wig.area.contains(t))
         {
             if let Ok(ref_value) = read_ron(&type_registry, wig.ron.clone()) {
-                bms_event.send(BMSEvent { value: ref_value });
+                bds_event.send(BdsEvent { value: ref_value });
             }
             commands.entity(target_entity).remove::<WaitInputGo>();
         }

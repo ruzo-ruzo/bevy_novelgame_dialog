@@ -22,14 +22,14 @@ pub fn read_script<S1: AsRef<str>, S2: AsRef<str>>(
     template: S2,
 ) -> HashMap<String, Vec<Order>> {
     let replaced = replace_by_template(input, template);
-    read_bms(replaced)
+    read_bds(replaced)
 }
 
-pub fn read_bms<S: AsRef<str>>(input: S) -> HashMap<String, Vec<Order>> {
+pub fn read_bds<S: AsRef<str>>(input: S) -> HashMap<String, Vec<Order>> {
     let mut section_map = HashMap::new();
     let mut next_head = "".to_string();
     let mut next_list = vec![];
-    for p in parse_bms(input.as_ref()) {
+    for p in parse_bds(input.as_ref()) {
         match p {
             ParsedOrder::SectionLine(s) => {
                 section_map.insert(next_head, next_list);
@@ -44,8 +44,8 @@ pub fn read_bms<S: AsRef<str>>(input: S) -> HashMap<String, Vec<Order>> {
     section_map
 }
 
-fn parse_bms(input: &str) -> Vec<ParsedOrder> {
-    let mut bms_parser = many0(alt((
+fn parse_bds(input: &str) -> Vec<ParsedOrder> {
+    let mut bds_parser = many0(alt((
         backslash,
         ampersand,
         section_head,
@@ -55,7 +55,7 @@ fn parse_bms(input: &str) -> Vec<ParsedOrder> {
         erase_useless_tag,
         simple_char,
     )));
-    if let Ok((_, parsed_order_list)) = bms_parser(input) {
+    if let Ok((_, parsed_order_list)) = bds_parser(input) {
         parsed_order_list
             .into_iter()
             .filter(|x| *x != ParsedOrder::Empty)
@@ -234,7 +234,7 @@ fn throw_event(input: &str) -> IResult<&str, ParsedOrder> {
 }
 
 #[cfg(test)]
-mod parse_bms_tests {
+mod parse_bds_tests {
     use super::*;
 
     const HELLO: &[Order] = &[
@@ -272,14 +272,14 @@ mod parse_bms_tests {
             .iter()
             .map(|o| ParsedOrder::OrderWrapper(o.clone()))
             .collect::<Vec<_>>();
-        assert_eq!(parse_bms("こんにちは<br />はじめまして"), hello_po);
+        assert_eq!(parse_bds("こんにちは<br />はじめまして"), hello_po);
     }
 
     #[test]
     fn test_hello_double_space_end() {
         let hello_vec = HELLO.into();
         assert_eq!(
-            read_bms("こんにちは  \r\nはじめまして"),
+            read_bds("こんにちは  \r\nはじめまして"),
             HashMap::from([("".to_string(), hello_vec)])
         );
     }
@@ -291,7 +291,7 @@ mod parse_bms_tests {
             ("二つ目".to_string(), ILL.into()),
         ]);
         assert_eq!(
-            read_bms("こんにちは<br>はじめまして<h1>二つ目</h1>この家の主人は病気です"),
+            read_bds("こんにちは<br>はじめまして<h1>二つ目</h1>この家の主人は病気です"),
             sectioned_phrase
         );
     }
@@ -303,7 +303,7 @@ mod parse_bms_tests {
             ("二つ目".to_string(), ILL.into()),
         ]);
         let read =
-            read_bms("こんにちは<br css='';/>はじめまして\n二つ目\n======\nこの家の主人は病気です");
+            read_bds("こんにちは<br css='';/>はじめまして\n二つ目\n======\nこの家の主人は病気です");
         assert_eq!(read, sectioned_phrase);
     }
 
@@ -313,7 +313,7 @@ mod parse_bms_tests {
             ("".to_string(), HELLO.into()),
             ("二つ目".to_string(), ILL.into()),
         ]);
-        let read = read_bms("こんにちは    \r\nはじめまして\r\n# 二つ目\r\nこの家の主人は病気です");
+        let read = read_bds("こんにちは    \r\nはじめまして\r\n# 二つ目\r\nこの家の主人は病気です");
         assert_eq!(read, sectioned_phrase);
     }
 
@@ -326,7 +326,7 @@ mod parse_bms_tests {
             .flatten()
             .map(|x| x.clone());
         let vec_pp = paged_phrase.collect::<Vec<Order>>();
-        let read = read_bms("こんにちは    \r\nはじめまして\r\n\r\nこの家の主人は病気です");
+        let read = read_bds("こんにちは    \r\nはじめまして\r\n\r\nこの家の主人は病気です");
         assert_eq!(read, HashMap::from([("".to_string(), vec_pp)]));
     }
 
@@ -339,7 +339,7 @@ mod parse_bms_tests {
             .flatten()
             .map(|x| x.clone());
         let vec_pp = paged_phrase.collect::<Vec<Order>>();
-        let read = read_bms("<p>こんにちは    \r\nはじめまして</p>この家の主人は病気です");
+        let read = read_bds("<p>こんにちは    \r\nはじめまして</p>この家の主人は病気です");
         assert_eq!(read, HashMap::from([("".to_string(), vec_pp)]));
     }
 
@@ -355,7 +355,7 @@ mod parse_bms_tests {
             .map(|x| x.clone());
         let vec_ws = with_script.collect::<Vec<Order>>();
         let read =
-            read_bms("こんにちは    \r\nはじめまして<script>test</script>この家の主人は病気です");
+            read_bds("こんにちは    \r\nはじめまして<script>test</script>この家の主人は病気です");
         assert_eq!(read, HashMap::from([("".to_string(), vec_ws)]));
     }
 
@@ -373,6 +373,6 @@ mod parse_bms_tests {
             ParsedOrder::OrderWrapper(Order::Type { character: '\\' }),
             ParsedOrder::OrderWrapper(Order::Type { character: '>' }),
         ];
-        assert_eq!(parse_bms("a<abc>abcd\\<ab\\\\>"), useless_taged);
+        assert_eq!(parse_bds("a<abc>abcd\\<ab\\\\>"), useless_taged);
     }
 }

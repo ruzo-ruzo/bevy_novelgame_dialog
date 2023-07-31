@@ -1,4 +1,4 @@
-mod parse_bms;
+mod parse_bds;
 mod regex;
 
 use bevy::{
@@ -10,15 +10,15 @@ use bevy::{
     },
     utils::BoxedFuture,
 };
-use parse_bms::read_script;
+use parse_bds::read_script;
 use serde::{de::DeserializeSeed, Deserialize};
 
 #[derive(Event)]
-pub struct BMSEvent {
+pub struct BdsEvent {
     pub value: Box<dyn Reflect>,
 }
 
-impl BMSEvent {
+impl BdsEvent {
     pub fn get<T: Default + Reflect>(&self) -> T {
         let mut my_data = <T>::default();
         my_data.apply(&*self.value);
@@ -44,8 +44,8 @@ pub enum Order {
 
 #[derive(Component, Debug)]
 pub struct LoadedScript {
-    pub bms_handle: Handle<BMWScript>,
-    pub bmt_handle: Handle<BMWTemplate>,
+    pub bds_handle: Handle<BMWScript>,
+    pub bdt_handle: Handle<BMWTemplate>,
     pub order_list: Option<Vec<Order>>,
 }
 
@@ -66,14 +66,14 @@ impl AssetLoader for BMWScriptLoader {
     ) -> BoxedFuture<'a, Result<(), bevy::asset::Error>> {
         Box::pin(async move {
             let raw_text = String::from_utf8(bytes.to_vec())?;
-            let bms = BMWScript { script: raw_text };
-            load_context.set_default_asset(LoadedAsset::new(bms));
+            let bds = BMWScript { script: raw_text };
+            load_context.set_default_asset(LoadedAsset::new(bds));
             Ok(())
         })
     }
 
     fn extensions(&self) -> &[&str] {
-        &["md", "bms"]
+        &["md", "bds"]
     }
 }
 
@@ -94,14 +94,14 @@ impl AssetLoader for BMWTemplateLoader {
     ) -> BoxedFuture<'a, Result<(), bevy::asset::Error>> {
         Box::pin(async move {
             let raw_text = String::from_utf8(bytes.to_vec())?;
-            let bmt = BMWTemplate { template: raw_text };
-            load_context.set_default_asset(LoadedAsset::new(bmt));
+            let bdt = BMWTemplate { template: raw_text };
+            load_context.set_default_asset(LoadedAsset::new(bdt));
             Ok(())
         })
     }
 
     fn extensions(&self) -> &[&str] {
-        &["csv", "bmt"]
+        &["csv", "bdt"]
     }
 }
 
@@ -112,10 +112,10 @@ pub fn script_on_load(
 ) {
     for mut loaded_script in &mut loaded_script_query {
         if loaded_script.order_list.is_none() {
-            let script_opt = script_assets.get(&loaded_script.bms_handle);
-            let template_opt = template_assets.get(&loaded_script.bmt_handle);
-            if let (Some(bms), Some(bmt)) = (script_opt, template_opt) {
-                let parsed = parse_script(&bms.script, &bmt.template);
+            let script_opt = script_assets.get(&loaded_script.bds_handle);
+            let template_opt = template_assets.get(&loaded_script.bdt_handle);
+            if let (Some(bds), Some(bdt)) = (script_opt, template_opt) {
+                let parsed = parse_script(&bds.script, &bdt.template);
                 loaded_script.order_list = Some(parsed);
             }
         }
