@@ -26,7 +26,7 @@ pub struct ScrollFeed {
 pub fn setup_feed_starter(
     mut commands: Commands,
     window_query: Query<(Entity, &WaitBrakerStyle)>,
-    text_box_query: Query<(Entity, &Parent, &GlobalTransform, &Sprite), With<TextBox>>,
+    text_box_query: Query<(Entity, &Parent, &GlobalTransform, &Sprite), With<TextArea>>,
     selected_query: Query<Entity, With<Selected>>,
     mut waitting_event: EventReader<FeedWaitingEvent>,
     type_registry: Res<AppTypeRegistry>,
@@ -130,7 +130,7 @@ pub fn trigger_feeding_by_time(
 pub fn start_feeding(
     mut commands: Commands,
     mut window_query: Query<(Entity, &mut DialogBoxState, &WaitBrakerStyle)>,
-    text_box_query: Query<(Entity, &GlobalTransform, &Sprite, &Parent), With<TextBox>>,
+    text_box_query: Query<(Entity, &GlobalTransform, &Sprite, &Parent), With<TextArea>>,
     parent_query: Query<&Parent>,
     line_query: Query<(Entity, &FeedingStyle), With<MessageTextLine>>,
     start_feeding_event: EventReader<StartFeedingEvent>,

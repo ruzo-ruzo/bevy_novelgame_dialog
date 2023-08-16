@@ -9,7 +9,7 @@ fn main() {
             DefaultPlugins,
             dialog_box::DialogBoxPlugin::default(),
             // fox_background::FoxBackgroundPlugin,
-            DebugTextBoxPlugin,
+            DebugTextAreaPlugin,
         ))
         .add_systems(Startup, waiting_sprite_setup)
         .add_systems(Update, start_message)

@@ -30,8 +30,8 @@ pub fn open_window(
             transform: Transform::from_translation(window_config.position.extend(0.0)),
             ..default()
         };
-        let tbb = TextBoxBundle {
-            text_box: TextBox {
+        let tbb = TextAreaBundle {
+            text_box: TextArea {
                 name: window_config.box_name.clone(),
             },
             feeding: window_config.feeding,

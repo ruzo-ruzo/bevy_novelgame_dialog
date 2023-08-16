@@ -61,7 +61,7 @@ type LastText = (
     &'static Parent,
 );
 
-type TextBoxData<'w, 's> = Query<
+type TextAreaData<'w, 's> = Query<
     'w,
     's,
     (
@@ -70,13 +70,13 @@ type TextBoxData<'w, 's> = Query<
         &'static TypeTextConfig,
         &'static Parent,
     ),
-    (With<Current>, With<TextBox>),
+    (With<Current>, With<TextArea>),
 >;
 
 pub fn add_new_text(
     mut commands: Commands,
     mut window_query: Query<(Entity, &mut LoadedScript, &mut DialogBoxState)>,
-    text_box_query: TextBoxData,
+    text_box_query: TextAreaData,
     last_data: LastTextData,
     app_type_registry: Res<AppTypeRegistry>,
     mut wrapper: EventWriter<BdsEvent>,
@@ -319,10 +319,10 @@ pub fn settle_lines(
             &Children,
             &Parent,
         ),
-        Without<TextBox>,
+        Without<TextArea>,
     >,
     text_char: Query<&Text, With<MessageTextChar>>,
-    text_box_query: Query<(&Sprite, &TypeTextConfig, &Parent), With<TextBox>>,
+    text_box_query: Query<(&Sprite, &TypeTextConfig, &Parent), With<TextArea>>,
     window_query: Query<&DialogBoxState>,
 ) {
     let mut sorted = targets.iter_mut().collect::<Vec<(

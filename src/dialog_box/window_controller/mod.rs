@@ -21,7 +21,7 @@ pub struct DialogBox {
 }
 
 #[derive(Component, Debug)]
-pub struct TextBox {
+pub struct TextArea {
     pub name: String,
 }
 
@@ -48,8 +48,8 @@ struct DialogBoxBundle {
 }
 
 #[derive(Bundle)]
-struct TextBoxBundle {
-    text_box: TextBox,
+struct TextAreaBundle {
+    text_box: TextArea,
     feeding: FeedingStyle,
     config: TypeTextConfig,
 }

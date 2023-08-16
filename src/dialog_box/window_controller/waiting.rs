@@ -32,7 +32,7 @@ pub fn simple_wait(
     mut window_query: Query<(Entity, &mut DialogBoxState, &WaitBrakerStyle), With<DialogBox>>,
     text_box_query: Query<
         (Entity, &GlobalTransform, &Sprite, &Parent),
-        (With<Current>, With<TextBox>),
+        (With<Current>, With<TextArea>),
     >,
     selected_query: Query<Entity, With<Selected>>,
     last_data: LastTextData,
@@ -84,7 +84,7 @@ pub fn simple_wait(
 
 pub fn restart_typing(
     mut window_query: Query<(Entity, &mut DialogBoxState, &WaitBrakerStyle), With<DialogBox>>,
-    text_box_query: Query<&Parent, With<TextBox>>,
+    text_box_query: Query<&Parent, With<TextArea>>,
     mut icon_query: Query<(&mut Visibility, &mut WaitingIcon)>,
     mut bds_reader: EventReader<BdsEvent>,
 ) {
@@ -142,7 +142,7 @@ pub fn waiting_icon_setting(
 #[allow(clippy::type_complexity)]
 pub fn settle_wating_icon(
     window_query: Query<(Entity, &DialogBoxState, &WaitBrakerStyle), With<DialogBox>>,
-    text_box_query: Query<(Entity, &Parent, &TypeTextConfig), With<TextBox>>,
+    text_box_query: Query<(Entity, &Parent, &TypeTextConfig), With<TextArea>>,
     mut icon_query: Query<
         (&mut Transform, &mut WaitingIcon),
         (Without<MessageTextLine>, Without<MessageTextChar>),
@@ -197,7 +197,7 @@ pub fn skip_typing_or_next(
     >,
     mut typing_texts_query: Query<(Entity, &mut TypingStyle, &Parent), With<MessageTextChar>>,
     window_query: Query<&DialogBoxState, With<DialogBox>>,
-    text_box_query: Query<(&GlobalTransform, &Sprite, &Parent), With<TextBox>>,
+    text_box_query: Query<(&GlobalTransform, &Sprite, &Parent), With<TextArea>>,
     line_query: Query<(Entity, &Parent), With<MessageTextLine>>,
     mut icon_query: Query<(Entity, &mut Visibility), (With<WaitingIcon>, Without<MessageTextChar>)>,
     mut bds_reader: EventReader<BdsEvent>,
@@ -261,7 +261,7 @@ pub fn skip_typing_or_next(
 pub fn skip_feeding(
     mut commands: Commands,
     mut window_query: Query<&mut DialogBoxState, With<DialogBox>>,
-    text_box_query: Query<&Parent, With<TextBox>>,
+    text_box_query: Query<&Parent, With<TextArea>>,
     line_query: Query<(Entity, &Parent), With<MessageTextLine>>,
     mut bds_reader: EventReader<BdsEvent>,
 ) {

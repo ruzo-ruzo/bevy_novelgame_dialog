@@ -27,7 +27,7 @@ pub struct GoSinking {
 pub fn setup_window_sink(
     mut commands: Commands,
     text_query: Query<(Entity, &TypingTimer), (With<Current>, With<MessageTextChar>)>,
-    text_box_query: Query<(Entity, &GlobalTransform, &Sprite), (With<Current>, With<TextBox>)>,
+    text_box_query: Query<(Entity, &GlobalTransform, &Sprite), (With<Current>, With<TextArea>)>,
     mut mw_query: Query<
         (Entity, &mut DialogBoxState, &WaitBrakerStyle),
         (With<Current>, With<DialogBox>),

@@ -16,7 +16,7 @@ pub struct LoadBds{
 
 pub fn change_font_size(
     mut events: EventReader<BdsEvent>,
-    mut tb_query: Query<&mut TypeTextConfig, (With<Current>, With<TextBox>)>,
+    mut tb_query: Query<&mut TypeTextConfig, (With<Current>, With<TextArea>)>,
 ) {
     for event_wrapper in events.iter() {
         if let Some(FontSizeChange { size: s }) = event_wrapper.get_opt::<FontSizeChange>() {

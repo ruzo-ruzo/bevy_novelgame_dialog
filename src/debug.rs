@@ -2,9 +2,9 @@ use crate::dialog_box::window_controller::*;
 use crate::read_script::*;
 use bevy::prelude::*;
 
-pub struct DebugTextBoxPlugin;
+pub struct DebugTextAreaPlugin;
 
-impl Plugin for DebugTextBoxPlugin {
+impl Plugin for DebugTextAreaPlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(Update, monitor_db_state);
         app.add_systems(Update, monitor_bds_event);
