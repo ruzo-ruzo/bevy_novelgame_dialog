@@ -1,4 +1,5 @@
 use super::*;
+use crate::read_script::split_path_and_section;
 use bevy::render::view::Visibility::Visible;
 
 pub fn open_window(
@@ -9,15 +10,17 @@ pub fn open_window(
     setup_config: Res<SetupConfig>,
 ) {
     for window_config in &mut ow_event {
+        let (script_path, script_section) = split_path_and_section(window_config.script_path.clone());
         let mwb = DialogBoxBundle {
             dialog_box: DialogBox {
                 name: window_config.window_name.clone(),
             },
-            state: WindowState::Preparing,
+            state: DialogBoxState::Preparing,
             waitting: window_config.wait_breaker,
             script: LoadedScript {
-                bds_handle: asset_server.load(window_config.script_path.clone()),
+                bds_handle: asset_server.load(script_path),
                 bdt_handle: asset_server.load(window_config.template_path.clone()),
+                target_section: script_section,
                 order_list: None,
             },
             popup_type: window_config.popup,
@@ -87,7 +90,7 @@ pub fn window_popper(
     mut mw_query: Query<
         (
             Entity,
-            &mut WindowState,
+            &mut DialogBoxState,
             &PopupType,
             &mut Visibility,
             &mut Transform,
@@ -96,7 +99,7 @@ pub fn window_popper(
     >,
 ) {
     for (ent, mut ws, pt, mut vis, mut tf) in &mut mw_query {
-        if *ws == WindowState::Preparing {
+        if *ws == DialogBoxState::Preparing {
             match pt {
                 PopupType::Scale { sec: s } => {
                     tf.scale = Vec3::new(0., 0., 0.);
@@ -106,20 +109,20 @@ pub fn window_popper(
                 }
             }
             *vis = Visible;
-            *ws = WindowState::PoppingUp;
+            *ws = DialogBoxState::PoppingUp;
         }
     }
 }
 
 pub fn scaling_up(
     mut commands: Commands,
-    mut mw_query: Query<(Entity, &mut Transform, &ScalingUp, &mut WindowState)>,
+    mut mw_query: Query<(Entity, &mut Transform, &ScalingUp, &mut DialogBoxState)>,
     time: Res<Time>,
 ) {
     for (ent, mut tf, ScalingUp { add_per_sec: aps }, mut ws) in &mut mw_query {
         if tf.scale.x >= 1.0 {
             tf.scale = Vec3::new(1., 1., 1.);
-            *ws = WindowState::Typing;
+            *ws = DialogBoxState::Typing;
             commands.entity(ent).remove::<ScalingUp>();
         } else {
             tf.scale.x += time.delta_seconds() * aps;

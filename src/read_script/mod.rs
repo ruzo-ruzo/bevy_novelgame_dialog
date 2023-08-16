@@ -10,7 +10,7 @@ use bevy::{
     },
     utils::BoxedFuture,
 };
-use parse_bds::read_script;
+use parse_bds::*;
 use serde::{de::DeserializeSeed, Deserialize};
 
 #[derive(Event)]
@@ -46,6 +46,7 @@ pub enum Order {
 pub struct LoadedScript {
     pub bds_handle: Handle<BMWScript>,
     pub bdt_handle: Handle<BMWTemplate>,
+    pub target_section: String,
     pub order_list: Option<Vec<Order>>,
 }
 
@@ -115,7 +116,8 @@ pub fn script_on_load(
             let script_opt = script_assets.get(&loaded_script.bds_handle);
             let template_opt = template_assets.get(&loaded_script.bdt_handle);
             if let (Some(bds), Some(bdt)) = (script_opt, template_opt) {
-                let parsed = parse_script(&bds.script, &bdt.template);
+                // info!("script is {}, \r\n section is {}", bds.script, loaded_script.target_section);
+                let parsed = parse_script(&bds.script, &bdt.template, &loaded_script.target_section);
                 loaded_script.order_list = Some(parsed);
             }
         }
@@ -133,6 +135,10 @@ pub fn read_ron<S: AsRef<str>>(
     reflect_deserializer.deserialize(&mut deserializer)
 }
 
+pub fn split_path_and_section<S: AsRef<str>>(uri: S) -> (String, String){
+    parse_uri(uri.as_ref())
+}
+
 pub fn write_ron<R: Reflect>(
     type_registry: &AppTypeRegistry,
     value: R,
@@ -142,8 +148,12 @@ pub fn write_ron<R: Reflect>(
     ron::ser::to_string_pretty(&serializer, ron::ser::PrettyConfig::default())
 }
 
-//-- 以下は仮設定
-pub fn parse_script<S1: AsRef<str>, S2: AsRef<str>>(base: S1, template: S2) -> Vec<Order> {
+pub fn parse_script<S1: AsRef<str>, S2: AsRef<str>, S3: AsRef<str>>(
+    base: S1,
+    template: S2,
+    section: S3,
+) -> Vec<Order> {
     let orders = read_script(base, template);
-    orders[""].clone().into_iter().rev().collect()
+    // info!("{orders:?}");
+    orders[section.as_ref()].clone().into_iter().rev().collect()
 }

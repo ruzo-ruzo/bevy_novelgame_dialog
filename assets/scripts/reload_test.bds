@@ -1,0 +1,10 @@
+# テストヘッダー1
+これはジャンプ後のテキストです。
+
+["Main Window"]("scripts/test.bds")
+
+
+# テストヘッダー2
+これはジャンプのテストのテキストです。
+
+["Main Window"]("scripts/reload_test.bds#テストヘッダー1")

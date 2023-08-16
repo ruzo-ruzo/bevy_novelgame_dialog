@@ -41,7 +41,7 @@ pub struct TypeTextConfig {
 #[derive(Bundle)]
 struct DialogBoxBundle {
     dialog_box: DialogBox,
-    state: WindowState,
+    state: DialogBoxState,
     waitting: WaitBrakerStyle,
     script: LoadedScript,
     popup_type: PopupType,
@@ -55,7 +55,7 @@ struct TextBoxBundle {
 }
 
 #[derive(Component, Debug, Clone, Copy, PartialEq)]
-pub enum WindowState {
+pub enum DialogBoxState {
     Preparing,
     PoppingUp,
     Typing,

@@ -129,7 +129,7 @@ pub fn trigger_feeding_by_time(
 
 pub fn start_feeding(
     mut commands: Commands,
-    mut window_query: Query<(Entity, &mut WindowState, &WaitBrakerStyle)>,
+    mut window_query: Query<(Entity, &mut DialogBoxState, &WaitBrakerStyle)>,
     text_box_query: Query<(Entity, &GlobalTransform, &Sprite, &Parent), With<TextBox>>,
     parent_query: Query<&Parent>,
     line_query: Query<(Entity, &FeedingStyle), With<MessageTextLine>>,
@@ -140,7 +140,7 @@ pub fn start_feeding(
         return;
     };
     for (w_entity, mut ws, wbs) in &mut window_query {
-        if *ws != WindowState::Waiting {
+        if *ws != DialogBoxState::Waiting {
             return;
         }
         let target_lines = line_query
@@ -166,7 +166,7 @@ pub fn start_feeding(
                 }
             };
         }
-        *ws = WindowState::Feeding;
+        *ws = DialogBoxState::Feeding;
         for (tb_entity, tb_tf, tb_sp, tb_parent) in &text_box_query {
             if tb_parent.get() == w_entity {
                 if let WaitBrakerStyle::Input { .. } = wbs {
@@ -180,13 +180,13 @@ pub fn start_feeding(
 
 pub fn scroll_lines(
     mut commands: Commands,
-    mut window_query: Query<(Entity, &mut WindowState)>,
+    mut window_query: Query<(Entity, &mut DialogBoxState)>,
     mut line_query: Query<(Entity, &mut Transform, &Sprite, &mut ScrollFeed)>,
     parent_query: Query<&Parent>,
     time: Res<Time>,
 ) {
     for (w_entity, mut ws) in &mut window_query {
-        if *ws == WindowState::Feeding {
+        if *ws == DialogBoxState::Feeding {
             let mut target_lines = line_query
                 .iter_mut()
                 .filter(|q| parent_query.iter_ancestors(q.0).any(|e| e == w_entity))
@@ -194,7 +194,7 @@ pub fn scroll_lines(
             target_lines.sort_by(|a, b| a.1.translation.y.partial_cmp(&b.1.translation.y).unwrap());
             let targets_size = target_lines.len();
             if targets_size <= target_lines.first().map(|l| l.3.count).unwrap_or_default() {
-                *ws = WindowState::Typing;
+                *ws = DialogBoxState::Typing;
                 for (l_entity, _, _, _) in target_lines.iter() {
                     commands.entity(*l_entity).remove::<ScrollFeed>();
                 }

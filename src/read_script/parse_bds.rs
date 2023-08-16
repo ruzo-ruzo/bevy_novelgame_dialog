@@ -25,6 +25,17 @@ pub fn read_script<S1: AsRef<str>, S2: AsRef<str>>(
     read_bds(replaced)
 }
 
+pub fn parse_uri(uri: &str) -> (String, String){
+    let mut parser = separated_pair(take_until("#"), char('#'), many0(take(1usize)));
+    let parsed: IResult<&str, (&str, Vec<&str>)> = parser(uri);
+    if let Ok((_, (path, section_list))) = parsed {
+        let section_name = section_list.concat();
+        (path.to_string(), section_name)
+    } else {
+        (uri.to_string(), "".to_string())
+    }
+}
+
 pub fn read_bds<S: AsRef<str>>(input: S) -> HashMap<String, Vec<Order>> {
     let mut section_map = HashMap::new();
     let mut next_head = "".to_string();
@@ -50,6 +61,7 @@ fn parse_bds(input: &str) -> Vec<ParsedOrder> {
         ampersand,
         section_head,
         next_paragraph,
+        jump_event,
         throw_event,
         next_line,
         erase_useless_tag,
@@ -209,14 +221,18 @@ fn section_head(input: &str) -> IResult<&str, ParsedOrder> {
     let h1_taged = delimited(h1_open, take_until(h1_close), tag(h1_close));
     let h1 = map(h1_taged, |s| ParsedOrder::SectionLine(s.to_string()));
     let sharp_head = preceded(
-        tuple((line_ending, char('#'), space1)),
+        tuple((line_head, char('#'), space1)),
         many_till(take(1usize), line_ending),
     );
     let sharp = map(sharp_head, |(v, _)| ParsedOrder::SectionLine(v.concat()));
-    let under_line = tuple((line_ending, char('='), many1(char('=')), line_ending));
-    let under_lined = preceded(line_ending, many_till(take(1usize), under_line));
+    let under_line = tuple((char('='), many1(char('=')), line_ending));
+    let under_lined = delimited(line_head, many_till(take(1usize), line_ending), under_line);
     let lined = map(under_lined, |(v, _)| ParsedOrder::SectionLine(v.concat()));
     alt((h1, sharp, lined))(input)
+}
+
+fn line_head(input: &str) -> IResult<&str, String> {
+    map(many0(line_ending), |x|x.concat())(input)
 }
 
 fn throw_event(input: &str) -> IResult<&str, ParsedOrder> {
@@ -231,6 +247,19 @@ fn throw_event(input: &str) -> IResult<&str, ParsedOrder> {
             }),
         )
     })
+}
+
+#[allow(clippy::let_and_return)]
+fn jump_event(input: &str) -> IResult<&str, ParsedOrder> {
+    let window_name = delimited(char('['), is_not("]"), char(']'));
+    let path = delimited(char('('), is_not(")"), char(')'));
+    let link = separated_pair(window_name, space0, path);
+    let head = r#"{"bevy_dialog_box::dialog_box::bds_event::LoadBds": (path: "#;
+    let middle = r#",target_name: "#;
+    let last = r#",),}"#;
+    let to_ron = map(link, |(p, t)|[head, t, middle, p, last].concat());
+    let parsed = map(to_ron, |s|ParsedOrder::OrderWrapper(Order::ThroghEvent {ron: s}))(input);
+    parsed
 }
 
 #[cfg(test)]
@@ -313,7 +342,7 @@ mod parse_bds_tests {
             ("".to_string(), HELLO.into()),
             ("二つ目".to_string(), ILL.into()),
         ]);
-        let read = read_bds("こんにちは    \r\nはじめまして\r\n# 二つ目\r\nこの家の主人は病気です");
+        let read = read_bds("こんにちは    \r\nはじめまして\r\n\r\n# 二つ目\r\nこの家の主人は病気です");
         assert_eq!(read, sectioned_phrase);
     }
 
@@ -374,5 +403,18 @@ mod parse_bds_tests {
             ParsedOrder::OrderWrapper(Order::Type { character: '>' }),
         ];
         assert_eq!(parse_bds("a<abc>abcd\\<ab\\\\>"), useless_taged);
+    }
+    
+    #[test]
+    fn test_split_uri(){
+        assert_eq!(parse_uri("test_path#testtest"), ("test_path".to_string(), "testtest".to_string()));
+        assert_eq!(parse_uri("test_path2"), ("test_path2".to_string(), "".to_string()));
+    }
+
+    #[test]
+    fn test_jump_event(){
+        let ron = "{\"bevy_dialog_box::dialog_box::bds_event::LoadBds\": (path: \"abc\",target_name: \"def\",),}";
+        let link = ParsedOrder::OrderWrapper(Order::ThroghEvent {ron: ron.to_string()});
+        assert_eq!(parse_bds("[def](abc)"), vec![link]);
     }
 }

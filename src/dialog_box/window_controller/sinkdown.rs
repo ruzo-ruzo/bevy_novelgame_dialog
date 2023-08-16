@@ -29,7 +29,7 @@ pub fn setup_window_sink(
     text_query: Query<(Entity, &TypingTimer), (With<Current>, With<MessageTextChar>)>,
     text_box_query: Query<(Entity, &GlobalTransform, &Sprite), (With<Current>, With<TextBox>)>,
     mut mw_query: Query<
-        (Entity, &mut WindowState, &WaitBrakerStyle),
+        (Entity, &mut DialogBoxState, &WaitBrakerStyle),
         (With<Current>, With<DialogBox>),
     >,
     parents: Query<&Parent>,
@@ -77,7 +77,7 @@ pub fn setup_window_sink(
                         }
                     }
                 }
-                *ws = WindowState::Waiting
+                *ws = DialogBoxState::Waiting
             }
         }
     }
@@ -113,7 +113,7 @@ pub fn trigger_window_sink_by_time(
 
 pub fn start_window_sink(
     mut commands: Commands,
-    mut mw_query: Query<(Entity, &mut WindowState), With<DialogBox>>,
+    mut mw_query: Query<(Entity, &mut DialogBoxState), With<DialogBox>>,
     mut events: EventReader<GoSinking>,
 ) {
     for GoSinking {
@@ -129,9 +129,9 @@ pub fn start_window_sink(
                             commands.entity(entity).insert(ScalingDown {
                                 sub_per_sec: 1.0 / s,
                             });
-                            *ws = WindowState::SinkingDown;
+                            *ws = DialogBoxState::SinkingDown;
                         }
-                        SinkDownType::Fix => *ws = WindowState::Fixed,
+                        SinkDownType::Fix => *ws = DialogBoxState::Fixed,
                     }
                 }
             }

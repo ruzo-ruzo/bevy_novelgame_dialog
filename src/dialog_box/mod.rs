@@ -50,6 +50,7 @@ impl Plugin for DialogBoxPlugin {
                 render_order: self.render_order,
             })
             .register_type::<FontSizeChange>()
+            .register_type::<LoadBds>()
             .register_type::<SinkDownWindow>()
             .register_type::<Option<Entity>>()
             .register_type::<InputForFeeding>()
@@ -85,6 +86,7 @@ impl Plugin for DialogBoxPlugin {
             .add_systems(Update, scroll_lines.in_set(PhaseSet::Progress))
             .add_systems(Update, simple_wait.in_set(PhaseSet::Progress))
             .add_systems(Update, open_window.in_set(PhaseSet::Change))
+            .add_systems(Update, load_bds.in_set(PhaseSet::Change))
             .add_systems(Update, window_popper.in_set(PhaseSet::Change))
             .add_systems(Update, start_window_sink.in_set(PhaseSet::Change))
             .add_systems(Update, add_new_text.in_set(PhaseSet::Change))
