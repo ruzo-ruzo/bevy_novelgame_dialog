@@ -251,13 +251,12 @@ fn throw_event(input: &str) -> IResult<&str, ParsedOrder> {
 
 #[allow(clippy::let_and_return)]
 fn jump_event(input: &str) -> IResult<&str, ParsedOrder> {
-    let window_name = delimited(char('['), is_not("]"), char(']'));
-    let path = delimited(char('('), is_not(")"), char(')'));
-    let link = separated_pair(window_name, space0, path);
-    let head = r#"{"bevy_dialog_box::dialog_box::bds_event::LoadBds": (path: "#;
-    let middle = r#",target_name: "#;
+    let path_target = separated_pair(is_not(" \t"), space1,  is_not(")"));
+    let link = delimited(char('('), path_target, char(')'));
+    let head = r#"{"bevy_dialog_box::dialog_box::bds_event::LoadBds": (path: ""#;
+    let middle = r#"",target_name: "#;
     let last = r#",),}"#;
-    let to_ron = map(link, |(p, t)|[head, t, middle, p, last].concat());
+    let to_ron = map(link, |(t, p)|[head, t, middle, p, last].concat());
     let parsed = map(to_ron, |s|ParsedOrder::OrderWrapper(Order::ThroghEvent {ron: s}))(input);
     parsed
 }
@@ -415,6 +414,6 @@ mod parse_bds_tests {
     fn test_jump_event(){
         let ron = "{\"bevy_dialog_box::dialog_box::bds_event::LoadBds\": (path: \"abc\",target_name: \"def\",),}";
         let link = ParsedOrder::OrderWrapper(Order::ThroghEvent {ron: ron.to_string()});
-        assert_eq!(parse_bds("[def](abc)"), vec![link]);
+        assert_eq!(parse_bds("(abc \"def\")"), vec![link]);
     }
 }
