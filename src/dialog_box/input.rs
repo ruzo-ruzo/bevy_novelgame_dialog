@@ -20,10 +20,10 @@ pub fn go_selected(
     selected_query: Query<Entity, With<Selected>>,
     window_query: Query<&Window, With<PrimaryWindow>>,
     camera_query: Query<(&Camera, &GlobalTransform), With<DialogBoxCamera>>,
-    keys: Res<Input<KeyCode>>,
-    mouse_buttons: Res<Input<MouseButton>>,
+    keys: Res<ButtonInput<KeyCode>>,
+    mouse_buttons: Res<ButtonInput<MouseButton>>,
     touches: Res<Touches>,
-    gamepad_buttons: Res<Input<GamepadButton>>,
+    gamepad_buttons: Res<ButtonInput<GamepadButton>>,
     mut bds_event: EventWriter<BdsEvent>,
     gamepads: Res<Gamepads>,
     type_registry: Res<AppTypeRegistry>,
@@ -52,7 +52,7 @@ pub fn go_selected(
             gamepad: x,
             button_type: GamepadButtonType::South,
         });
-        if (keys.any_just_pressed([KeyCode::Space, KeyCode::Return]) && is_selected)
+        if (keys.any_just_pressed([KeyCode::Space, KeyCode::Enter]) && is_selected)
             || (gamepad_go_button.is_some_and(|x| gamepad_buttons.just_pressed(x)) && is_selected)
             || (mouse_buttons.just_pressed(MouseButton::Left) && is_pointed)
             || touched_position_list.any(|t| wig.area.contains(t))

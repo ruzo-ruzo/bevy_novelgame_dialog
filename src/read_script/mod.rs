@@ -2,16 +2,17 @@ mod parse_bds;
 mod regex;
 
 use bevy::{
-    asset::{AssetLoader, LoadContext, LoadedAsset},
+    asset::{AssetLoader, AsyncReadExt, LoadContext, io::Reader},
     prelude::*,
     reflect::{
         serde::{ReflectSerializer, UntypedReflectDeserializer},
-        TypePath, TypeUuid,
+        TypePath,
     },
-    utils::BoxedFuture,
+    utils::{BoxedFuture, thiserror},
 };
 use parse_bds::*;
 use serde::{de::DeserializeSeed, Deserialize};
+use thiserror::Error;
 
 #[derive(Event)]
 pub struct BdsEvent {
@@ -25,7 +26,7 @@ impl BdsEvent {
         my_data
     }
 
-    pub fn get_opt<T: Default + Reflect>(&self) -> Option<T> {
+    pub fn get_opt<T: Default + Reflect + TypePath>(&self) -> Option<T> {
         if self.value.represents::<T>() {
             Some(self.get::<T>())
         } else {
@@ -50,8 +51,7 @@ pub struct LoadedScript {
     pub order_list: Option<Vec<Order>>,
 }
 
-#[derive(Debug, Deserialize, TypeUuid, TypePath)]
-#[uuid = "edb6ad8f-ca38-189e-9dce-ae1fb5031888"]
+#[derive(Asset, Debug, Deserialize, TypePath)]
 pub struct BMWScript {
     pub script: String,
 }
@@ -59,17 +59,32 @@ pub struct BMWScript {
 #[derive(Default)]
 pub struct BMWScriptLoader;
 
+#[non_exhaustive]
+#[derive(Debug, Error)]
+pub enum BMWScriptLoaderError {
+    /// An [IO](std::io) Error
+    #[error("Could not load asset: {0}")]
+    Io(#[from] std::io::Error),
+    /// A [RON](ron) Error
+    #[error("Could not parse RON: {0}")]
+    RonSpannedError(#[from] ron::error::SpannedError),
+}
+
 impl AssetLoader for BMWScriptLoader {
+    type Asset = BMWScript;
+    type Settings = ();
+    type Error = BMWScriptLoaderError;
     fn load<'a>(
         &'a self,
-        bytes: &'a [u8],
-        load_context: &'a mut LoadContext,
-    ) -> BoxedFuture<'a, Result<(), bevy::asset::Error>> {
+        reader:  &'a mut Reader,
+        _settings: &'a Self::Settings,
+        _load_context: &'a mut LoadContext,
+    ) -> BoxedFuture<'a, Result<Self::Asset, Self::Error>> {
         Box::pin(async move {
-            let raw_text = String::from_utf8(bytes.to_vec())?;
-            let bds = BMWScript { script: raw_text };
-            load_context.set_default_asset(LoadedAsset::new(bds));
-            Ok(())
+            let mut bytes = Vec::new();
+            reader.read_to_end(&mut bytes).await?;
+            let asset = ron::de::from_bytes::<BMWScript>(&bytes)?;
+            Ok(asset)
         })
     }
 
@@ -78,8 +93,7 @@ impl AssetLoader for BMWScriptLoader {
     }
 }
 
-#[derive(Debug, Deserialize, TypeUuid, TypePath)]
-#[uuid = "82967a68-951e-3f8d-c4ce-8143f7180d33"]
+#[derive(Asset, Debug, Deserialize, TypePath)]
 pub struct BMWTemplate {
     pub template: String,
 }
@@ -87,17 +101,32 @@ pub struct BMWTemplate {
 #[derive(Default)]
 pub struct BMWTemplateLoader;
 
+#[non_exhaustive]
+#[derive(Debug, Error)]
+pub enum BMWTemplateLoaderError {
+    /// An [IO](std::io) Error
+    #[error("Could not load asset: {0}")]
+    Io(#[from] std::io::Error),
+    /// A [RON](ron) Error
+    #[error("Could not parse RON: {0}")]
+    RonSpannedError(#[from] ron::error::SpannedError),
+}
+
 impl AssetLoader for BMWTemplateLoader {
+    type Asset = BMWTemplate;
+    type Settings = ();
+    type Error = BMWTemplateLoaderError;
     fn load<'a>(
         &'a self,
-        bytes: &'a [u8],
-        load_context: &'a mut LoadContext,
-    ) -> BoxedFuture<'a, Result<(), bevy::asset::Error>> {
+        reader:  &'a mut Reader,
+        _settings: &'a Self::Settings,
+        _load_context: &'a mut LoadContext,
+    ) -> BoxedFuture<'a, Result<Self::Asset, Self::Error>> {
         Box::pin(async move {
-            let raw_text = String::from_utf8(bytes.to_vec())?;
-            let bdt = BMWTemplate { template: raw_text };
-            load_context.set_default_asset(LoadedAsset::new(bdt));
-            Ok(())
+            let mut bytes = Vec::new();
+            reader.read_to_end(&mut bytes).await?;
+            let asset = ron::de::from_bytes::<BMWTemplate>(&bytes)?;
+            Ok(asset)
         })
     }
 
@@ -117,7 +146,8 @@ pub fn script_on_load(
             let template_opt = template_assets.get(&loaded_script.bdt_handle);
             if let (Some(bds), Some(bdt)) = (script_opt, template_opt) {
                 // info!("script is {}, \r\n section is {}", bds.script, loaded_script.target_section);
-                let parsed = parse_script(&bds.script, &bdt.template, &loaded_script.target_section);
+                let parsed =
+                    parse_script(&bds.script, &bdt.template, &loaded_script.target_section);
                 loaded_script.order_list = Some(parsed);
             }
         }
@@ -135,7 +165,7 @@ pub fn read_ron<S: AsRef<str>>(
     reflect_deserializer.deserialize(&mut deserializer)
 }
 
-pub fn split_path_and_section<S: AsRef<str>>(uri: S) -> (String, String){
+pub fn split_path_and_section<S: AsRef<str>>(uri: S) -> (String, String) {
     parse_uri(uri.as_ref())
 }
 

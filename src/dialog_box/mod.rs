@@ -7,6 +7,7 @@ mod setup;
 mod text_conroller;
 pub mod window_controller;
 
+use crate::choice::*;
 use bds_event::*;
 use input::*;
 use setup::*;
@@ -41,8 +42,8 @@ enum PhaseSet {
 
 impl Plugin for DialogBoxPlugin {
     fn build(&self, app: &mut App) {
-        app.add_asset::<BMWScript>()
-            .add_asset::<BMWTemplate>()
+        app.init_asset::<BMWScript>()
+            .init_asset::<BMWTemplate>()
             .init_asset_loader::<BMWScriptLoader>()
             .init_asset_loader::<BMWTemplateLoader>()
             .insert_resource(SetupConfig {
@@ -62,6 +63,7 @@ impl Plugin for DialogBoxPlugin {
             .add_event::<OpenWindowEvent>()
             .add_event::<FeedWaitingEvent>()
             .add_event::<StartFeedingEvent>()
+            .add_event::<ChoosenEvent>()
             .add_event::<GoSinking>()
             .add_event::<BdsEvent>()
             .configure_sets(

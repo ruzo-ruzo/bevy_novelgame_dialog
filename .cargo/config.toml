@@ -1,0 +1,8 @@
+[target.x86_64-pc-windows-msvc]
+linker = "rust-lld"
+rustflags = [
+  "-Clink-arg=-fuse-ld=lld",
+  "-Lnative=/mnt/e/Documents/programs/test_rusts/libs/.xwin/crt/lib/x86_64",
+  "-Lnative=/mnt/e/Documents/programs/test_rusts/libs/.xwin/sdk/lib/um/x86_64",
+  "-Lnative=/mnt/e/Documents/programs/test_rusts/libs/.xwin/sdk/lib/ucrt/x86_64"
+]

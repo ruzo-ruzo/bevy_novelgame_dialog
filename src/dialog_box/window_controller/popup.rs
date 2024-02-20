@@ -4,13 +4,14 @@ use bevy::render::view::Visibility::Visible;
 
 pub fn open_window(
     mut commands: Commands,
-    mut mw_query: Query<Entity, With<Current>>,
+    mut db_query: Query<Entity, (With<Current>, With<DialogBox>)>,
     mut ow_event: EventReader<OpenWindowEvent>,
     asset_server: Res<AssetServer>,
     setup_config: Res<SetupConfig>,
 ) {
-    for window_config in &mut ow_event {
-        let (script_path, script_section) = split_path_and_section(window_config.script_path.clone());
+    for window_config in &mut ow_event.read() {
+        let (script_path, script_section) =
+            split_path_and_section(window_config.script_path.clone());
         let mwb = DialogBoxBundle {
             dialog_box: DialogBox {
                 name: window_config.window_name.clone(),
@@ -32,7 +33,7 @@ pub fn open_window(
         };
         let tbb = TextAreaBundle {
             text_box: TextArea {
-                name: window_config.box_name.clone(),
+                name: window_config.area_name.clone(),
             },
             feeding: window_config.feeding,
             config: TypeTextConfig {
@@ -62,7 +63,7 @@ pub fn open_window(
             transform: Transform::from_translation(window_config.main_box_origin.extend(0.0)),
             ..default()
         };
-        for entity in &mut mw_query {
+        for entity in &mut db_query {
             commands.entity(entity).remove::<Current>();
         }
         let layer = RenderLayers::layer(setup_config.render_layer);
@@ -87,7 +88,7 @@ pub struct ScalingUp {
 #[allow(clippy::type_complexity)]
 pub fn window_popper(
     mut commands: Commands,
-    mut mw_query: Query<
+    mut db_query: Query<
         (
             Entity,
             &mut DialogBoxState,
@@ -98,7 +99,7 @@ pub fn window_popper(
         (With<Current>, With<DialogBox>),
     >,
 ) {
-    for (ent, mut ws, pt, mut vis, mut tf) in &mut mw_query {
+    for (ent, mut ws, pt, mut vis, mut tf) in &mut db_query {
         if *ws == DialogBoxState::Preparing {
             match pt {
                 PopupType::Scale { sec: s } => {
@@ -116,10 +117,10 @@ pub fn window_popper(
 
 pub fn scaling_up(
     mut commands: Commands,
-    mut mw_query: Query<(Entity, &mut Transform, &ScalingUp, &mut DialogBoxState)>,
+    mut db_query: Query<(Entity, &mut Transform, &ScalingUp, &mut DialogBoxState)>,
     time: Res<Time>,
 ) {
-    for (ent, mut tf, ScalingUp { add_per_sec: aps }, mut ws) in &mut mw_query {
+    for (ent, mut tf, ScalingUp { add_per_sec: aps }, mut ws) in &mut db_query {
         if tf.scale.x >= 1.0 {
             tf.scale = Vec3::new(1., 1., 1.);
             *ws = DialogBoxState::Typing;

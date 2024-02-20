@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 #[allow(unused_imports)]
-use bevy::text::TextAlignment;
+use bevy::text::JustifyText;
 use bevy_dialog_box::*;
 
 fn main() {
@@ -29,8 +29,8 @@ fn start_message(
                 "yurumoji.ttf",
                 "yinghuayunduoxiaohuzi.ttf",
                 "NotoSansJP-Black.ttf",
-            ].iter().map(|s| String::from("../../text_test/assets/fonts/".to_owned() + s)).collect(),
-            background_path: "../../text_test/assets/2d_picture/ui/messageframe/material/messageframe_non_line/message_001.png".to_string(),
+            ].iter().map(|s| String::from("fonts/".to_owned() + s)).collect(),
+            background_path: "2d_picture/ui/messageframe/material/messageframe_non_line/message_001.png".to_string(),
             position: Vec2::new(0., -200.),
             feeding: FeedingStyle::Scroll { size: 0, sec: 0.5 },
             // script_path: "scripts/test.bds".to_string(),
@@ -38,7 +38,7 @@ fn start_message(
             template_path: "scripts/test.bdt".to_string(),
             main_box_origin: Vec2::new(-540.0, 70.0),
             main_box_size: Vec2::new(1060.0, 140.0),
-            // main_alignment: TextAlignment::Center,
+            // main_alignment: JustifyText::Center,
             // writing:WritingStyle::Wipe{ sec: 0.7 },
             // writing:WritingStyle::Put,
             // typing_timing: TypingTiming::ByLine { sec: 1.5 },
@@ -71,16 +71,16 @@ fn animate_sprite(
     mut query: Query<(
         &AnimationIndices,
         &mut AnimationTimer,
-        &mut TextureAtlasSprite,
+        &mut TextureAtlas,
     )>,
 ) {
-    for (indices, mut timer, mut sprite) in &mut query {
+    for (indices, mut timer, mut atlas) in &mut query {
         timer.tick(time.delta());
         if timer.just_finished() {
-            sprite.index = if sprite.index >= indices.last {
+            atlas.index = if atlas.index >= indices.last {
                 indices.first
             } else {
-                sprite.index + indices.step
+                atlas.index + indices.step
             };
         }
     }
@@ -89,13 +89,12 @@ fn animate_sprite(
 fn waiting_sprite_setup(
     mut commands: Commands,
     asset_server: Res<AssetServer>,
-    mut texture_atlases: ResMut<Assets<TextureAtlas>>,
+    mut texture_atlases: ResMut<Assets<TextureAtlasLayout>>,
 ) {
     let texture_handle = asset_server.load(
-        "../../text_test/assets/2d_picture/ui/kenney_input-prompts-pixel-16/Tilemap/tilemap.png",
+        "2d_picture/ui/kenney_input-prompts-pixel-16/Tilemap/tilemap.png",
     );
-    let texture_atlas = TextureAtlas::from_grid(
-        texture_handle,
+    let texture_atlas = TextureAtlasLayout::from_grid(
         Vec2::new(16.0, 16.0),
         34,
         24,
@@ -108,13 +107,17 @@ fn waiting_sprite_setup(
         step: 34,
     };
     let texture_atlas_handle = texture_atlases.add(texture_atlas);
-    let mut sprite = TextureAtlasSprite::new(animation_indices.first);
+    let mut sprite = Sprite::default();
     sprite.anchor = Anchor::BottomLeft;
     commands.spawn((
         SpriteSheetBundle {
-            texture_atlas: texture_atlas_handle,
+            atlas: TextureAtlas {
+                layout: texture_atlas_handle,
+                index: animation_indices.first,
+            },
             sprite: sprite,
             transform: Transform::from_scale(Vec3::splat(1.5)),
+            texture: texture_handle,
             ..default()
         },
         animation_indices,
@@ -156,9 +159,9 @@ mod fox_background {
     ) {
         // Insert a resource with the current scene information
         commands.insert_resource(Animations(vec![
-            asset_server.load("../../text_test/assets/models/animated/Fox.glb#Animation2"),
-            asset_server.load("../../text_test/assets/models/animated/Fox.glb#Animation1"),
-            asset_server.load("../../text_test/assets/models/animated/Fox.glb#Animation0"),
+            asset_server.load("models/animated/Fox.glb#Animation2"),
+            asset_server.load("models/animated/Fox.glb#Animation1"),
+            asset_server.load("models/animated/Fox.glb#Animation0"),
         ]));
 
         // Camera
@@ -170,8 +173,8 @@ mod fox_background {
 
         // Plane
         commands.spawn(PbrBundle {
-            mesh: meshes.add(shape::Plane::from_size(500000.0).into()),
-            material: materials.add(Color::rgb(0.3, 0.5, 0.3).into()),
+            mesh: meshes.add(Plane3d::default().mesh().size(500000.0, 500000.0)),
+            material: materials.add(Color::rgb(0.3, 0.5, 0.3)),
             ..default()
         });
 
@@ -218,13 +221,13 @@ mod fox_background {
     }
 
     fn keyboard_animation_control(
-        keyboard_input: Res<Input<KeyCode>>,
+        keyboard_input: Res<ButtonInput<KeyCode>>,
         mut animation_player: Query<&mut AnimationPlayer>,
         animations: Res<Animations>,
         mut current_animation: Local<usize>,
     ) {
         if let Ok(mut player) = animation_player.get_single_mut() {
-            if keyboard_input.just_pressed(KeyCode::Left) {
+            if keyboard_input.just_pressed(KeyCode::ArrowLeft) {
                 let anim_len = animations.0.len();
                 *current_animation = (*current_animation + anim_len - 1) % anim_len;
                 player
@@ -235,7 +238,7 @@ mod fox_background {
                     .repeat();
             }
 
-            if keyboard_input.just_pressed(KeyCode::Right) {
+            if keyboard_input.just_pressed(KeyCode::ArrowRight) {
                 *current_animation = (*current_animation + 1) % animations.0.len();
                 player
                     .play_with_transition(

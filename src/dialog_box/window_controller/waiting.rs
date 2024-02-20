@@ -39,7 +39,7 @@ pub fn simple_wait(
     mut bds_reader: EventReader<BdsEvent>,
     type_registry: Res<AppTypeRegistry>,
 ) {
-    for event_wrapper in bds_reader.iter() {
+    for event_wrapper in bds_reader.read() {
         if event_wrapper.get_opt::<SimpleWait>() == Some(SimpleWait) {
             for (mw_entity, mut ws, wbs) in &mut window_query {
                 if let WaitBrakerStyle::Input {
@@ -88,7 +88,7 @@ pub fn restart_typing(
     mut icon_query: Query<(&mut Visibility, &mut WaitingIcon)>,
     mut bds_reader: EventReader<BdsEvent>,
 ) {
-    for event_wrapper in bds_reader.iter() {
+    for event_wrapper in bds_reader.read() {
         if let Some(BreakWait {
             target_text_box: Some(tb_entity),
         }) = event_wrapper.get_opt::<BreakWait>()
@@ -203,7 +203,7 @@ pub fn skip_typing_or_next(
     mut bds_reader: EventReader<BdsEvent>,
     type_registry: Res<AppTypeRegistry>,
 ) {
-    for event_wrapper in bds_reader.iter() {
+    for event_wrapper in bds_reader.read() {
         if let Some(InputForSkipping {
             next_event_ron: ron,
             target_text_box: Some(tb_entity),
@@ -265,7 +265,7 @@ pub fn skip_feeding(
     line_query: Query<(Entity, &Parent), With<MessageTextLine>>,
     mut bds_reader: EventReader<BdsEvent>,
 ) {
-    for event_wrapper in bds_reader.iter() {
+    for event_wrapper in bds_reader.read() {
         if let Some(InputForSkipping {
             next_event_ron: _,
             target_text_box: Some(tb_entity),

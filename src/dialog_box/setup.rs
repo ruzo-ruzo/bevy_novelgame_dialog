@@ -1,6 +1,6 @@
 use bevy::{
-    core_pipeline::clear_color::ClearColorConfig, prelude::*,
-    render::view::visibility::RenderLayers, ui::camera_config::UiCameraConfig,
+    prelude::*,
+    render::{view::visibility::RenderLayers, camera::ClearColorConfig},
 };
 
 #[derive(Component, Debug)]
@@ -17,15 +17,12 @@ pub fn setup_camera(mut commands: Commands, config: Res<SetupConfig>) {
         Camera2dBundle {
             camera: Camera {
                 order: config.render_order,
-                ..default()
-            },
-            camera_2d: Camera2d {
                 clear_color: ClearColorConfig::None,
+                ..default()
             },
             ..default()
         },
         RenderLayers::layer(config.render_layer),
-        UiCameraConfig { show_ui: false },
         DialogBoxCamera,
     ));
 }

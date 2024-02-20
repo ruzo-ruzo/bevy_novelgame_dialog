@@ -5,9 +5,10 @@ use bevy::{
         view::{RenderLayers, Visibility::Hidden},
     },
     sprite::Anchor,
-    text::TextAlignment,
+    text::JustifyText,
 };
 
+pub mod choice;
 pub mod popup;
 pub mod sinkdown;
 pub mod waiting;
@@ -35,7 +36,7 @@ pub struct TypeTextConfig {
     pub writing: WritingStyle,
     pub typing_timing: TypingTiming,
     pub layer: RenderLayers,
-    pub alignment: TextAlignment,
+    pub alignment: JustifyText,
 }
 
 #[derive(Bundle)]
@@ -61,6 +62,7 @@ pub enum DialogBoxState {
     Typing,
     Waiting,
     Feeding,
+    Choosing,
     SinkingDown,
     Fixed,
 }
@@ -118,7 +120,7 @@ pub struct OpenWindowEvent {
     pub background_path: String,
     pub dialog_box_entity: Option<Entity>,
     pub position: Vec2,
-    pub box_name: String,
+    pub area_name: String,
     pub popup: PopupType,
     pub typing_timing: TypingTiming,
     pub writing: WritingStyle,
@@ -128,7 +130,7 @@ pub struct OpenWindowEvent {
     pub template_path: String,
     pub main_box_origin: Vec2,
     pub main_box_size: Vec2,
-    pub main_alignment: TextAlignment,
+    pub main_alignment: JustifyText,
 }
 
 impl Default for OpenWindowEvent {
@@ -141,7 +143,7 @@ impl Default for OpenWindowEvent {
             background_path: "texture/ui/text_box.png".to_string(),
             dialog_box_entity: None,
             position: Vec2::new(0., 0.),
-            box_name: "Main Box".to_string(),
+            area_name: "Main Area".to_string(),
             popup: PopupType::Scale { sec: 0.8 },
             typing_timing: TypingTiming::ByChar { sec: 0.07 },
             writing: WritingStyle::Wipe { sec: 0.07 },
@@ -151,7 +153,7 @@ impl Default for OpenWindowEvent {
             template_path: "scripts/template.bdt".to_string(),
             main_box_origin: Vec2::new(-600., 80.),
             main_box_size: Vec2::new(1060., 260.),
-            main_alignment: TextAlignment::Left,
+            main_alignment: JustifyText::Left,
         }
     }
 }

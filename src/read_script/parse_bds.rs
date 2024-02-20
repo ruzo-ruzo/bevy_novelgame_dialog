@@ -25,7 +25,7 @@ pub fn read_script<S1: AsRef<str>, S2: AsRef<str>>(
     read_bds(replaced)
 }
 
-pub fn parse_uri(uri: &str) -> (String, String){
+pub fn parse_uri(uri: &str) -> (String, String) {
     let mut parser = separated_pair(take_until("#"), char('#'), many0(take(1usize)));
     let parsed: IResult<&str, (&str, Vec<&str>)> = parser(uri);
     if let Ok((_, (path, section_list))) = parsed {
@@ -232,7 +232,7 @@ fn section_head(input: &str) -> IResult<&str, ParsedOrder> {
 }
 
 fn line_head(input: &str) -> IResult<&str, String> {
-    map(many0(line_ending), |x|x.concat())(input)
+    map(many0(line_ending), |x| x.concat())(input)
 }
 
 fn throw_event(input: &str) -> IResult<&str, ParsedOrder> {
@@ -251,13 +251,15 @@ fn throw_event(input: &str) -> IResult<&str, ParsedOrder> {
 
 #[allow(clippy::let_and_return)]
 fn jump_event(input: &str) -> IResult<&str, ParsedOrder> {
-    let path_target = separated_pair(is_not(" \t"), space1,  is_not(")"));
+    let path_target = separated_pair(is_not(" \t"), space1, is_not(")"));
     let link = delimited(char('('), path_target, char(')'));
     let head = r#"{"bevy_dialog_box::dialog_box::bds_event::LoadBds": (path: ""#;
     let middle = r#"",target_name: "#;
     let last = r#",),}"#;
-    let to_ron = map(link, |(t, p)|[head, t, middle, p, last].concat());
-    let parsed = map(to_ron, |s|ParsedOrder::OrderWrapper(Order::ThroghEvent {ron: s}))(input);
+    let to_ron = map(link, |(t, p)| [head, t, middle, p, last].concat());
+    let parsed = map(to_ron, |s| {
+        ParsedOrder::OrderWrapper(Order::ThroghEvent { ron: s })
+    })(input);
     parsed
 }
 
@@ -341,7 +343,8 @@ mod parse_bds_tests {
             ("".to_string(), HELLO.into()),
             ("二つ目".to_string(), ILL.into()),
         ]);
-        let read = read_bds("こんにちは    \r\nはじめまして\r\n\r\n# 二つ目\r\nこの家の主人は病気です");
+        let read =
+            read_bds("こんにちは    \r\nはじめまして\r\n\r\n# 二つ目\r\nこの家の主人は病気です");
         assert_eq!(read, sectioned_phrase);
     }
 
@@ -403,17 +406,25 @@ mod parse_bds_tests {
         ];
         assert_eq!(parse_bds("a<abc>abcd\\<ab\\\\>"), useless_taged);
     }
-    
+
     #[test]
-    fn test_split_uri(){
-        assert_eq!(parse_uri("test_path#testtest"), ("test_path".to_string(), "testtest".to_string()));
-        assert_eq!(parse_uri("test_path2"), ("test_path2".to_string(), "".to_string()));
+    fn test_split_uri() {
+        assert_eq!(
+            parse_uri("test_path#testtest"),
+            ("test_path".to_string(), "testtest".to_string())
+        );
+        assert_eq!(
+            parse_uri("test_path2"),
+            ("test_path2".to_string(), "".to_string())
+        );
     }
 
     #[test]
-    fn test_jump_event(){
+    fn test_jump_event() {
         let ron = "{\"bevy_dialog_box::dialog_box::bds_event::LoadBds\": (path: \"abc\",target_name: \"def\",),}";
-        let link = ParsedOrder::OrderWrapper(Order::ThroghEvent {ron: ron.to_string()});
+        let link = ParsedOrder::OrderWrapper(Order::ThroghEvent {
+            ron: ron.to_string(),
+        });
         assert_eq!(parse_bds("(abc \"def\")"), vec![link]);
     }
 }

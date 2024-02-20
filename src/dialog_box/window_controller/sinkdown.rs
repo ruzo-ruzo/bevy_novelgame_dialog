@@ -28,7 +28,7 @@ pub fn setup_window_sink(
     mut commands: Commands,
     text_query: Query<(Entity, &TypingTimer), (With<Current>, With<MessageTextChar>)>,
     text_box_query: Query<(Entity, &GlobalTransform, &Sprite), (With<Current>, With<TextArea>)>,
-    mut mw_query: Query<
+    mut db_query: Query<
         (Entity, &mut DialogBoxState, &WaitBrakerStyle),
         (With<Current>, With<DialogBox>),
     >,
@@ -36,9 +36,9 @@ pub fn setup_window_sink(
     mut events: EventReader<BdsEvent>,
     type_registry: Res<AppTypeRegistry>,
 ) {
-    for event_wrapper in events.iter() {
+    for event_wrapper in events.read() {
         if let Some(SinkDownWindow { sink_type: sdt }) = event_wrapper.get_opt::<SinkDownWindow>() {
-            for (mw_entity, mut ws, wbs) in &mut mw_query {
+            for (mw_entity, mut ws, wbs) in &mut db_query {
                 match wbs {
                     WaitBrakerStyle::Auto { wait_sec: base_sec } => {
                         let count: f32 = text_query
@@ -87,20 +87,20 @@ pub fn trigger_window_sink_by_event(
     mut bds_reader: EventReader<BdsEvent>,
     mut gs_writer: EventWriter<GoSinking>,
 ) {
-    for event_wrapper in bds_reader.iter() {
+    for event_wrapper in bds_reader.read() {
         if let Some(gs @ GoSinking { .. }) = event_wrapper.get_opt::<GoSinking>() {
-            gs_writer.send(gs)
+            gs_writer.send(gs);
         }
     }
 }
 
 pub fn trigger_window_sink_by_time(
     mut commands: Commands,
-    mut mw_query: Query<(Entity, &mut WaitSinkingTrigger), With<DialogBox>>,
+    mut db_query: Query<(Entity, &mut WaitSinkingTrigger), With<DialogBox>>,
     time: Res<Time>,
     mut events: EventWriter<GoSinking>,
 ) {
-    for (entity, mut wst) in &mut mw_query {
+    for (entity, mut wst) in &mut db_query {
         if wst.timer.tick(time.delta()).finished() {
             events.send(GoSinking {
                 target: Some(entity),
@@ -113,15 +113,15 @@ pub fn trigger_window_sink_by_time(
 
 pub fn start_window_sink(
     mut commands: Commands,
-    mut mw_query: Query<(Entity, &mut DialogBoxState), With<DialogBox>>,
+    mut db_query: Query<(Entity, &mut DialogBoxState), With<DialogBox>>,
     mut events: EventReader<GoSinking>,
 ) {
     for GoSinking {
         target: entity_opt,
         sink_type: st,
-    } in &mut events
+    } in &mut events.read()
     {
-        for (mw_entity, mut ws) in &mut mw_query {
+        for (mw_entity, mut ws) in &mut db_query {
             if let Some(entity) = *entity_opt {
                 if entity == mw_entity {
                     match st {
@@ -141,10 +141,10 @@ pub fn start_window_sink(
 
 pub fn scaling_down(
     mut commands: Commands,
-    mut mw_query: Query<(Entity, &mut Transform, &ScalingDown)>,
+    mut db_query: Query<(Entity, &mut Transform, &ScalingDown)>,
     time: Res<Time>,
 ) {
-    for (entity, mut tf, ScalingDown { sub_per_sec: aps }) in &mut mw_query {
+    for (entity, mut tf, ScalingDown { sub_per_sec: aps }) in &mut db_query {
         if tf.scale.x <= 0.0 {
             tf.scale = Vec3::new(0., 0., 0.);
             commands.entity(entity).despawn_recursive();

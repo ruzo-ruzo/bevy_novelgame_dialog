@@ -31,7 +31,7 @@ pub fn setup_feed_starter(
     mut waitting_event: EventReader<FeedWaitingEvent>,
     type_registry: Res<AppTypeRegistry>,
 ) {
-    for event in waitting_event.iter() {
+    for event in waitting_event.read() {
         for (w_entity, wbs) in &window_query {
             for (tb_entity, parent, tb_tf, tb_sp) in &text_box_query {
                 if event.target_window == w_entity && w_entity == parent.get() {
@@ -86,7 +86,7 @@ pub fn trigger_feeding_by_event(
     mut start_feeding_event: EventWriter<StartFeedingEvent>,
     mut events: EventReader<BdsEvent>,
 ) {
-    for event_wrapper in events.iter() {
+    for event_wrapper in events.read() {
         if let Some(InputForFeeding {
             target_text_box: Some(tb_entity),
         }) = event_wrapper.get_opt::<InputForFeeding>()

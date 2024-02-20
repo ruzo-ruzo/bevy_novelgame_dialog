@@ -18,7 +18,7 @@ pub fn choice_font<R: AsRef<[Handle<Font>]>>(
         .iter()
         .find(|h| {
             fonts
-                .get(h)
+                .get(*h)
                 .map(|f| glyph_exists_in_font(f.clone(), target))
                 .unwrap_or(false)
         })
@@ -29,7 +29,7 @@ pub fn choice_font<R: AsRef<[Handle<Font>]>>(
 fn glyph_exists_in_font(font: Font, target: char) -> bool {
     let font_id = font.font.glyph_id(target);
     let outline = font.font.outline(font_id);
-    let raster = font.font.glyph_raster_image(font_id, 1);
+    let raster = font.font.glyph_raster_image2(font_id, 1);
     outline.is_some() || raster.is_some()
 }
 

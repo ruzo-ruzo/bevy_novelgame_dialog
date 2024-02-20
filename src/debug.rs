@@ -11,18 +11,14 @@ impl Plugin for DebugTextAreaPlugin {
     }
 }
 
-pub fn monitor_db_state(
-    dbs_query: Query<&DialogBoxState, Changed<DialogBoxState>>
-){
+pub fn monitor_db_state(dbs_query: Query<&DialogBoxState, Changed<DialogBoxState>>) {
     for dbs in &dbs_query {
         info!("Dialog Box State: {dbs:?}");
     }
 }
 
-pub fn monitor_bds_event(
-    mut events: EventReader<BdsEvent>,
-){
-    for event_wrapper in events.iter() {
+pub fn monitor_bds_event(mut events: EventReader<BdsEvent>) {
+    for event_wrapper in events.read() {
         info!("Throw Event: {:?}", &event_wrapper.value);
     }
 }

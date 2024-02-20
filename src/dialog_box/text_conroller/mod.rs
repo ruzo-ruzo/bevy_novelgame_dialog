@@ -3,7 +3,7 @@ use bevy::{
     prelude::*,
     render::view::{RenderLayers, Visibility},
     sprite::Anchor,
-    text::TextAlignment,
+    text::JustifyText,
 };
 
 pub mod feed_animation;
@@ -15,7 +15,7 @@ use feed_animation::*;
 
 #[derive(Component, Debug)]
 pub struct MessageTextLine {
-    alignment: TextAlignment,
+    alignment: JustifyText,
 }
 
 #[derive(Component, Debug)]
@@ -152,7 +152,7 @@ pub fn add_new_text(
                         if let Ok(reflect_value) = event_opt {
                             wrapper.send(BdsEvent {
                                 value: reflect_value,
-                            })
+                            });
                         }
                         break;
                     }
@@ -358,8 +358,8 @@ pub fn settle_lines(
             .and_then(|b| b.0.custom_size.map(|s| s.x))
             .unwrap_or_default();
         l_tf.translation.x = match mtl.alignment {
-            TextAlignment::Center => (box_width - line_width) / 2.,
-            TextAlignment::Right => box_width - line_width,
+            JustifyText::Center => (box_width - line_width) / 2.,
+            JustifyText::Right => box_width - line_width,
             _ => 0.,
         };
         if let Some(DialogBoxState::Typing) = window {
