@@ -65,9 +65,9 @@ pub enum BMWScriptLoaderError {
     /// An [IO](std::io) Error
     #[error("Could not load asset: {0}")]
     Io(#[from] std::io::Error),
-    /// A [RON](ron) Error
-    #[error("Could not parse RON: {0}")]
-    RonSpannedError(#[from] ron::error::SpannedError),
+    /// A [String](std::string) Error
+    #[error("Could not read utf8: {0}")]
+    ReadingStringError(#[from] std::string::FromUtf8Error),
 }
 
 impl AssetLoader for BMWScriptLoader {
@@ -83,8 +83,9 @@ impl AssetLoader for BMWScriptLoader {
         Box::pin(async move {
             let mut bytes = Vec::new();
             reader.read_to_end(&mut bytes).await?;
-            let asset = ron::de::from_bytes::<BMWScript>(&bytes)?;
-            Ok(asset)
+            let raw_text = String::from_utf8(bytes)?;
+            let bds = BMWScript { script: raw_text };
+            Ok(bds)
         })
     }
 
@@ -107,9 +108,9 @@ pub enum BMWTemplateLoaderError {
     /// An [IO](std::io) Error
     #[error("Could not load asset: {0}")]
     Io(#[from] std::io::Error),
-    /// A [RON](ron) Error
-    #[error("Could not parse RON: {0}")]
-    RonSpannedError(#[from] ron::error::SpannedError),
+    /// A [String](std::string) Error
+    #[error("Could not read utf8: {0}")]
+    ReadingStringError(#[from] std::string::FromUtf8Error),
 }
 
 impl AssetLoader for BMWTemplateLoader {
@@ -125,8 +126,9 @@ impl AssetLoader for BMWTemplateLoader {
         Box::pin(async move {
             let mut bytes = Vec::new();
             reader.read_to_end(&mut bytes).await?;
-            let asset = ron::de::from_bytes::<BMWTemplate>(&bytes)?;
-            Ok(asset)
+            let raw_text = String::from_utf8(bytes)?;
+            let bdt = BMWTemplate { template: raw_text };
+            Ok(bdt)
         })
     }
 

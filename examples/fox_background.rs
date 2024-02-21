@@ -25,7 +25,7 @@ fn start_message(
     if !*is_started {
         ow_event.send( OpenWindowEvent {
             font_paths: [
-                "NotoColorEmoji-Regular",
+                // "NotoColorEmoji-Regular",
                 "yurumoji.ttf",
                 "yinghuayunduoxiaohuzi.ttf",
                 "NotoSansJP-Black.ttf",
