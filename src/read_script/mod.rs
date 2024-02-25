@@ -2,13 +2,13 @@ mod parse_bds;
 mod regex;
 
 use bevy::{
-    asset::{AssetLoader, AsyncReadExt, LoadContext, io::Reader},
+    asset::{io::Reader, AssetLoader, AsyncReadExt, LoadContext},
     prelude::*,
     reflect::{
         serde::{ReflectSerializer, UntypedReflectDeserializer},
         TypePath,
     },
-    utils::{BoxedFuture, thiserror},
+    utils::{thiserror, BoxedFuture},
 };
 use parse_bds::*;
 use serde::{de::DeserializeSeed, Deserialize};
@@ -76,7 +76,7 @@ impl AssetLoader for BMWScriptLoader {
     type Error = BMWScriptLoaderError;
     fn load<'a>(
         &'a self,
-        reader:  &'a mut Reader,
+        reader: &'a mut Reader,
         _settings: &'a Self::Settings,
         _load_context: &'a mut LoadContext,
     ) -> BoxedFuture<'a, Result<Self::Asset, Self::Error>> {
@@ -119,7 +119,7 @@ impl AssetLoader for BMWTemplateLoader {
     type Error = BMWTemplateLoaderError;
     fn load<'a>(
         &'a self,
-        reader:  &'a mut Reader,
+        reader: &'a mut Reader,
         _settings: &'a Self::Settings,
         _load_context: &'a mut LoadContext,
     ) -> BoxedFuture<'a, Result<Self::Asset, Self::Error>> {

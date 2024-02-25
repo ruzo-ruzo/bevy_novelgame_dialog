@@ -1,3 +1,4 @@
+#![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 use bevy::prelude::*;
 #[allow(unused_imports)]
 use bevy::text::JustifyText;
@@ -8,7 +9,7 @@ fn main() {
         .add_plugins((
             DefaultPlugins,
             dialog_box::DialogBoxPlugin::default(),
-            // fox_background::FoxBackgroundPlugin,
+            fox_background::FoxBackgroundPlugin,
             DebugTextAreaPlugin,
         ))
         .add_systems(Startup, waiting_sprite_setup)
@@ -23,14 +24,19 @@ fn start_message(
     mut is_started: Local<bool>,
 ) {
     if !*is_started {
-        ow_event.send( OpenWindowEvent {
+        ow_event.send(OpenWindowEvent {
             font_paths: [
                 // "NotoColorEmoji-Regular",
                 "yurumoji.ttf",
                 "yinghuayunduoxiaohuzi.ttf",
                 "NotoSansJP-Black.ttf",
-            ].iter().map(|s| String::from("fonts/".to_owned() + s)).collect(),
-            background_path: "2d_picture/ui/messageframe/material/messageframe_non_line/message_001.png".to_string(),
+            ]
+            .iter()
+            .map(|s| String::from("fonts/".to_owned() + s))
+            .collect(),
+            background_path:
+                "2d_picture/ui/messageframe/material/messageframe_non_line/message_001.png"
+                    .to_string(),
             position: Vec2::new(0., -200.),
             feeding: FeedingStyle::Scroll { size: 0, sec: 0.5 },
             // script_path: "scripts/test.bds".to_string(),
@@ -43,7 +49,10 @@ fn start_message(
             // writing:WritingStyle::Put,
             // typing_timing: TypingTiming::ByLine { sec: 1.5 },
             // typing_timing: TypingTiming::ByPage,
-            wait_breaker: WaitBrakerStyle::Input {icon_entity: Some(waiting_sprite.single()), is_icon_moving_to_last: true},
+            wait_breaker: WaitBrakerStyle::Input {
+                icon_entity: Some(waiting_sprite.single()),
+                is_icon_moving_to_last: true,
+            },
             ..default()
         });
         *is_started = true;
@@ -68,11 +77,7 @@ struct AnimationTimer(Timer);
 
 fn animate_sprite(
     time: Res<Time>,
-    mut query: Query<(
-        &AnimationIndices,
-        &mut AnimationTimer,
-        &mut TextureAtlas,
-    )>,
+    mut query: Query<(&AnimationIndices, &mut AnimationTimer, &mut TextureAtlas)>,
 ) {
     for (indices, mut timer, mut atlas) in &mut query {
         timer.tick(time.delta());
@@ -91,9 +96,8 @@ fn waiting_sprite_setup(
     asset_server: Res<AssetServer>,
     mut texture_atlases: ResMut<Assets<TextureAtlasLayout>>,
 ) {
-    let texture_handle = asset_server.load(
-        "2d_picture/ui/kenney_input-prompts-pixel-16/Tilemap/tilemap.png",
-    );
+    let texture_handle =
+        asset_server.load("2d_picture/ui/kenney_input-prompts-pixel-16/Tilemap/tilemap.png");
     let texture_atlas = TextureAtlasLayout::from_grid(
         Vec2::new(16.0, 16.0),
         34,
@@ -201,7 +205,7 @@ mod fox_background {
 
         // Fox
         commands.spawn(SceneBundle {
-            scene: asset_server.load("../../text_test/assets/models/animated/Fox.glb#Scene0"),
+            scene: asset_server.load("models/animated/Fox.glb#Scene0"),
             ..default()
         });
     }

@@ -111,7 +111,8 @@ pub fn add_new_text(
                             fonts.as_ref(),
                             max_width,
                         );
-                        let (Some(new_text), Some(last_line)) = (new_text_opt, last_line_opt) else {
+                        let (Some(new_text), Some(last_line)) = (new_text_opt, last_line_opt)
+                        else {
                             *pending = next_order;
                             *in_cr = true;
                             continue;
@@ -129,7 +130,14 @@ pub fn add_new_text(
                         let new_line_opt =
                             make_empty_line(config, &mut last_x, &mut last_y, max_height);
                         let Some(new_line) = new_line_opt else {
-                            send_feed_event(&mut ps_event, w_ent, &last_timer, &mut ws, last_x, last_y);
+                            send_feed_event(
+                                &mut ps_event,
+                                w_ent,
+                                &last_timer,
+                                &mut ws,
+                                last_x,
+                                last_y,
+                            );
                             *in_cr = true;
                             break;
                         };

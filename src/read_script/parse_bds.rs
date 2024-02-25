@@ -61,6 +61,7 @@ fn parse_bds(input: &str) -> Vec<ParsedOrder> {
         ampersand,
         section_head,
         next_paragraph,
+        choice,
         jump_event,
         throw_event,
         next_line,
@@ -263,6 +264,32 @@ fn jump_event(input: &str) -> IResult<&str, ParsedOrder> {
     parsed
 }
 
+fn jump_string(input: &str) -> IResult<&str, String> {
+    map(jump_event, |o| {
+        if let ParsedOrder::OrderWrapper(Order::ThroghEvent { ron }) = o {
+            ron
+        } else {
+            "".to_string()
+        }
+    })(input)
+}
+
+fn choice(input: &str) -> IResult<&str, ParsedOrder> {
+    let text_and_link = preceded(tag("* "), many_till(take(1usize), jump_string));
+    let choice_to_string = map(text_and_link, |(s1, s2)| {
+        format!("(\"{}\", \"{}\"),", s1.concat(), s2.replace("\"", "\\\""))
+    });
+    let listed = separated_list1(line_ending, choice_to_string);
+    let head = r#"{"bevy_dialog_box::dialog_box::window_controller::choice::SetupChoice": ("#;
+    let middle = r#"target_list: ["#;
+    let last = r#"],),}"#;
+    let list_to_ron = map(listed, |x| format!("{head}{middle}{}{last}", x.concat()));
+    let parsed = map(list_to_ron, |s| {
+        ParsedOrder::OrderWrapper(Order::ThroghEvent { ron: s })
+    })(input);
+    parsed
+}
+
 #[cfg(test)]
 mod parse_bds_tests {
     use super::*;
@@ -426,5 +453,17 @@ mod parse_bds_tests {
             ron: ron.to_string(),
         });
         assert_eq!(parse_bds("(abc \"def\")"), vec![link]);
+    }
+
+    #[test]
+    fn test_choice() {
+        let ron = "{\"bevy_dialog_box::dialog_box::window_controller::choice::SetupChoice\": (target_list: [(\"efg\", \"{\\\"bevy_dialog_box::dialog_box::bds_event::LoadBds\\\": (path: \\\"abc\\\",target_name: \\\"def\\\",),}\"),(\"nop\", \"{\\\"bevy_dialog_box::dialog_box::bds_event::LoadBds\\\": (path: \\\"hij\\\",target_name: \\\"klm\\\",),}\"),],),}";
+        let link = ParsedOrder::OrderWrapper(Order::ThroghEvent {
+            ron: ron.to_string(),
+        });
+        assert_eq!(
+            parse_bds("* efg(abc \"def\")\n* nop(hij \"klm\")\n"),
+            vec![link]
+        );
     }
 }
