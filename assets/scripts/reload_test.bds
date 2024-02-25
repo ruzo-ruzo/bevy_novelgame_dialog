@@ -1,7 +1,8 @@
 # テストヘッダー1
 これはジャンプ後のテキストです。
 
-(scripts/test.bds "Main Window")
+* 選択肢1(scripts/test.bds "Main Window")
+* 選択肢2(scripts/reload_test.bds#テストヘッダー2 "Main Window")
 
 
 # テストヘッダー2

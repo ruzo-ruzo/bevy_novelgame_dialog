@@ -274,10 +274,11 @@ fn jump_string(input: &str) -> IResult<&str, String> {
     })(input)
 }
 
+#[allow(clippy::let_and_return)]
 fn choice(input: &str) -> IResult<&str, ParsedOrder> {
     let text_and_link = preceded(tag("* "), many_till(take(1usize), jump_string));
     let choice_to_string = map(text_and_link, |(s1, s2)| {
-        format!("(\"{}\", \"{}\"),", s1.concat(), s2.replace("\"", "\\\""))
+        format!("(\"{}\", \"{}\"),", s1.concat(), s2.replace('\"', "\\\""))
     });
     let listed = separated_list1(line_ending, choice_to_string);
     let head = r#"{"bevy_dialog_box::dialog_box::window_controller::choice::SetupChoice": ("#;

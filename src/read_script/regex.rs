@@ -46,7 +46,7 @@ fn a_row(input: &str) -> IResult<&str, Vec<String>> {
     let to_vec_string = |parsed: (Vec<(String, bool)>, (String, bool))| {
         let (succ, (last, _)) = parsed;
         let inits = succ.into_iter().map(|(s, _)| s);
-        inits.chain([last].into_iter()).collect::<Vec<_>>()
+        inits.chain([last]).collect::<Vec<_>>()
     };
     map(cells, to_vec_string)(input)
 }
