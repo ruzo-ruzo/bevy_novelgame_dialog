@@ -13,6 +13,7 @@ fn main() {
             DebugTextAreaPlugin,
         ))
         .add_systems(Startup, waiting_sprite_setup)
+        .add_systems(Startup, setup_messageframe)
         .add_systems(Update, start_message)
         .add_systems(Update, animate_sprite)
         .run();
@@ -21,6 +22,7 @@ fn main() {
 fn start_message(
     mut ow_event: EventWriter<OpenWindowEvent>,
     waiting_sprite: Query<Entity, With<WaitingSprite>>,
+    background: Query<Entity, With<DialogBoxBackground>>,
     mut is_started: Local<bool>,
 ) {
     if !*is_started {
@@ -34,11 +36,13 @@ fn start_message(
             .iter()
             .map(|s| String::from("fonts/".to_owned() + s))
             .collect(),
-            background_path:
-                "2d_picture/ui/messageframe/material/messageframe_non_line/message_001.png"
-                    .to_string(),
+            // background_path:
+                // "2d_picture/ui/messageframe/material/messageframe_non_line/message_001.png"
+                    // .to_string(),
             position: Vec2::new(0., -200.),
             feeding: FeedingStyle::Scroll { size: 0, sec: 0.5 },
+			dialog_box_entity: Some(background.single()),
+			font_color: Color::DARK_GRAY,
             // script_path: "scripts/test.bds".to_string(),
             script_path: "scripts/reload_test.bds#テストヘッダー2".to_string(),
             template_path: "scripts/test.bdt".to_string(),
@@ -66,6 +70,10 @@ use bevy::sprite::Anchor;
 struct WaitingSprite;
 
 #[derive(Component)]
+struct DialogBoxBackground;
+
+
+#[derive(Component)]
 struct AnimationIndices {
     first: usize,
     last: usize,
@@ -89,6 +97,33 @@ fn animate_sprite(
             };
         }
     }
+}
+
+fn setup_messageframe(
+    mut commands: Commands,
+    asset_server: Res<AssetServer>,
+){
+    let dialog_box_image_handle =
+		asset_server.load("textures\\ui\\dialog_box_02.png");
+
+    let dialog_box_slice = ImageScaleMode::Sliced(TextureSlicer {
+        border: BorderRect::rectangle(55., 71.),
+        ..default()
+    });
+    commands.spawn((
+        SpriteBundle {
+            sprite: Sprite {
+				color: Color::rgba(1., 1., 1., 0.8),
+                custom_size: Some(Vec2::new(1200., 300.)),
+                ..default()
+            },
+            transform: Transform::from_xyz(0., -200., 0.),
+            texture: dialog_box_image_handle,
+            ..default()
+        },
+        dialog_box_slice,
+		DialogBoxBackground,
+    ));
 }
 
 fn waiting_sprite_setup(
