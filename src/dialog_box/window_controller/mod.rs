@@ -131,6 +131,7 @@ pub struct OpenWindowEvent {
     pub main_box_origin: Vec2,
     pub main_box_size: Vec2,
     pub main_alignment: JustifyText,
+    pub template_open_choice: OpenChoiceEvent,
 }
 
 impl Default for OpenWindowEvent {
@@ -154,6 +155,39 @@ impl Default for OpenWindowEvent {
             main_box_origin: Vec2::new(-600., 80.),
             main_box_size: Vec2::new(1060., 260.),
             main_alignment: JustifyText::Left,
+            template_open_choice: OpenChoiceEvent::default(),
+        }
+    }
+}
+
+#[derive(Component)]
+struct ChoiceConfig {
+    open_window_event: OpenWindowEvent,
+}
+
+impl Default for ChoiceConfig {
+    fn default() -> Self {
+        ChoiceConfig {
+            open_window_event: OpenWindowEvent{
+                window_name: "Choice Window".to_string(),
+                writing: WritingStyle::Put,
+                typing_timing: TypingTiming::ByPage,
+                main_alignment: JustifyText::Center,
+                ..default()
+            },
+        }
+    }
+}
+
+#[derive(Event)]
+pub struct OpenChoiceEvent {
+    background_entity: Option<Entity>,
+}
+
+impl Default for OpenChoiceEvent {
+    fn default() -> Self {
+        OpenChoiceEvent {
+            background_entity: None,
         }
     }
 }

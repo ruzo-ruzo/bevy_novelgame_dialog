@@ -1,11 +1,6 @@
 use super::*;
 use crate::read_script::*;
 
-#[derive(Default, Debug)]
-pub struct ChoosingTarget {
-    pub choosen_event: String,
-}
-
 #[derive(Event, Default, Debug, Reflect)]
 pub struct SetupChoice {
     pub target_list: Vec<(String, String)>,

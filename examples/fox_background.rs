@@ -9,7 +9,7 @@ fn main() {
         .add_plugins((
             DefaultPlugins,
             dialog_box::DialogBoxPlugin::default(),
-            fox_background::FoxBackgroundPlugin,
+            // fox_background::FoxBackgroundPlugin,
             DebugTextAreaPlugin,
         ))
         .add_systems(Startup, waiting_sprite_setup)
@@ -28,17 +28,14 @@ fn start_message(
     if !*is_started {
         ow_event.send(OpenWindowEvent {
             font_paths: [
-                // "NotoColorEmoji-Regular",
-                "yurumoji.ttf",
-                "yinghuayunduoxiaohuzi.ttf",
-                "NotoSansJP-Black.ttf",
+                "UnifrakturMaguntia/UnifrakturMaguntia-Regular.ttf",
+                "赤薔薇/akabara-cinderella.ttf",
+                "网风雅宋/网风雅宋.ttf",
+                "noto/NotoEmoji-VariableFont_wght.ttf",
             ]
             .iter()
             .map(|s| String::from("fonts/".to_owned() + s))
             .collect(),
-            // background_path:
-                // "2d_picture/ui/messageframe/material/messageframe_non_line/message_001.png"
-                    // .to_string(),
             position: Vec2::new(0., -200.),
             feeding: FeedingStyle::Scroll { size: 0, sec: 0.5 },
 			dialog_box_entity: Some(background.single()),
@@ -104,20 +101,20 @@ fn setup_messageframe(
     asset_server: Res<AssetServer>,
 ){
     let dialog_box_image_handle =
-		asset_server.load("textures\\ui\\dialog_box_02.png");
+		asset_server.load("textures/ui/dialog_box_02.png");
 
     let dialog_box_slice = ImageScaleMode::Sliced(TextureSlicer {
-        border: BorderRect::rectangle(55., 71.),
+        border: BorderRect::rectangle(55.0, 71.0),
         ..default()
     });
     commands.spawn((
         SpriteBundle {
             sprite: Sprite {
-				color: Color::rgba(1., 1., 1., 0.8),
-                custom_size: Some(Vec2::new(1200., 300.)),
+				color: Color::rgba(1.0, 1.0, 1.0, 0.8),
+                custom_size: Some(Vec2::new(1200.0, 300.0)),
                 ..default()
             },
-            transform: Transform::from_xyz(0., -200., 0.),
+            transform: Transform::from_xyz(0.0, -200.0, 0.0),
             texture: dialog_box_image_handle,
             ..default()
         },
@@ -132,18 +129,18 @@ fn waiting_sprite_setup(
     mut texture_atlases: ResMut<Assets<TextureAtlasLayout>>,
 ) {
     let texture_handle =
-        asset_server.load("2d_picture/ui/kenney_input-prompts-pixel-16/Tilemap/tilemap.png");
+        asset_server.load("textures/ui/cursor.png");
     let texture_atlas = TextureAtlasLayout::from_grid(
-        Vec2::new(16.0, 16.0),
-        34,
-        24,
-        Some(Vec2::new(1.0, 1.0)),
+        Vec2::new(44.0, 56.0),
+        1,
+        2,
+        None,
         None,
     );
     let animation_indices = AnimationIndices {
-        first: 705,
-        last: 739,
-        step: 34,
+        first: 0,
+        last: 1,
+        step: 1,
     };
     let texture_atlas_handle = texture_atlases.add(texture_atlas);
     let mut sprite = Sprite::default();
@@ -155,7 +152,7 @@ fn waiting_sprite_setup(
                 index: animation_indices.first,
             },
             sprite: sprite,
-            transform: Transform::from_scale(Vec3::splat(1.5)),
+            transform: Transform::from_scale(Vec3::splat(0.5)),
             texture: texture_handle,
             ..default()
         },

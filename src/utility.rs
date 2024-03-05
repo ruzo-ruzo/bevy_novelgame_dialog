@@ -30,7 +30,7 @@ fn glyph_exists_in_font(font: Font, target: char) -> bool {
     let font_id = font.font.glyph_id(target);
     let outline = font.font.outline(font_id);
     let raster = font.font.glyph_raster_image2(font_id, 1);
-    outline.is_some() || raster.is_some()
+    font_id != ab_glyph::GlyphId(0) && (outline.is_some() || raster.is_some())
 }
 
 #[allow(dead_code)]
@@ -39,11 +39,11 @@ pub fn random_char() -> Option<char> {
         std::char::from_u32(rand::thread_rng().gen_range(range))
     }
 
-    let _emoji = range_to_char(0x1F300..0x1F5FF)?;
-    let _kanji = range_to_char(0x4E00..0x9FFF)?;
+    let emoji = range_to_char(0x1F300..0x1F5FF)?;
+    let kanji = range_to_char(0x4E00..0x9FFF)?;
     let hiragana = range_to_char(0x3040..0x309F)?;
     let alphabet_large = range_to_char(0x41..0x5A)?;
     let alphabet_small = range_to_char(0x61..0x7A)?;
-    let mixed = &[_kanji, hiragana, alphabet_large, alphabet_small];
+    let mixed = &[emoji, kanji, hiragana, alphabet_large, alphabet_small];
     get_random(mixed).copied()
 }

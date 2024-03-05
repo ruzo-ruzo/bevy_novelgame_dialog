@@ -6,6 +6,7 @@ pub fn open_window(
     mut commands: Commands,
     mut db_query: Query<Entity, (With<Current>, With<DialogBox>)>,
     mut ow_event: EventReader<OpenWindowEvent>,
+    mut tf_query: Query<&mut Transform>,
     asset_server: Res<AssetServer>,
     setup_config: Res<SetupConfig>,
 ) {
@@ -68,7 +69,12 @@ pub fn open_window(
         }
         let layer = RenderLayers::layer(setup_config.render_layer);
         let mw = match window_config.dialog_box_entity {
-            Some(entity) => entity,
+            Some(entity) => {
+                if let Ok(mut tf) = tf_query.get_mut(entity) {
+                    tf.translation = Vec3 { z: 0.0, .. tf.translation };
+                }
+                entity
+            },
             None => commands.spawn(mw_spirte).id(),
         };
         let additional_mw = (Hidden,);
