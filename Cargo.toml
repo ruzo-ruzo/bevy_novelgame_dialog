@@ -1,5 +1,5 @@
 [package]
-name = "bevy_dialog_box"
+name = "bevy_novelgame_dialog"
 version = "0.0.1"
 edition = "2021"
 

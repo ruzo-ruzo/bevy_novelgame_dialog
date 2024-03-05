@@ -2,7 +2,7 @@
 use bevy::prelude::*;
 #[allow(unused_imports)]
 use bevy::text::JustifyText;
-use bevy_dialog_box::*;
+use bevy_novelgame_dialog::*;
 
 fn main() {
     App::new()

@@ -1,7 +1,7 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 use bevy::prelude::*;
 #[allow(unused_imports)]
-use bevy_dialog_box::*;
+use bevy_novelgame_dialog::*;
 
 fn main() {
     App::new()
