@@ -1,2 +1,2 @@
-# bevy_dialog_box
-Bevy Engine's Message Window Plug-in by Text2D
+# bevy_novelgame_dialog
+Bevy-engine's dialog Plug-in by Text2D
