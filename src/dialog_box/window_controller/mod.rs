@@ -162,32 +162,54 @@ impl Default for OpenWindowEvent {
 
 #[derive(Component)]
 struct ChoiceConfig {
+	button_entities: Vec<Entity>,
+	cursor_entity: Option<Entity>,
     open_window_event: OpenWindowEvent,
+	target_list: Vec<(String, String)>,
+	button_box_origin: Vec2,
+	button_box_size: Vec2,
 }
 
 impl Default for ChoiceConfig {
     fn default() -> Self {
         ChoiceConfig {
+			button_entities: Vec::new(),
+			cursor_entity: None,
             open_window_event: OpenWindowEvent{
-                window_name: "Choice Window".to_string(),
                 writing: WritingStyle::Put,
                 typing_timing: TypingTiming::ByPage,
-                main_alignment: JustifyText::Center,
                 ..default()
             },
+			target_list: Vec::new(),
+			button_box_origin: Vec2::new(-60., 20.),
+			button_box_size: Vec2::new(600., 80.),
         }
     }
 }
 
 #[derive(Event)]
 pub struct OpenChoiceEvent {
-    background_entity: Option<Entity>,
+	background_entities: Option<Entity>,
+	button_entities: Vec<Entity>,
+	cursor_entity: Option<Entity>,
+	main_alignment: JustifyText,
+	window_name: String,
+	button_box_origin: Vec2,
+	button_box_size: Vec2,
+	popup: PopupType,
 }
 
 impl Default for OpenChoiceEvent {
     fn default() -> Self {
         OpenChoiceEvent {
-            background_entity: None,
+			background_entities: None,
+			button_entities: Vec::new(),
+			cursor_entity: None,
+			main_alignment: JustifyText::Center,
+			window_name: "Choice Window".to_string(),
+			button_box_origin: Vec2::new(-60., 20.),
+			button_box_size: Vec2::new(600., 80.),
+            popup: PopupType::Scale { sec: 0.8 },
         }
     }
 }
