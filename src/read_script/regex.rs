@@ -150,9 +150,9 @@ $t
 )}</script>"
 "\[close\]","<script>{
     "bevy_dialog_box::dialog_box::window_controller::sinkdown::SinkDownWindow": (
-	sink_type: Scale(
-			sec: 0.8,
-		),
+    sink_type: Scale(
+            sec: 0.8,
+        ),
     ),
 }</script>"
 "#;

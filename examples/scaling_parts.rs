@@ -20,11 +20,11 @@ fn button_box_setup(
     asset_server: Res<AssetServer>,
 ) {
     let button_image_handle =
-		asset_server.load("textures\\ui\\choice_buttons\\button_default.png");
+        asset_server.load("textures\\ui\\choice_buttons\\button_default.png");
     let choicing_frame_image_handle =
-		asset_server.load("textures\\ui\\choice_buttons\\choicing_frame.png");
+        asset_server.load("textures\\ui\\choice_buttons\\choicing_frame.png");
     let dialog_box_image_handle =
-		asset_server.load("textures\\ui\\dialog_box_01.png");
+        asset_server.load("textures\\ui\\dialog_box_01.png");
     let button_slice = ImageScaleMode::Sliced(TextureSlicer {
         border: BorderRect::square(30.),
         ..default()
@@ -89,7 +89,7 @@ fn button_box_setup(
     commands.spawn((
         SpriteBundle {
             sprite: Sprite {
-				color: Color::rgba(1., 1., 1., 0.5),
+                color: Color::rgba(1., 1., 1., 0.5),
                 custom_size: Some(Vec2::new(600., 500.)),
                 ..default()
             },

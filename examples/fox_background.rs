@@ -9,7 +9,7 @@ fn main() {
         .add_plugins((
             DefaultPlugins,
             dialog_box::DialogBoxPlugin::default(),
-            fox_background::FoxBackgroundPlugin,
+            // fox_background::FoxBackgroundPlugin,
             DebugTextAreaPlugin,
         ))
         .add_systems(Startup, waiting_sprite_setup)
@@ -38,8 +38,8 @@ fn start_message(
             .collect(),
             position: Vec2::new(0., -200.),
             feeding: FeedingStyle::Scroll { size: 0, sec: 0.5 },
-			dialog_box_entity: Some(background.single()),
-			font_color: Color::DARK_GRAY,
+            dialog_box_entity: Some(background.single()),
+            font_color: Color::DARK_GRAY,
             // script_path: "scripts/test.bds".to_string(),
             script_path: "scripts/reload_test.bds#テストヘッダー2".to_string(),
             template_path: "scripts/test.bdt".to_string(),
@@ -101,7 +101,7 @@ fn setup_messageframe(
     asset_server: Res<AssetServer>,
 ){
     let dialog_box_image_handle =
-		asset_server.load("textures/ui/dialog_box_02.png");
+        asset_server.load("textures/ui/dialog_box_02.png");
 
     let dialog_box_slice = ImageScaleMode::Sliced(TextureSlicer {
         border: BorderRect::rectangle(55.0, 71.0),
@@ -110,7 +110,7 @@ fn setup_messageframe(
     commands.spawn((
         SpriteBundle {
             sprite: Sprite {
-				color: Color::rgba(1.0, 1.0, 1.0, 0.8),
+                color: Color::rgba(1.0, 1.0, 1.0, 0.8),
                 custom_size: Some(Vec2::new(1200.0, 300.0)),
                 ..default()
             },
@@ -119,7 +119,7 @@ fn setup_messageframe(
             ..default()
         },
         dialog_box_slice,
-		DialogBoxBackground,
+        DialogBoxBackground,
     ));
 }
 

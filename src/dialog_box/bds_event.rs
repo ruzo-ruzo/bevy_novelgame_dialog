@@ -14,6 +14,9 @@ pub struct LoadBds {
     pub target_name: String,
 }
 
+
+// Simple String Event的なのを追加したい
+// 後で直す
 pub fn change_font_size(
     mut events: EventReader<BdsEvent>,
     mut ta_query: Query<&mut TypeTextConfig, (With<Current>, With<TextArea>)>,

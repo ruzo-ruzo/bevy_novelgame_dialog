@@ -1,19 +1,19 @@
 "\*(?<t>.*?)\*", "<script>{
-    "bevy_dialog_box::dialog_box::bds_event::FontSizeChange": (
+    "bevy_novelgame_dialog::dialog_box::bds_event::FontSizeChange": (
         size: 35.0,
 ),}</script>
 $t
 <script>{
-    "bevy_dialog_box::dialog_box::bds_event::FontSizeChange": (
+    "bevy_novelgame_dialog::dialog_box::bds_event::FontSizeChange": (
         size: 27.0,
 )}</script>"
 "\[close\]","<script>{
-    "bevy_dialog_box::dialog_box::window_controller::sinkdown::SinkDownWindow": (
+    "bevy_novelgame_dialog::dialog_box::window_controller::sinkdown::SinkDownWindow": (
 	sink_type: Scale(
 			sec: 0.8,
 		),
     ),
 }</script>"
 "\[wait\]","<script>{
-    "bevy_dialog_box::dialog_box::window_controller::waiting::SimpleWait":(),
+    "bevy_novelgame_dialog::dialog_box::window_controller::waiting::SimpleWait":(),
 }</script>"
