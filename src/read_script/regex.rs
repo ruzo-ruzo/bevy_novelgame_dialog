@@ -140,16 +140,16 @@ hijk,,""
     fn test_replace_by_template() {
         let csv = r#"
 "\*(?<t>.*?)\*", "<script>{
-    "bevy_dialog_box::dialog_box::bds_event::FontSizeChange": (
+    "bevy_novelgame_dialog::dialog_box::bds_event::FontSizeChange": (
         size: 35.0,
 ),}</script>
 $t
 <script>{
-    "bevy_dialog_box::dialog_box::bds_event::FontSizeChange": (
+    "bevy_novelgame_dialog::dialog_box::bds_event::FontSizeChange": (
         size: 27.0,
 )}</script>"
 "\[close\]","<script>{
-    "bevy_dialog_box::dialog_box::window_controller::sinkdown::SinkDownWindow": (
+    "bevy_novelgame_dialog::dialog_box::window_controller::sinkdown::SinkDownWindow": (
     sink_type: Scale(
             sec: 0.8,
         ),
@@ -158,12 +158,12 @@ $t
 "#;
         let base = "あい*うえ*お";
         let replaced = r#"あい<script>{
-    "bevy_dialog_box::dialog_box::bds_event::FontSizeChange": (
+    "bevy_novelgame_dialog::dialog_box::bds_event::FontSizeChange": (
         size: 35.0,
 ),}</script>
 うえ
 <script>{
-    "bevy_dialog_box::dialog_box::bds_event::FontSizeChange": (
+    "bevy_novelgame_dialog::dialog_box::bds_event::FontSizeChange": (
         size: 27.0,
 )}</script>お"#;
         assert_eq!(replace_by_template(base, csv), replaced);
