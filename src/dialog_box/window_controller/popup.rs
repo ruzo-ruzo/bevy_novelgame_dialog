@@ -5,7 +5,7 @@ use bevy::render::view::Visibility::Visible;
 pub fn open_window(
     mut commands: Commands,
     mut db_query: Query<Entity, (With<Current>, With<DialogBox>)>,
-    mut ow_event: EventReader<OpenWindowEvent>,
+    mut ow_event: EventReader<OpenDialogEvent>,
     mut tf_query: Query<&mut Transform>,
     asset_server: Res<AssetServer>,
     setup_config: Res<SetupConfig>,
@@ -15,7 +15,7 @@ pub fn open_window(
             split_path_and_section(window_config.script_path.clone());
         let mwb = DialogBoxBundle {
             dialog_box: DialogBox {
-                name: window_config.window_name.clone(),
+                name: window_config.dialog_box_name.clone(),
             },
             state: DialogBoxState::Preparing,
             waitting: window_config.wait_breaker,
@@ -52,6 +52,7 @@ pub fn open_window(
                 typing_timing: window_config.typing_timing,
                 layer: RenderLayers::layer(setup_config.render_layer),
                 alignment: window_config.main_alignment,
+                pos_z: window_config.text_pos_z,
             },
         };
         let tb_sprite = SpriteBundle {

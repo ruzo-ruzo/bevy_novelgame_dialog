@@ -63,7 +63,7 @@ impl Plugin for DialogBoxPlugin {
             .register_type::<SinkDownType>()
             .register_type::<SimpleWait>()
             .register_type::<BreakWait>()
-            .add_event::<OpenWindowEvent>()
+            .add_event::<OpenDialogEvent>()
             .add_event::<FeedWaitingEvent>()
             .add_event::<StartFeedingEvent>()
             .add_event::<ChoosenEvent>()

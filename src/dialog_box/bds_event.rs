@@ -52,4 +52,3 @@ pub fn change_font_size(
         }
     }
 }
-

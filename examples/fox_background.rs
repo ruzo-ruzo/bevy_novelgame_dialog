@@ -20,13 +20,13 @@ fn main() {
 }
 
 fn start_message(
-    mut ow_event: EventWriter<OpenWindowEvent>,
+    mut ow_event: EventWriter<OpenDialogEvent>,
     waiting_sprite: Query<Entity, With<WaitingSprite>>,
     background: Query<Entity, With<DialogBoxBackground>>,
     mut is_started: Local<bool>,
 ) {
     if !*is_started {
-        ow_event.send(OpenWindowEvent {
+        ow_event.send(OpenDialogEvent {
             font_paths: [
                 "UnifrakturMaguntia/UnifrakturMaguntia-Regular.ttf",
                 "赤薔薇/akabara-cinderella.ttf",
@@ -149,6 +149,13 @@ fn waiting_sprite_setup(
         WaitingSprite,
     ));
 }
+
+//----------
+
+
+
+
+
 
 //----------
 

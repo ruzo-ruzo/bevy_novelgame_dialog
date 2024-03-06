@@ -219,7 +219,7 @@ fn send_feed_event(
         wait_sec: last_timer.timer.remaining_secs(),
         last_pos: Vec2::new(last_x, last_y),
     });
-    *ws = DialogBoxState::ActionWaiting;
+    *ws = DialogBoxState::WaitingAction;
 }
 
 fn get_next_order(
@@ -255,7 +255,7 @@ fn make_new_text(
         };
         let text2d_bundle = Text2dBundle {
             text: Text::from_section(new_word.to_string(), text_style),
-            transform: Transform::from_translation(Vec3::new(next_x, 0., 1.)),
+            transform: Transform::from_translation(Vec3::new(next_x, 0., config.pos_z)),
             visibility: Visibility::Hidden,
             text_anchor: Anchor::BottomLeft,
             ..default()

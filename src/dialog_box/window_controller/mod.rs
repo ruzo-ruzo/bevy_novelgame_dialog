@@ -37,6 +37,7 @@ pub struct TypeTextConfig {
     pub typing_timing: TypingTiming,
     pub layer: RenderLayers,
     pub alignment: JustifyText,
+    pub pos_z: f32,
 }
 
 #[derive(Bundle)]
@@ -60,7 +61,7 @@ pub enum DialogBoxState {
     Preparing,
     PoppingUp,
     Typing,
-    ActionWaiting,
+    WaitingAction,
     Feeding,
     Pending,
     SinkingDown,
@@ -112,8 +113,8 @@ pub enum WaitBrakerStyle {
 }
 
 #[derive(Event)]
-pub struct OpenWindowEvent {
-    pub window_name: String,
+pub struct OpenDialogEvent {
+    pub dialog_box_name: String,
     pub font_paths: Vec<String>,
     pub font_size: f32,
     pub font_color: Color,
@@ -131,13 +132,14 @@ pub struct OpenWindowEvent {
     pub main_box_origin: Vec2,
     pub main_box_size: Vec2,
     pub main_alignment: JustifyText,
-    pub template_open_choice: OpenChoiceConfig,
+    pub template_open_choice: ChoiceBoxConfig,
+    pub text_pos_z: f32,
 }
 
-impl Default for OpenWindowEvent {
+impl Default for OpenDialogEvent {
     fn default() -> Self {
-        OpenWindowEvent {
-            window_name: "Main Window".to_string(),
+        OpenDialogEvent {
+            dialog_box_name: "Main Window".to_string(),
             font_paths: vec!["fonts/NotoSans-Black.ttf".to_string()],
             font_size: 27.0,
             font_color: Color::ANTIQUE_WHITE,
@@ -155,42 +157,46 @@ impl Default for OpenWindowEvent {
             main_box_origin: Vec2::new(-600., 80.),
             main_box_size: Vec2::new(1060., 260.),
             main_alignment: JustifyText::Left,
-            template_open_choice: OpenChoiceConfig::default(),
+            template_open_choice: ChoiceBoxConfig::default(),
+            text_pos_z: 1.0,
         }
     }
 }
 
+#[derive(Event, Clone)]
+pub struct BottunCursoredEvent(pub usize);
+
+#[derive(Event, Clone)]
+pub struct BottunClickedEvent(pub usize);
+
 #[derive(Component)]
-pub struct ChoiceState {
-    previous_window: Entity,
+pub struct ChoiceBoxState {
+    main_dialog_box: Entity,
+    open_dialog_event: OpenDialogEvent,
     button_entities: Vec<Entity>,
-    cursor_entity: Option<Entity>,
-    open_window_event: OpenWindowEvent,
     target_list: Vec<(String, String)>,
     button_box_origin: Vec2,
     button_box_size: Vec2,
 }
 
 #[derive(Component, Clone)]
-pub struct OpenChoiceConfig {
-    background_entities: Option<Entity>,
-    button_entities: Vec<Entity>,
-    cursor_entity: Option<Entity>,
-    main_alignment: JustifyText,
-    window_name: String,
-    button_box_origin: Vec2,
-    button_box_size: Vec2,
-    popup: PopupType,
+pub struct ChoiceBoxConfig {
+    pub background_entities: Option<Entity>,
+    pub button_entities: Vec<Entity>,
+    pub main_alignment: JustifyText,
+    pub dialog_box_name: String,
+    pub button_box_origin: Vec2,
+    pub button_box_size: Vec2,
+    pub popup: PopupType,
 }
 
-impl Default for OpenChoiceConfig {
+impl Default for ChoiceBoxConfig {
     fn default() -> Self {
-        OpenChoiceConfig {
+        ChoiceBoxConfig {
             background_entities: None,
             button_entities: Vec::new(),
-            cursor_entity: None,
             main_alignment: JustifyText::Center,
-            window_name: "Choice Window".to_string(),
+            dialog_box_name: "Choice Window".to_string(),
             button_box_origin: Vec2::new(-60., 20.),
             button_box_size: Vec2::new(600., 80.),
             popup: PopupType::Scale { sec: 0.8 },

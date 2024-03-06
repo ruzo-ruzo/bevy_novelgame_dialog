@@ -13,10 +13,10 @@ fn main() {
 //--
 
 fn button_box_setup(mut commands: Commands, asset_server: Res<AssetServer>) {
-    let button_image_handle = asset_server.load("textures\\ui\\choice_buttons\\button_default.png");
+    let button_image_handle = asset_server.load("textures/ui/choice_buttons/button_default.png");
     let choicing_frame_image_handle =
-        asset_server.load("textures\\ui\\choice_buttons\\choicing_frame.png");
-    let dialog_box_image_handle = asset_server.load("textures\\ui\\dialog_box_01.png");
+        asset_server.load("textures/ui/choice_buttons/choicing_frame.png");
+    let dialog_box_image_handle = asset_server.load("textures/ui/dialog_box_01.png");
     let button_slice = ImageScaleMode::Sliced(TextureSlicer {
         border: BorderRect::square(30.),
         ..default()

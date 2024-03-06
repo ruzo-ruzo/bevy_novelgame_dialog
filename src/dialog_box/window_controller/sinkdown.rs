@@ -77,7 +77,7 @@ pub fn setup_window_sink(
                         }
                     }
                 }
-                *ws = DialogBoxState::ActionWaiting
+                *ws = DialogBoxState::WaitingAction
             }
         }
     }
