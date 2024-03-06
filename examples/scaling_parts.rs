@@ -5,26 +5,18 @@ use bevy_novelgame_dialog::*;
 
 fn main() {
     App::new()
-        .add_plugins((
-            DefaultPlugins,
-            dialog_box::DialogBoxPlugin::default(),
-        ))
+        .add_plugins((DefaultPlugins, dialog_box::DialogBoxPlugin::default()))
         .add_systems(Startup, button_box_setup)
         .run();
 }
 
 //--
 
-fn button_box_setup(
-    mut commands: Commands,
-    asset_server: Res<AssetServer>,
-) {
-    let button_image_handle =
-        asset_server.load("textures\\ui\\choice_buttons\\button_default.png");
+fn button_box_setup(mut commands: Commands, asset_server: Res<AssetServer>) {
+    let button_image_handle = asset_server.load("textures\\ui\\choice_buttons\\button_default.png");
     let choicing_frame_image_handle =
         asset_server.load("textures\\ui\\choice_buttons\\choicing_frame.png");
-    let dialog_box_image_handle =
-        asset_server.load("textures\\ui\\dialog_box_01.png");
+    let dialog_box_image_handle = asset_server.load("textures\\ui\\dialog_box_01.png");
     let button_slice = ImageScaleMode::Sliced(TextureSlicer {
         border: BorderRect::square(30.),
         ..default()

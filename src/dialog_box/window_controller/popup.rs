@@ -71,13 +71,16 @@ pub fn open_window(
         let mw = match window_config.dialog_box_entity {
             Some(entity) => {
                 if let Ok(mut tf) = tf_query.get_mut(entity) {
-                    tf.translation = Vec3 { z: 0.0, .. tf.translation };
+                    tf.translation = Vec3 {
+                        z: 0.0,
+                        ..tf.translation
+                    };
                 }
                 entity
-            },
+            }
             None => commands.spawn(mw_spirte).id(),
         };
-        let additional_mw = (Hidden,);
+        let additional_mw = (Hidden, window_config.template_open_choice.clone());
         commands
             .entity(mw)
             .insert((mwb, layer, Current, additional_mw));

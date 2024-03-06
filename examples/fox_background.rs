@@ -69,7 +69,6 @@ struct WaitingSprite;
 #[derive(Component)]
 struct DialogBoxBackground;
 
-
 #[derive(Component)]
 struct AnimationIndices {
     first: usize,
@@ -96,12 +95,8 @@ fn animate_sprite(
     }
 }
 
-fn setup_messageframe(
-    mut commands: Commands,
-    asset_server: Res<AssetServer>,
-){
-    let dialog_box_image_handle =
-        asset_server.load("textures/ui/dialog_box_02.png");
+fn setup_messageframe(mut commands: Commands, asset_server: Res<AssetServer>) {
+    let dialog_box_image_handle = asset_server.load("textures/ui/dialog_box_02.png");
 
     let dialog_box_slice = ImageScaleMode::Sliced(TextureSlicer {
         border: BorderRect::rectangle(55.0, 71.0),
@@ -128,15 +123,8 @@ fn waiting_sprite_setup(
     asset_server: Res<AssetServer>,
     mut texture_atlases: ResMut<Assets<TextureAtlasLayout>>,
 ) {
-    let texture_handle =
-        asset_server.load("textures/ui/cursor.png");
-    let texture_atlas = TextureAtlasLayout::from_grid(
-        Vec2::new(44.0, 56.0),
-        1,
-        2,
-        None,
-        None,
-    );
+    let texture_handle = asset_server.load("textures/ui/cursor.png");
+    let texture_atlas = TextureAtlasLayout::from_grid(Vec2::new(44.0, 56.0), 1, 2, None, None);
     let animation_indices = AnimationIndices {
         first: 0,
         last: 1,

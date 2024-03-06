@@ -219,7 +219,7 @@ fn send_feed_event(
         wait_sec: last_timer.timer.remaining_secs(),
         last_pos: Vec2::new(last_x, last_y),
     });
-    *ws = DialogBoxState::Waiting;
+    *ws = DialogBoxState::ActionWaiting;
 }
 
 fn get_next_order(

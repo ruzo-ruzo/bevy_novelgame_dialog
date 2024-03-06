@@ -60,9 +60,9 @@ pub enum DialogBoxState {
     Preparing,
     PoppingUp,
     Typing,
-    Waiting,
+    ActionWaiting,
     Feeding,
-    Choosing,
+    Pending,
     SinkingDown,
     Fixed,
 }
@@ -131,7 +131,7 @@ pub struct OpenWindowEvent {
     pub main_box_origin: Vec2,
     pub main_box_size: Vec2,
     pub main_alignment: JustifyText,
-    pub template_open_choice: OpenChoiceEvent,
+    pub template_open_choice: OpenChoiceConfig,
 }
 
 impl Default for OpenWindowEvent {
@@ -155,13 +155,14 @@ impl Default for OpenWindowEvent {
             main_box_origin: Vec2::new(-600., 80.),
             main_box_size: Vec2::new(1060., 260.),
             main_alignment: JustifyText::Left,
-            template_open_choice: OpenChoiceEvent::default(),
+            template_open_choice: OpenChoiceConfig::default(),
         }
     }
 }
 
 #[derive(Component)]
-struct ChoiceConfig {
+pub struct ChoiceState {
+    previous_window: Entity,
     button_entities: Vec<Entity>,
     cursor_entity: Option<Entity>,
     open_window_event: OpenWindowEvent,
@@ -170,25 +171,8 @@ struct ChoiceConfig {
     button_box_size: Vec2,
 }
 
-impl Default for ChoiceConfig {
-    fn default() -> Self {
-        ChoiceConfig {
-            button_entities: Vec::new(),
-            cursor_entity: None,
-            open_window_event: OpenWindowEvent{
-                writing: WritingStyle::Put,
-                typing_timing: TypingTiming::ByPage,
-                ..default()
-            },
-            target_list: Vec::new(),
-            button_box_origin: Vec2::new(-60., 20.),
-            button_box_size: Vec2::new(600., 80.),
-        }
-    }
-}
-
-#[derive(Event)]
-pub struct OpenChoiceEvent {
+#[derive(Component, Clone)]
+pub struct OpenChoiceConfig {
     background_entities: Option<Entity>,
     button_entities: Vec<Entity>,
     cursor_entity: Option<Entity>,
@@ -199,9 +183,9 @@ pub struct OpenChoiceEvent {
     popup: PopupType,
 }
 
-impl Default for OpenChoiceEvent {
+impl Default for OpenChoiceConfig {
     fn default() -> Self {
-        OpenChoiceEvent {
+        OpenChoiceConfig {
             background_entities: None,
             button_entities: Vec::new(),
             cursor_entity: None,

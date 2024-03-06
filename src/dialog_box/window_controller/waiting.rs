@@ -75,7 +75,7 @@ pub fn simple_wait(
                         }
                         commands.entity(tb_entity).insert(Selected);
                     }
-                    *ws = DialogBoxState::Waiting;
+                    *ws = DialogBoxState::ActionWaiting;
                 }
             }
         }
@@ -95,7 +95,7 @@ pub fn restart_typing(
         {
             for (mw_entity, mut ws, wbs) in &mut window_query {
                 if let Ok(tb_parent) = text_box_query.get(tb_entity) {
-                    if tb_parent.get() == mw_entity && DialogBoxState::Waiting == *ws {
+                    if tb_parent.get() == mw_entity && DialogBoxState::ActionWaiting == *ws {
                         *ws = DialogBoxState::Typing;
                     }
                 }
@@ -159,7 +159,7 @@ pub fn settle_wating_icon(
                 let WaitingIcon {
                     is_settled: settled,
                 } = &mut *wi;
-                if *ws == DialogBoxState::Waiting {
+                if *ws == DialogBoxState::ActionWaiting {
                     if *settled {
                         return;
                     }
@@ -210,7 +210,7 @@ pub fn skip_typing_or_next(
         }) = event_wrapper.get_opt::<InputForSkipping>()
         {
             if let Ok((_, _, parent)) = text_box_query.get(tb_entity) {
-                if window_query.get(parent.get()) != Ok(&DialogBoxState::Waiting) {
+                if window_query.get(parent.get()) != Ok(&DialogBoxState::ActionWaiting) {
                     return;
                 }
             }

@@ -140,7 +140,7 @@ pub fn start_feeding(
         return;
     };
     for (w_entity, mut ws, wbs) in &mut window_query {
-        if *ws != DialogBoxState::Waiting {
+        if *ws != DialogBoxState::ActionWaiting {
             return;
         }
         let target_lines = line_query

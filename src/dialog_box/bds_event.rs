@@ -14,21 +14,7 @@ pub struct LoadBds {
     pub target_name: String,
 }
 
-
 // Simple String Event的なのを追加したい
-// 後で直す
-pub fn change_font_size(
-    mut events: EventReader<BdsEvent>,
-    mut ta_query: Query<&mut TypeTextConfig, (With<Current>, With<TextArea>)>,
-) {
-    for event_wrapper in events.read() {
-        if let Some(FontSizeChange { size: s }) = event_wrapper.get_opt::<FontSizeChange>() {
-            if let Ok(mut config) = ta_query.get_single_mut() {
-                config.text_style.font_size = s;
-            }
-        }
-    }
-}
 
 pub fn load_bds(
     mut events: EventReader<BdsEvent>,
@@ -52,3 +38,18 @@ pub fn load_bds(
         }
     }
 }
+
+// 後で直す
+pub fn change_font_size(
+    mut events: EventReader<BdsEvent>,
+    mut ta_query: Query<&mut TypeTextConfig, (With<Current>, With<TextArea>)>,
+) {
+    for event_wrapper in events.read() {
+        if let Some(FontSizeChange { size: s }) = event_wrapper.get_opt::<FontSizeChange>() {
+            if let Ok(mut config) = ta_query.get_single_mut() {
+                config.text_style.font_size = s;
+            }
+        }
+    }
+}
+
