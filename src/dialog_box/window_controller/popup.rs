@@ -11,6 +11,9 @@ pub fn open_window(
     setup_config: Res<SetupConfig>,
 ) {
     for window_config in &mut ow_event.read() {
+        for entity in &mut db_query {
+            commands.entity(entity).remove::<Current>();
+        }
         let (script_path, script_section) =
             split_path_and_section(window_config.script_path.clone());
         let mwb = DialogBoxBundle {
@@ -23,52 +26,18 @@ pub fn open_window(
                 bds_handle: asset_server.load(script_path),
                 bdt_handle: asset_server.load(window_config.template_path.clone()),
                 target_section: script_section,
-                order_list: None,
+                order_list: if window_config.raw_orders.is_some() {
+                        window_config.raw_orders.clone()
+                    } else {
+                        None
+                    },
             },
             popup_type: window_config.popup,
         };
         let mw_spirte = SpriteBundle {
-            texture: asset_server.load(window_config.background_path.clone()),
             transform: Transform::from_translation(window_config.position.extend(0.0)),
             ..default()
         };
-        let tbb = TextAreaBundle {
-            text_box: TextArea {
-                name: window_config.area_name.clone(),
-            },
-            feeding: window_config.feeding,
-            config: TypeTextConfig {
-                fonts: window_config
-                    .font_paths
-                    .iter()
-                    .map(|s| asset_server.load(s))
-                    .collect(),
-                text_style: TextStyle {
-                    font_size: window_config.font_size,
-                    color: window_config.font_color,
-                    ..default()
-                },
-                writing: window_config.writing,
-                typing_timing: window_config.typing_timing,
-                layer: RenderLayers::layer(setup_config.render_layer),
-                alignment: window_config.main_alignment,
-                pos_z: window_config.text_pos_z,
-            },
-        };
-        let tb_sprite = SpriteBundle {
-            sprite: Sprite {
-                anchor: Anchor::TopLeft,
-                color: Color::WHITE.with_a(0.),
-                custom_size: Some(window_config.main_box_size),
-                ..default()
-            },
-            transform: Transform::from_translation(window_config.main_box_origin.extend(0.0)),
-            ..default()
-        };
-        for entity in &mut db_query {
-            commands.entity(entity).remove::<Current>();
-        }
-        let layer = RenderLayers::layer(setup_config.render_layer);
         let mw = match window_config.dialog_box_entity {
             Some(entity) => {
                 if let Ok(mut tf) = tf_query.get_mut(entity) {
@@ -82,11 +51,58 @@ pub fn open_window(
             None => commands.spawn(mw_spirte).id(),
         };
         let additional_mw = (Hidden, window_config.template_open_choice.clone());
+        let layer = RenderLayers::layer(setup_config.render_layer);
         commands
             .entity(mw)
             .insert((mwb, layer, Current, additional_mw));
-        let tb = commands.spawn((tbb, tb_sprite, layer, Current)).id();
-        commands.entity(mw).add_child(tb);
+        let mut ta_id_list = Vec::new();
+        let mut current_exists_in_text_areas = false;
+        for t_cfg  in &window_config.text_area_configs {
+            let tab = TextAreaBundle {
+                text_area: TextArea {
+                    name: t_cfg.area_name.clone(),
+                },
+                feeding: t_cfg.feeding,
+                config: TypeTextConfig {
+                    fonts: t_cfg.font_paths
+                        .iter()
+                        .map(|s| asset_server.load(s))
+                        .collect(),
+                    text_style: TextStyle {
+                        font_size: t_cfg.font_size,
+                        color: t_cfg.font_color,
+                        ..default()
+                    },
+                    writing: t_cfg.writing,
+                    typing_timing: t_cfg.typing_timing,
+                    layer: RenderLayers::layer(setup_config.render_layer),
+                    alignment: t_cfg.main_alignment,
+                    pos_z: t_cfg.text_pos_z,
+                },
+            };
+            let ta_sprite = SpriteBundle {
+                sprite: Sprite {
+                    anchor: Anchor::TopLeft,
+                    color: Color::WHITE.with_a(0.),
+                    custom_size: Some(t_cfg.main_area_size),
+                    ..default()
+                },
+                transform: Transform::from_translation(t_cfg.main_area_origin.extend(0.0)),
+                ..default()
+            };
+            let tai = commands.spawn((tab, ta_sprite, layer)).id();
+            commands.entity(mw).add_child(tai);
+            if t_cfg.area_name == window_config.main_text_area_name {
+                commands.entity(tai).insert(Current);
+                current_exists_in_text_areas = true;
+            }
+            ta_id_list.push(tai);
+        }
+        if !current_exists_in_text_areas {
+            if let Some(id) = ta_id_list.first() {
+                commands.entity(*id).insert(Current);
+            }
+        }
     }
 }
 

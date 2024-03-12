@@ -6,3 +6,4 @@ mod utility;
 
 pub use debug::*;
 pub use dialog_box::window_controller::*;
+pub use dialog_box::public_events::*;

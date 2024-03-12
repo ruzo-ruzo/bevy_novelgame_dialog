@@ -1,10 +1,10 @@
 "\*(?<t>.*?)\*", "<script>{
-    "bevy_novelgame_dialog::dialog_box::bds_event::FontSizeChange": (
+    "bevy_novelgame_dialog::dialog_box::public_events::bds_event::FontSizeChange": (
         size: 35.0,
 ),}</script>
 $t
 <script>{
-    "bevy_novelgame_dialog::dialog_box::bds_event::FontSizeChange": (
+    "bevy_novelgame_dialog::dialog_box::public_events::bds_event::FontSizeChange": (
         size: 27.0,
 )}</script>"
 "\[close\]","<script>{

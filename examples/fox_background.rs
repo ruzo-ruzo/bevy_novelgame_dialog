@@ -14,6 +14,7 @@ fn main() {
         ))
         .add_systems(Startup, waiting_sprite_setup)
         .add_systems(Startup, setup_messageframe)
+        .add_systems(Startup, setup_choice_images)
         .add_systems(Update, start_message)
         .add_systems(Update, animate_sprite)
         .run();
@@ -23,36 +24,47 @@ fn start_message(
     mut ow_event: EventWriter<OpenDialogEvent>,
     waiting_sprite: Query<Entity, With<WaitingSprite>>,
     background: Query<Entity, With<DialogBoxBackground>>,
+    choice_frame: Query<Entity, With<ChoiceFrame>>,
+    choice_buttons: Query<(Entity, &ChoiceButton)>,
     mut is_started: Local<bool>,
 ) {
     if !*is_started {
+        let mut buttons_vec = choice_buttons.iter().collect::<Vec<_>>();
+        buttons_vec.sort_by_key(|x| x.1.0);
         ow_event.send(OpenDialogEvent {
-            font_paths: [
-                "UnifrakturMaguntia/UnifrakturMaguntia-Regular.ttf",
-                "赤薔薇/akabara-cinderella.ttf",
-                "网风雅宋/网风雅宋.ttf",
-                "noto/NotoEmoji-VariableFont_wght.ttf",
-            ]
-            .iter()
-            .map(|s| String::from("fonts/".to_owned() + s))
-            .collect(),
-            position: Vec2::new(0., -200.),
-            feeding: FeedingStyle::Scroll { size: 0, sec: 0.5 },
-            dialog_box_entity: Some(background.single()),
-            font_color: Color::DARK_GRAY,
-            // script_path: "scripts/test.bds".to_string(),
             script_path: "scripts/reload_test.bds#テストヘッダー2".to_string(),
             template_path: "scripts/test.bdt".to_string(),
-            main_box_origin: Vec2::new(-540.0, 70.0),
-            main_box_size: Vec2::new(1060.0, 140.0),
-            // main_alignment: JustifyText::Center,
-            // writing:WritingStyle::Wipe{ sec: 0.7 },
-            // writing:WritingStyle::Put,
-            // typing_timing: TypingTiming::ByLine { sec: 1.5 },
-            // typing_timing: TypingTiming::ByPage,
+            text_area_configs: vec![TextAreaConfig {
+                font_paths: [
+                        "UnifrakturMaguntia/UnifrakturMaguntia-Regular.ttf",
+                        "赤薔薇/akabara-cinderella.ttf",
+                        "网风雅宋/网风雅宋.ttf",
+                        "noto/NotoEmoji-VariableFont_wght.ttf",
+                    ]
+                    .iter()
+                    .map(|s| String::from("fonts/".to_owned() + s))
+                    .collect(),
+                feeding: FeedingStyle::Scroll { size: 0, sec: 0.5 },
+                font_color: Color::DARK_GRAY,
+                main_area_origin: Vec2::new(-540.0, 70.0),
+                main_area_size: Vec2::new(1060.0, 140.0),
+                // main_alignment: JustifyText::Center,
+                // writing:WritingStyle::Wipe{ sec: 0.7 },
+                // writing:WritingStyle::Put,
+                // typing_timing: TypingTiming::ByLine { sec: 1.5 },
+                // typing_timing: TypingTiming::ByPage,
+                ..default()
+            }],
+            dialog_box_entity: Some(background.single()),
+            position: Vec2::new(0., -200.),
             wait_breaker: WaitBrakerStyle::Input {
-                icon_entity: Some(waiting_sprite.single()),
+                icon_entity: waiting_sprite.get_single().ok(),
                 is_icon_moving_to_last: true,
+            },
+            template_open_choice: ChoiceBoxConfig {
+                background_entity: choice_frame.get_single().ok(),
+                button_entities: buttons_vec.iter().map(|x| x.0).collect::<Vec<_>>(),
+                ..default()
             },
             ..default()
         });
@@ -152,10 +164,99 @@ fn waiting_sprite_setup(
 
 //----------
 
+#[derive(Component)]
+struct ChoiceFrame;
 
+#[derive(Component)]
+struct ChoiceButton(usize);
 
+#[derive(Component)]
+struct ChoiceCursor;
 
-
+fn setup_choice_images(mut commands: Commands, asset_server: Res<AssetServer>) {
+    let button_image_handle = asset_server.load("textures/ui/choice_buttons/button_default.png");
+    let choicing_frame_image_handle =
+        asset_server.load("textures/ui/choice_buttons/choicing_frame.png");
+    let dialog_box_image_handle = asset_server.load("textures/ui/dialog_box_01.png");
+    let button_slice = ImageScaleMode::Sliced(TextureSlicer {
+        border: BorderRect::square(30.),
+        ..default()
+    });
+    let choicing_frame_slice = ImageScaleMode::Sliced(TextureSlicer {
+        border: BorderRect::rectangle(56., 102.),
+        ..default()
+    });
+    let dialog_box_slice = ImageScaleMode::Sliced(TextureSlicer {
+        border: BorderRect::rectangle(44., 52.),
+        ..default()
+    });
+    commands.spawn((
+        SpriteBundle {
+            sprite: Sprite {
+                custom_size: Some(Vec2::new(400., 100.)),
+                ..default()
+            },
+            transform: Transform::from_xyz(0., 130., 1.8),
+            texture: button_image_handle.clone(),
+            ..default()
+        },
+        button_slice.clone(),
+        ChoiceButton(0),
+    ));
+    commands.spawn((
+        SpriteBundle {
+            sprite: Sprite {
+                custom_size: Some(Vec2::new(400., 100.)),
+                ..default()
+            },
+            transform: Transform::from_xyz(0., -10., 1.8),
+            texture: button_image_handle.clone(),
+            ..default()
+        },
+        button_slice.clone(),
+        ChoiceButton(1),
+    ));
+    commands.spawn((
+        SpriteBundle {
+            sprite: Sprite {
+                custom_size: Some(Vec2::new(400., 100.)),
+                ..default()
+            },
+            transform: Transform::from_xyz(0., -140., 1.8),
+            texture: button_image_handle.clone(),
+            ..default()
+        },
+        button_slice,
+        ChoiceButton(2),
+    ));
+    commands.spawn((
+        SpriteBundle {
+            sprite: Sprite {
+                custom_size: Some(Vec2::new(480., 200.)),
+                ..default()
+            },
+            transform: Transform::from_xyz(-2., 135., 1.5),
+            texture: choicing_frame_image_handle,
+            ..default()
+        },
+        choicing_frame_slice,
+        ChoiceFrame,
+    ));
+    commands.spawn((
+        SpriteBundle {
+            sprite: Sprite {
+                color: Color::rgba(1., 1., 1., 0.5),
+                custom_size: Some(Vec2::new(600., 500.)),
+                ..default()
+            },
+            transform: Transform::from_xyz(0., 0., 1.3),
+            texture: dialog_box_image_handle,
+            ..default()
+        },
+        dialog_box_slice,
+        ChoiceFrame,
+    ));
+}
 
 //----------
 

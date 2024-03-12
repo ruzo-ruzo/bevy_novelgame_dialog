@@ -1,13 +1,14 @@
 use crate::read_script::*;
 use bevy::prelude::*;
 
-mod bds_event;
+pub mod public_events;
 mod input;
 mod setup;
 mod text_conroller;
 pub mod window_controller;
 
 use crate::choice::*;
+use public_events::*;
 use bds_event::*;
 use input::*;
 use setup::*;

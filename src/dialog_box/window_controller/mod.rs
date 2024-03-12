@@ -1,11 +1,11 @@
 use bevy::{
     prelude::*,
+    text::JustifyText,
     render::{
         color::Color,
         view::{RenderLayers, Visibility::Hidden},
     },
     sprite::Anchor,
-    text::JustifyText,
 };
 
 pub mod choice;
@@ -15,6 +15,7 @@ pub mod waiting;
 
 use super::setup::SetupConfig;
 use crate::read_script::*;
+use crate::dialog_box::OpenDialogEvent;
 
 #[derive(Component, Debug)]
 pub struct DialogBox {
@@ -51,9 +52,41 @@ struct DialogBoxBundle {
 
 #[derive(Bundle)]
 struct TextAreaBundle {
-    text_box: TextArea,
+    text_area: TextArea,
     feeding: FeedingStyle,
     config: TypeTextConfig,
+}
+
+pub struct TextAreaConfig {
+    pub area_name: String,
+    pub main_area_origin: Vec2,
+    pub main_area_size: Vec2,
+    pub main_alignment: JustifyText,
+    pub feeding: FeedingStyle,
+    pub typing_timing: TypingTiming,
+    pub writing: WritingStyle,
+    pub font_paths: Vec<String>,
+    pub font_size: f32,
+    pub font_color: Color,
+    pub text_pos_z: f32,
+}
+
+impl Default for TextAreaConfig {
+    fn default() -> Self {
+        TextAreaConfig {
+            area_name: "Main Area".to_string(),
+            main_area_origin: Vec2::new(-600., 80.),
+            main_area_size: Vec2::new(1060., 260.),
+            main_alignment: JustifyText::Left,
+            feeding: FeedingStyle::Scroll { size: 0, sec: 40. },
+            typing_timing: TypingTiming::ByChar { sec: 0.07 },
+            writing: WritingStyle::Wipe { sec: 0.07 },
+            font_paths: vec!["fonts/FiraMono-Regular.ttf".to_string()],
+            font_size: 27.0,
+            font_color: Color::ANTIQUE_WHITE,
+            text_pos_z: 1.0,
+        }
+    }
 }
 
 #[derive(Component, Debug, Clone, Copy, PartialEq)]
@@ -112,62 +145,12 @@ pub enum WaitBrakerStyle {
     },
 }
 
-#[derive(Event)]
-pub struct OpenDialogEvent {
-    pub dialog_box_name: String,
-    pub font_paths: Vec<String>,
-    pub font_size: f32,
-    pub font_color: Color,
-    pub background_path: String,
-    pub dialog_box_entity: Option<Entity>,
-    pub position: Vec2,
-    pub area_name: String,
-    pub popup: PopupType,
-    pub typing_timing: TypingTiming,
-    pub writing: WritingStyle,
-    pub feeding: FeedingStyle,
-    pub wait_breaker: WaitBrakerStyle,
-    pub script_path: String,
-    pub template_path: String,
-    pub main_box_origin: Vec2,
-    pub main_box_size: Vec2,
-    pub main_alignment: JustifyText,
-    pub template_open_choice: ChoiceBoxConfig,
-    pub text_pos_z: f32,
+
+#[derive(Component, Debug, Clone, Copy, PartialEq)]
+pub enum SelectVector {
+    Vertical,
+    Horizon,
 }
-
-impl Default for OpenDialogEvent {
-    fn default() -> Self {
-        OpenDialogEvent {
-            dialog_box_name: "Main Window".to_string(),
-            font_paths: vec!["fonts/NotoSans-Black.ttf".to_string()],
-            font_size: 27.0,
-            font_color: Color::ANTIQUE_WHITE,
-            background_path: "texture/ui/text_box.png".to_string(),
-            dialog_box_entity: None,
-            position: Vec2::new(0., 0.),
-            area_name: "Main Area".to_string(),
-            popup: PopupType::Scale { sec: 0.8 },
-            typing_timing: TypingTiming::ByChar { sec: 0.07 },
-            writing: WritingStyle::Wipe { sec: 0.07 },
-            feeding: FeedingStyle::Scroll { size: 0, sec: 40. },
-            wait_breaker: WaitBrakerStyle::Auto { wait_sec: 1.5 },
-            script_path: "scripts/message.bds".to_string(),
-            template_path: "scripts/template.bdt".to_string(),
-            main_box_origin: Vec2::new(-600., 80.),
-            main_box_size: Vec2::new(1060., 260.),
-            main_alignment: JustifyText::Left,
-            template_open_choice: ChoiceBoxConfig::default(),
-            text_pos_z: 1.0,
-        }
-    }
-}
-
-#[derive(Event, Clone)]
-pub struct BottunCursoredEvent(pub usize);
-
-#[derive(Event, Clone)]
-pub struct BottunClickedEvent(pub usize);
 
 #[derive(Component)]
 pub struct ChoiceBoxState {
@@ -175,31 +158,36 @@ pub struct ChoiceBoxState {
     open_dialog_event: OpenDialogEvent,
     button_entities: Vec<Entity>,
     target_list: Vec<(String, String)>,
+    select_vector: SelectVector,
     button_box_origin: Vec2,
     button_box_size: Vec2,
 }
 
 #[derive(Component, Clone)]
 pub struct ChoiceBoxConfig {
-    pub background_entities: Option<Entity>,
+    pub background_entity: Option<Entity>,
     pub button_entities: Vec<Entity>,
     pub main_alignment: JustifyText,
     pub dialog_box_name: String,
     pub button_box_origin: Vec2,
     pub button_box_size: Vec2,
     pub popup: PopupType,
+    pub select_vector: SelectVector,
+    pub text_pos_z: f32,
 }
 
 impl Default for ChoiceBoxConfig {
     fn default() -> Self {
         ChoiceBoxConfig {
-            background_entities: None,
+            background_entity: None,
             button_entities: Vec::new(),
             main_alignment: JustifyText::Center,
-            dialog_box_name: "Choice Window".to_string(),
+            dialog_box_name: "Choice Box".to_string(),
             button_box_origin: Vec2::new(-60., 20.),
             button_box_size: Vec2::new(600., 80.),
             popup: PopupType::Scale { sec: 0.8 },
+            select_vector: SelectVector::Vertical,
+            text_pos_z: 2.0,
         }
     }
 }

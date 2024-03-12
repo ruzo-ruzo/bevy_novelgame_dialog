@@ -1,11 +1,11 @@
 # テストヘッダー1
 これはジャンプ後のテキストです。
 
-* 選択肢1(scripts/test.bds "Main Window")
-* 選択肢2(scripts/reload_test.bds#テストヘッダー2 "Main Window")
+* 選択肢1(scripts/test.bds "Main Box")
+* 選択肢2(scripts/reload_test.bds#テストヘッダー2 "Main Box")
 
 
 # テストヘッダー2
 これはジャンプ前のテキストです。
 
-(scripts/reload_test.bds#テストヘッダー1 "Main Window")
+(scripts/reload_test.bds#テストヘッダー1 "Main Box")
