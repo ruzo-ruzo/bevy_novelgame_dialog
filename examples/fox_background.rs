@@ -30,31 +30,32 @@ fn start_message(
 ) {
     if !*is_started {
         let mut buttons_vec = choice_buttons.iter().collect::<Vec<_>>();
+        let tac = TextAreaConfig {
+            font_paths: [
+                    "UnifrakturMaguntia/UnifrakturMaguntia-Regular.ttf",
+                    "赤薔薇/akabara-cinderella.ttf",
+                    "网风雅宋/网风雅宋.ttf",
+                    "noto/NotoEmoji-VariableFont_wght.ttf",
+                ]
+                .iter()
+                .map(|s| String::from("fonts/".to_owned() + s))
+                .collect(),
+            feeding: FeedingStyle::Scroll { size: 0, sec: 0.5 },
+            font_color: Color::DARK_GRAY,
+            area_origin: Vec2::new(-540.0, 70.0),
+            area_size: Vec2::new(1060.0, 140.0),
+            // main_alignment: JustifyText::Center,
+            // writing:WritingStyle::Wipe{ sec: 0.7 },
+            // writing:WritingStyle::Put,
+            // typing_timing: TypingTiming::ByLine { sec: 1.5 },
+            // typing_timing: TypingTiming::ByPage,
+            ..default()
+        };
         buttons_vec.sort_by_key(|x| x.1.0);
         ow_event.send(OpenDialogEvent {
             script_path: "scripts/reload_test.bds#テストヘッダー2".to_string(),
             template_path: "scripts/test.bdt".to_string(),
-            text_area_configs: vec![TextAreaConfig {
-                font_paths: [
-                        "UnifrakturMaguntia/UnifrakturMaguntia-Regular.ttf",
-                        "赤薔薇/akabara-cinderella.ttf",
-                        "网风雅宋/网风雅宋.ttf",
-                        "noto/NotoEmoji-VariableFont_wght.ttf",
-                    ]
-                    .iter()
-                    .map(|s| String::from("fonts/".to_owned() + s))
-                    .collect(),
-                feeding: FeedingStyle::Scroll { size: 0, sec: 0.5 },
-                font_color: Color::DARK_GRAY,
-                main_area_origin: Vec2::new(-540.0, 70.0),
-                main_area_size: Vec2::new(1060.0, 140.0),
-                // main_alignment: JustifyText::Center,
-                // writing:WritingStyle::Wipe{ sec: 0.7 },
-                // writing:WritingStyle::Put,
-                // typing_timing: TypingTiming::ByLine { sec: 1.5 },
-                // typing_timing: TypingTiming::ByPage,
-                ..default()
-            }],
+            text_area_configs: vec![tac.clone()],
             dialog_box_entity: Some(background.single()),
             position: Vec2::new(0., -200.),
             wait_breaker: WaitBrakerStyle::Input {
@@ -64,6 +65,7 @@ fn start_message(
             template_open_choice: ChoiceBoxConfig {
                 background_entity: choice_frame.get_single().ok(),
                 button_entities: buttons_vec.iter().map(|x| x.0).collect::<Vec<_>>(),
+                button_text_areas: vec![tac.clone(), tac.clone(), tac],
                 ..default()
             },
             ..default()
@@ -240,7 +242,7 @@ fn setup_choice_images(mut commands: Commands, asset_server: Res<AssetServer>) {
             ..default()
         },
         choicing_frame_slice,
-        ChoiceFrame,
+        ChoiceCursor,
     ));
     commands.spawn((
         SpriteBundle {

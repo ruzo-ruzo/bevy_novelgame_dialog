@@ -1,11 +1,10 @@
 pub mod bds_event;
 
-use bevy::prelude::*;
 use super::window_controller::*;
 use crate::read_script::*;
+use bevy::prelude::*;
 
-
-#[derive(Event)]
+#[derive(Event, Clone)]
 pub struct OpenDialogEvent {
     pub dialog_box_name: String,
     pub dialog_box_entity: Option<Entity>,

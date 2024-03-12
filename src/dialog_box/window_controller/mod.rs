@@ -44,7 +44,7 @@ pub struct TypeTextConfig {
 #[derive(Bundle)]
 struct DialogBoxBundle {
     dialog_box: DialogBox,
-    state: DialogBoxState,
+    state: DialogBoxPhase,
     waitting: WaitBrakerStyle,
     script: LoadedScript,
     popup_type: PopupType,
@@ -57,10 +57,11 @@ struct TextAreaBundle {
     config: TypeTextConfig,
 }
 
+#[derive(Clone)]
 pub struct TextAreaConfig {
     pub area_name: String,
-    pub main_area_origin: Vec2,
-    pub main_area_size: Vec2,
+    pub area_origin: Vec2,
+    pub area_size: Vec2,
     pub main_alignment: JustifyText,
     pub feeding: FeedingStyle,
     pub typing_timing: TypingTiming,
@@ -75,8 +76,8 @@ impl Default for TextAreaConfig {
     fn default() -> Self {
         TextAreaConfig {
             area_name: "Main Area".to_string(),
-            main_area_origin: Vec2::new(-600., 80.),
-            main_area_size: Vec2::new(1060., 260.),
+            area_origin: Vec2::new(-600., 80.),
+            area_size: Vec2::new(1060., 260.),
             main_alignment: JustifyText::Left,
             feeding: FeedingStyle::Scroll { size: 0, sec: 40. },
             typing_timing: TypingTiming::ByChar { sec: 0.07 },
@@ -90,7 +91,7 @@ impl Default for TextAreaConfig {
 }
 
 #[derive(Component, Debug, Clone, Copy, PartialEq)]
-pub enum DialogBoxState {
+pub enum DialogBoxPhase {
     Preparing,
     PoppingUp,
     Typing,
@@ -159,35 +160,50 @@ pub struct ChoiceBoxState {
     button_entities: Vec<Entity>,
     target_list: Vec<(String, String)>,
     select_vector: SelectVector,
-    button_box_origin: Vec2,
-    button_box_size: Vec2,
 }
 
 #[derive(Component, Clone)]
 pub struct ChoiceBoxConfig {
     pub background_entity: Option<Entity>,
     pub button_entities: Vec<Entity>,
-    pub main_alignment: JustifyText,
+    pub button_text_areas: Vec<TextAreaConfig>,
     pub dialog_box_name: String,
-    pub button_box_origin: Vec2,
-    pub button_box_size: Vec2,
     pub popup: PopupType,
     pub select_vector: SelectVector,
-    pub text_pos_z: f32,
 }
 
 impl Default for ChoiceBoxConfig {
     fn default() -> Self {
+        let basic_text_area = TextAreaConfig {
+            writing: WritingStyle::Put,
+            typing_timing: TypingTiming::ByPage,
+            main_alignment: JustifyText::Center,
+            text_pos_z: 2.0,
+            ..default()
+        };
         ChoiceBoxConfig {
             background_entity: None,
             button_entities: Vec::new(),
-            main_alignment: JustifyText::Center,
+            button_text_areas: vec![
+                TextAreaConfig {
+                    area_name: "Button Area 01".to_string(),
+                    area_origin: Vec2::new(-400., -100.),
+                    ..basic_text_area.clone()
+                },
+                TextAreaConfig {
+                    area_name: "Button Area 02".to_string(),
+                    area_origin: Vec2::new(-400., 0.),
+                    ..basic_text_area.clone()
+                },
+                TextAreaConfig {
+                    area_name: "Button Area 03".to_string(),
+                    area_origin: Vec2::new(-400., 100.),
+                    ..basic_text_area
+                },
+            ],
             dialog_box_name: "Choice Box".to_string(),
-            button_box_origin: Vec2::new(-60., 20.),
-            button_box_size: Vec2::new(600., 80.),
             popup: PopupType::Scale { sec: 0.8 },
             select_vector: SelectVector::Vertical,
-            text_pos_z: 2.0,
         }
     }
 }

@@ -75,7 +75,7 @@ type TextAreaData<'w, 's> = Query<
 
 pub fn add_new_text(
     mut commands: Commands,
-    mut window_query: Query<(Entity, &mut LoadedScript, &mut DialogBoxState)>,
+    mut window_query: Query<(Entity, &mut LoadedScript, &mut DialogBoxPhase)>,
     text_box_query: TextAreaData,
     last_data: LastTextData,
     app_type_registry: Res<AppTypeRegistry>,
@@ -87,7 +87,7 @@ pub fn add_new_text(
 ) {
     for (w_ent, mut script, mut ws) in &mut window_query {
         for (tb_ent, tb_spr, config, parent) in &text_box_query {
-            if *ws != DialogBoxState::Typing || w_ent != parent.get() {
+            if *ws != DialogBoxPhase::Typing || w_ent != parent.get() {
                 continue;
             }
             let (mut last_line_opt, mut last_text_opt, mut last_x, mut last_y, mut last_timer) =
@@ -210,7 +210,7 @@ fn send_feed_event(
     fw_event: &mut EventWriter<FeedWaitingEvent>,
     entity: Entity,
     last_timer: &TypingTimer,
-    ws: &mut DialogBoxState,
+    ws: &mut DialogBoxPhase,
     last_x: f32,
     last_y: f32,
 ) {
@@ -219,7 +219,7 @@ fn send_feed_event(
         wait_sec: last_timer.timer.remaining_secs(),
         last_pos: Vec2::new(last_x, last_y),
     });
-    *ws = DialogBoxState::WaitingAction;
+    *ws = DialogBoxPhase::WaitingAction;
 }
 
 fn get_next_order(
@@ -331,7 +331,7 @@ pub fn settle_lines(
     >,
     text_char: Query<&Text, With<MessageTextChar>>,
     text_box_query: Query<(&Sprite, &TypeTextConfig, &Parent), With<TextArea>>,
-    window_query: Query<&DialogBoxState>,
+    window_query: Query<&DialogBoxPhase>,
 ) {
     let mut sorted = targets.iter_mut().collect::<Vec<(
         &MessageTextLine,
@@ -370,7 +370,7 @@ pub fn settle_lines(
             JustifyText::Right => box_width - line_width,
             _ => 0.,
         };
-        if let Some(DialogBoxState::Typing) = window {
+        if let Some(DialogBoxPhase::Typing) = window {
             l_tf.translation.y = prev_height
         };
     }

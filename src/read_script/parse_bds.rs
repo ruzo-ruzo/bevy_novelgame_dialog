@@ -254,7 +254,8 @@ fn throw_event(input: &str) -> IResult<&str, ParsedOrder> {
 fn jump_event(input: &str) -> IResult<&str, ParsedOrder> {
     let path_target = separated_pair(is_not(" \t"), space1, is_not(")"));
     let link = delimited(char('('), path_target, char(')'));
-    let head = r#"{"bevy_novelgame_dialog::dialog_box::public_events::bds_event::LoadBds": (path: ""#;
+    let head =
+        r#"{"bevy_novelgame_dialog::dialog_box::public_events::bds_event::LoadBds": (path: ""#;
     let middle = r#"",target_name: "#;
     let last = r#",),}"#;
     let to_ron = map(link, |(t, p)| [head, t, middle, p, last].concat());

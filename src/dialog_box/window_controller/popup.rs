@@ -4,23 +4,20 @@ use bevy::render::view::Visibility::Visible;
 
 pub fn open_window(
     mut commands: Commands,
-    mut db_query: Query<Entity, (With<Current>, With<DialogBox>)>,
+    db_query: Query<Entity, (With<Current>, With<DialogBox>)>,
     mut ow_event: EventReader<OpenDialogEvent>,
-    mut tf_query: Query<&mut Transform>,
     asset_server: Res<AssetServer>,
     setup_config: Res<SetupConfig>,
 ) {
     for window_config in &mut ow_event.read() {
-        for entity in &mut db_query {
-            commands.entity(entity).remove::<Current>();
-        }
+        db_query.iter().for_each(|e| {commands.entity(e).remove::<Current>();});
         let (script_path, script_section) =
             split_path_and_section(window_config.script_path.clone());
         let mwb = DialogBoxBundle {
             dialog_box: DialogBox {
                 name: window_config.dialog_box_name.clone(),
             },
-            state: DialogBoxState::Preparing,
+            state: DialogBoxPhase::Preparing,
             waitting: window_config.wait_breaker,
             script: LoadedScript {
                 bds_handle: asset_server.load(script_path),
@@ -39,15 +36,7 @@ pub fn open_window(
             ..default()
         };
         let mw = match window_config.dialog_box_entity {
-            Some(entity) => {
-                if let Ok(mut tf) = tf_query.get_mut(entity) {
-                    tf.translation = Vec3 {
-                        z: 0.0,
-                        ..tf.translation
-                    };
-                }
-                entity
-            }
+            Some(entity) =>  entity,
             None => commands.spawn(mw_spirte).id(),
         };
         let additional_mw = (Hidden, window_config.template_open_choice.clone());
@@ -84,10 +73,10 @@ pub fn open_window(
                 sprite: Sprite {
                     anchor: Anchor::TopLeft,
                     color: Color::WHITE.with_a(0.),
-                    custom_size: Some(t_cfg.main_area_size),
+                    custom_size: Some(t_cfg.area_size),
                     ..default()
                 },
-                transform: Transform::from_translation(t_cfg.main_area_origin.extend(0.0)),
+                transform: Transform::from_translation(t_cfg.area_origin.extend(0.0)),
                 ..default()
             };
             let tai = commands.spawn((tab, ta_sprite, layer)).id();
@@ -117,7 +106,7 @@ pub fn window_popper(
     mut db_query: Query<
         (
             Entity,
-            &mut DialogBoxState,
+            &mut DialogBoxPhase,
             &PopupType,
             &mut Visibility,
             &mut Transform,
@@ -126,7 +115,7 @@ pub fn window_popper(
     >,
 ) {
     for (ent, mut ws, pt, mut vis, mut tf) in &mut db_query {
-        if *ws == DialogBoxState::Preparing {
+        if *ws == DialogBoxPhase::Preparing {
             match pt {
                 PopupType::Scale { sec: s } => {
                     tf.scale = Vec3::new(0., 0., 0.);
@@ -136,20 +125,20 @@ pub fn window_popper(
                 }
             }
             *vis = Visible;
-            *ws = DialogBoxState::PoppingUp;
+            *ws = DialogBoxPhase::PoppingUp;
         }
     }
 }
 
 pub fn scaling_up(
     mut commands: Commands,
-    mut db_query: Query<(Entity, &mut Transform, &ScalingUp, &mut DialogBoxState)>,
+    mut db_query: Query<(Entity, &mut Transform, &ScalingUp, &mut DialogBoxPhase)>,
     time: Res<Time>,
 ) {
     for (ent, mut tf, ScalingUp { add_per_sec: aps }, mut ws) in &mut db_query {
         if tf.scale.x >= 1.0 {
             tf.scale = Vec3::new(1., 1., 1.);
-            *ws = DialogBoxState::Typing;
+            *ws = DialogBoxPhase::Typing;
             commands.entity(ent).remove::<ScalingUp>();
         } else {
             tf.scale.x += time.delta_seconds() * aps;
