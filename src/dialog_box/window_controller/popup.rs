@@ -10,7 +10,9 @@ pub fn open_window(
     setup_config: Res<SetupConfig>,
 ) {
     for window_config in &mut ow_event.read() {
-        db_query.iter().for_each(|e| {commands.entity(e).remove::<Current>();});
+        db_query.iter().for_each(|e| {
+            commands.entity(e).remove::<Current>();
+        });
         let (script_path, script_section) =
             split_path_and_section(window_config.script_path.clone());
         let mwb = DialogBoxBundle {
@@ -24,10 +26,10 @@ pub fn open_window(
                 bdt_handle: asset_server.load(window_config.template_path.clone()),
                 target_section: script_section,
                 order_list: if window_config.raw_orders.is_some() {
-                        window_config.raw_orders.clone()
-                    } else {
-                        None
-                    },
+                    window_config.raw_orders.clone()
+                } else {
+                    None
+                },
             },
             popup_type: window_config.popup,
         };
@@ -36,7 +38,7 @@ pub fn open_window(
             ..default()
         };
         let mw = match window_config.dialog_box_entity {
-            Some(entity) =>  entity,
+            Some(entity) => entity,
             None => commands.spawn(mw_spirte).id(),
         };
         let additional_mw = (Hidden, window_config.template_open_choice.clone());
@@ -46,14 +48,15 @@ pub fn open_window(
             .insert((mwb, layer, Current, additional_mw));
         let mut ta_id_list = Vec::new();
         let mut current_exists_in_text_areas = false;
-        for t_cfg  in &window_config.text_area_configs {
+        for t_cfg in &window_config.text_area_configs {
             let tab = TextAreaBundle {
                 text_area: TextArea {
                     name: t_cfg.area_name.clone(),
                 },
                 feeding: t_cfg.feeding,
                 config: TypeTextConfig {
-                    fonts: t_cfg.font_paths
+                    fonts: t_cfg
+                        .font_paths
                         .iter()
                         .map(|s| asset_server.load(s))
                         .collect(),

@@ -88,6 +88,7 @@ impl Plugin for DialogBoxPlugin {
             .add_systems(Update, change_current_text_area.in_set(PhaseSet::Setting))
             .add_systems(Update, change_current_dialog_box.in_set(PhaseSet::Setting))
             .add_systems(Update, change_font_size.in_set(PhaseSet::Setting))
+            .add_systems(Update, setup_choice.in_set(PhaseSet::Setting))
             .add_systems(Update, settle_wating_icon.in_set(PhaseSet::Progress))
             .add_systems(Update, settle_lines.in_set(PhaseSet::Progress))
             .add_systems(Update, text_wipe.in_set(PhaseSet::Progress))
@@ -96,13 +97,13 @@ impl Plugin for DialogBoxPlugin {
             .add_systems(Update, scroll_lines.in_set(PhaseSet::Progress))
             .add_systems(Update, simple_wait.in_set(PhaseSet::Progress))
             .add_systems(Update, open_window.in_set(PhaseSet::Fire))
+            .add_systems(Update, open_choice_box.in_set(PhaseSet::Fire))
             .add_systems(Update, load_bds.in_set(PhaseSet::Fire))
             .add_systems(Update, window_popper.in_set(PhaseSet::Fire))
             .add_systems(Update, start_window_sink.in_set(PhaseSet::Fire))
             .add_systems(Update, add_new_text.in_set(PhaseSet::Fire))
             .add_systems(Update, trigger_feeding_by_time.in_set(PhaseSet::Fire))
-            .add_systems(Update, setup_choice.in_set(PhaseSet::Fire))
-            .add_systems(Update, closing_choice_phase.in_set(PhaseSet::Fire))
+            .add_systems(Update, close_choice_phase.in_set(PhaseSet::Fire))
             .add_systems(Update, trigger_feeding_by_event.in_set(PhaseSet::Fire))
             .add_systems(Update, go_selected.in_set(PhaseSet::Fire))
             .add_systems(
@@ -110,9 +111,6 @@ impl Plugin for DialogBoxPlugin {
                 skip_feeding.in_set(PhaseSet::Fire).after(add_new_text),
             )
             .add_systems(Update, trigger_window_sink_by_time.in_set(PhaseSet::Fire))
-            .add_systems(
-                Update,
-                trigger_window_sink_by_event.in_set(PhaseSet::Fire),
-            );
+            .add_systems(Update, trigger_window_sink_by_event.in_set(PhaseSet::Fire));
     }
 }

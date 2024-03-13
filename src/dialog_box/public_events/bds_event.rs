@@ -65,12 +65,13 @@ pub fn change_current_text_area(
     db_query: Query<&DialogBox>,
     ta_query: Query<(Entity, &TextArea, &Parent)>,
     mut events: EventReader<BdsEvent>,
-){
+) {
     for event_wrapper in events.read() {
         if let Some(ChangeCurrentTextArea {
-            target_dialog_box_name: db_name ,
-            next_current_text_area_name: ta_name ,
-        }) = event_wrapper.get_opt::<ChangeCurrentTextArea>() {
+            target_dialog_box_name: db_name,
+            next_current_text_area_name: ta_name,
+        }) = event_wrapper.get_opt::<ChangeCurrentTextArea>()
+        {
             for (entity, text_area, parent) in &ta_query {
                 if let Ok(parent_db) = db_query.get(parent.get()) {
                     if parent_db.name == db_name {
@@ -95,11 +96,12 @@ pub fn change_current_dialog_box(
     mut commands: Commands,
     db_query: Query<(Entity, &DialogBox)>,
     mut events: EventReader<BdsEvent>,
-){
+) {
     for event_wrapper in events.read() {
         if let Some(ChangeCurrentDialogBox {
-            next_current_dialog_box_name: name ,
-        }) = event_wrapper.get_opt::<ChangeCurrentDialogBox>() {
+            next_current_dialog_box_name: name,
+        }) = event_wrapper.get_opt::<ChangeCurrentDialogBox>()
+        {
             for (entity, dialog_box) in &db_query {
                 if name == dialog_box.name {
                     commands.entity(entity).insert(Current);

@@ -1,11 +1,11 @@
 use bevy::{
     prelude::*,
-    text::JustifyText,
     render::{
         color::Color,
         view::{RenderLayers, Visibility::Hidden},
     },
     sprite::Anchor,
+    text::JustifyText,
 };
 
 pub mod choice;
@@ -14,8 +14,8 @@ pub mod sinkdown;
 pub mod waiting;
 
 use super::setup::SetupConfig;
-use crate::read_script::*;
 use crate::dialog_box::OpenDialogEvent;
+use crate::read_script::*;
 
 #[derive(Component, Debug)]
 pub struct DialogBox {
@@ -146,7 +146,6 @@ pub enum WaitBrakerStyle {
     },
 }
 
-
 #[derive(Component, Debug, Clone, Copy, PartialEq)]
 pub enum SelectVector {
     Vertical,
@@ -156,7 +155,7 @@ pub enum SelectVector {
 #[derive(Component)]
 pub struct ChoiceBoxState {
     main_dialog_box: Entity,
-    open_dialog_event: OpenDialogEvent,
+    choice_box_entity: Option<Entity>,
     button_entities: Vec<Entity>,
     target_list: Vec<(String, String)>,
     select_vector: SelectVector,
@@ -170,6 +169,7 @@ pub struct ChoiceBoxConfig {
     pub dialog_box_name: String,
     pub popup: PopupType,
     pub select_vector: SelectVector,
+    pub background_scaling_per_button: Vec2,
 }
 
 impl Default for ChoiceBoxConfig {
@@ -187,23 +187,24 @@ impl Default for ChoiceBoxConfig {
             button_text_areas: vec![
                 TextAreaConfig {
                     area_name: "Button Area 01".to_string(),
-                    area_origin: Vec2::new(-400., -100.),
+                    area_origin: Vec2::new(0., 100.),
                     ..basic_text_area.clone()
                 },
                 TextAreaConfig {
                     area_name: "Button Area 02".to_string(),
-                    area_origin: Vec2::new(-400., 0.),
+                    area_origin: Vec2::new(0., 0.),
                     ..basic_text_area.clone()
                 },
                 TextAreaConfig {
                     area_name: "Button Area 03".to_string(),
-                    area_origin: Vec2::new(-400., 100.),
+                    area_origin: Vec2::new(0., -100.),
                     ..basic_text_area
                 },
             ],
             dialog_box_name: "Choice Box".to_string(),
             popup: PopupType::Scale { sec: 0.8 },
             select_vector: SelectVector::Vertical,
+            background_scaling_per_button: Vec2::new(0., 100.),
         }
     }
 }

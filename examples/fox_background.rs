@@ -9,7 +9,7 @@ fn main() {
         .add_plugins((
             DefaultPlugins,
             dialog_box::DialogBoxPlugin::default(),
-            // fox_background::FoxBackgroundPlugin,
+            fox_background::FoxBackgroundPlugin,
             DebugTextAreaPlugin,
         ))
         .add_systems(Startup, waiting_sprite_setup)
@@ -32,14 +32,14 @@ fn start_message(
         let mut buttons_vec = choice_buttons.iter().collect::<Vec<_>>();
         let tac = TextAreaConfig {
             font_paths: [
-                    "UnifrakturMaguntia/UnifrakturMaguntia-Regular.ttf",
-                    "赤薔薇/akabara-cinderella.ttf",
-                    "网风雅宋/网风雅宋.ttf",
-                    "noto/NotoEmoji-VariableFont_wght.ttf",
-                ]
-                .iter()
-                .map(|s| String::from("fonts/".to_owned() + s))
-                .collect(),
+                "UnifrakturMaguntia/UnifrakturMaguntia-Regular.ttf",
+                "赤薔薇/akabara-cinderella.ttf",
+                "网风雅宋/网风雅宋.ttf",
+                "noto/NotoEmoji-VariableFont_wght.ttf",
+            ]
+            .iter()
+            .map(|s| String::from("fonts/".to_owned() + s))
+            .collect(),
             feeding: FeedingStyle::Scroll { size: 0, sec: 0.5 },
             font_color: Color::DARK_GRAY,
             area_origin: Vec2::new(-540.0, 70.0),
@@ -51,7 +51,7 @@ fn start_message(
             // typing_timing: TypingTiming::ByPage,
             ..default()
         };
-        buttons_vec.sort_by_key(|x| x.1.0);
+        buttons_vec.sort_by_key(|x| x.1 .0);
         ow_event.send(OpenDialogEvent {
             script_path: "scripts/reload_test.bds#テストヘッダー2".to_string(),
             template_path: "scripts/test.bdt".to_string(),
@@ -66,6 +66,7 @@ fn start_message(
                 background_entity: choice_frame.get_single().ok(),
                 button_entities: buttons_vec.iter().map(|x| x.0).collect::<Vec<_>>(),
                 button_text_areas: vec![tac.clone(), tac.clone(), tac],
+				background_scaling_per_button: Vec2::new(0.0, 130.0),
                 ..default()
             },
             ..default()
@@ -198,7 +199,7 @@ fn setup_choice_images(mut commands: Commands, asset_server: Res<AssetServer>) {
                 custom_size: Some(Vec2::new(400., 100.)),
                 ..default()
             },
-            transform: Transform::from_xyz(0., 130., 1.8),
+            transform: Transform::from_xyz(0., 110., 1.8),
             texture: button_image_handle.clone(),
             ..default()
         },
@@ -211,7 +212,7 @@ fn setup_choice_images(mut commands: Commands, asset_server: Res<AssetServer>) {
                 custom_size: Some(Vec2::new(400., 100.)),
                 ..default()
             },
-            transform: Transform::from_xyz(0., -10., 1.8),
+            transform: Transform::from_xyz(0., -30., 1.8),
             texture: button_image_handle.clone(),
             ..default()
         },
@@ -224,7 +225,7 @@ fn setup_choice_images(mut commands: Commands, asset_server: Res<AssetServer>) {
                 custom_size: Some(Vec2::new(400., 100.)),
                 ..default()
             },
-            transform: Transform::from_xyz(0., -140., 1.8),
+            transform: Transform::from_xyz(0., -160., 1.8),
             texture: button_image_handle.clone(),
             ..default()
         },
@@ -248,7 +249,7 @@ fn setup_choice_images(mut commands: Commands, asset_server: Res<AssetServer>) {
         SpriteBundle {
             sprite: Sprite {
                 color: Color::rgba(1., 1., 1., 0.5),
-                custom_size: Some(Vec2::new(600., 500.)),
+                custom_size: Some(Vec2::new(600., 100.)),
                 ..default()
             },
             transform: Transform::from_xyz(0., 0., 1.3),

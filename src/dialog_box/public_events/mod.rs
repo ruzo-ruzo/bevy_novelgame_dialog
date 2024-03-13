@@ -4,7 +4,7 @@ use super::window_controller::*;
 use crate::read_script::*;
 use bevy::prelude::*;
 
-#[derive(Event, Clone)]
+#[derive(Event)]
 pub struct OpenDialogEvent {
     pub dialog_box_name: String,
     pub dialog_box_entity: Option<Entity>,
