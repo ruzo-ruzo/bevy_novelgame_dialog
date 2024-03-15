@@ -76,6 +76,7 @@ pub fn open_window(
                 sprite: Sprite {
                     anchor: Anchor::TopLeft,
                     color: Color::WHITE.with_a(0.),
+                    // color: Color::BLACK.with_a(0.5),
                     custom_size: Some(t_cfg.area_size),
                     ..default()
                 },
@@ -114,7 +115,7 @@ pub fn window_popper(
             &mut Visibility,
             &mut Transform,
         ),
-        (With<Current>, With<DialogBox>),
+        With<DialogBox>,
     >,
 ) {
     for (ent, mut ws, pt, mut vis, mut tf) in &mut db_query {
@@ -139,7 +140,7 @@ pub fn scaling_up(
     time: Res<Time>,
 ) {
     for (ent, mut tf, ScalingUp { add_per_sec: aps }, mut ws) in &mut db_query {
-        if tf.scale.x >= 1.0 {
+        if *ws == DialogBoxPhase::PoppingUp && tf.scale.x >= 1.0 {
             tf.scale = Vec3::new(1., 1., 1.);
             *ws = DialogBoxPhase::Typing;
             commands.entity(ent).remove::<ScalingUp>();

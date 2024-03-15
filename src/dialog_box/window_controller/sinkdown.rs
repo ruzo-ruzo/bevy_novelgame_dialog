@@ -131,7 +131,7 @@ pub fn start_window_sink(
                             });
                             *ws = DialogBoxPhase::SinkingDown;
                         }
-                        SinkDownType::Fix => *ws = DialogBoxPhase::Fixed,
+                        SinkDownType::Fix => *ws = DialogBoxPhase::Pending,
                     }
                 }
             }

@@ -99,7 +99,6 @@ pub enum DialogBoxPhase {
     Feeding,
     Pending,
     SinkingDown,
-    Fixed,
 }
 
 #[derive(Component, Debug, Clone, Copy, PartialEq)]
@@ -170,6 +169,7 @@ pub struct ChoiceBoxConfig {
     pub popup: PopupType,
     pub select_vector: SelectVector,
     pub background_scaling_per_button: Vec2,
+    pub background_scaling_anchor: Anchor,
 }
 
 impl Default for ChoiceBoxConfig {
@@ -178,7 +178,6 @@ impl Default for ChoiceBoxConfig {
             writing: WritingStyle::Put,
             typing_timing: TypingTiming::ByPage,
             main_alignment: JustifyText::Center,
-            text_pos_z: 2.0,
             ..default()
         };
         ChoiceBoxConfig {
@@ -205,6 +204,7 @@ impl Default for ChoiceBoxConfig {
             popup: PopupType::Scale { sec: 0.8 },
             select_vector: SelectVector::Vertical,
             background_scaling_per_button: Vec2::new(0., 100.),
+            background_scaling_anchor: Anchor::TopLeft,
         }
     }
 }

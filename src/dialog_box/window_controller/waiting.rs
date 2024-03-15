@@ -260,7 +260,7 @@ pub fn skip_typing_or_next(
 
 pub fn skip_feeding(
     mut commands: Commands,
-    mut window_query: Query<&mut DialogBoxPhase, With<DialogBox>>,
+    mut window_query: Query<&mut DialogBoxPhase, (With<DialogBox>, With<Current>)>,
     text_box_query: Query<&Parent, With<TextArea>>,
     line_query: Query<(Entity, &Parent), With<MessageTextLine>>,
     mut bds_reader: EventReader<BdsEvent>,

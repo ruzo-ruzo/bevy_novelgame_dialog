@@ -11,9 +11,9 @@ impl Plugin for DebugTextAreaPlugin {
     }
 }
 
-pub fn monitor_db_state(dbs_query: Query<&DialogBoxPhase, Changed<DialogBoxPhase>>) {
-    for dbs in &dbs_query {
-        info!("Dialog Box State: {dbs:?}");
+pub fn monitor_db_state(dbs_query: Query<(&DialogBox, &DialogBoxPhase), Changed<DialogBoxPhase>>) {
+    for (db, dbs) in &dbs_query {
+        info!("Dialog Box \"{}\"'s State: {dbs:?}", db.name);
     }
 }
 

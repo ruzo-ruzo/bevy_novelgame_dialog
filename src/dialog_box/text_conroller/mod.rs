@@ -75,8 +75,8 @@ type TextAreaData<'w, 's> = Query<
 
 pub fn add_new_text(
     mut commands: Commands,
-    mut window_query: Query<(Entity, &mut LoadedScript, &mut DialogBoxPhase)>,
-    text_box_query: TextAreaData,
+    mut dialog_box_query: Query<(Entity, &mut LoadedScript, &mut DialogBoxPhase)>,
+    text_area_query: TextAreaData,
     last_data: LastTextData,
     app_type_registry: Res<AppTypeRegistry>,
     mut wrapper: EventWriter<BdsEvent>,
@@ -85,11 +85,10 @@ pub fn add_new_text(
     mut pending: Local<Option<Order>>,
     mut in_cr: Local<bool>,
 ) {
-    for (w_ent, mut script, mut ws) in &mut window_query {
-        for (tb_ent, tb_spr, config, parent) in &text_box_query {
-            if *ws != DialogBoxPhase::Typing || w_ent != parent.get() {
-                continue;
-            }
+    for (w_ent, mut script, mut ws) in &mut dialog_box_query {
+        if *ws != DialogBoxPhase::Typing { continue; }
+        for (tb_ent, tb_spr, config, parent) in &text_area_query {
+            if w_ent != parent.get() { continue; }
             let (mut last_line_opt, mut last_text_opt, mut last_x, mut last_y, mut last_timer) =
                 initialize_typing_data(&last_data, tb_ent);
             let Vec2 {
@@ -255,7 +254,7 @@ fn make_new_text(
         };
         let text2d_bundle = Text2dBundle {
             text: Text::from_section(new_word.to_string(), text_style),
-            transform: Transform::from_translation(Vec3::new(next_x, 0., config.pos_z)),
+            transform: Transform::from_translation(Vec3::new(next_x, 0., 0.)),
             visibility: Visibility::Hidden,
             text_anchor: Anchor::BottomLeft,
             ..default()
@@ -306,7 +305,7 @@ fn make_empty_line(
                 anchor: Anchor::BottomLeft,
                 ..default()
             },
-            transform: Transform::from_translation(Vec3::new(0., *last_y, 0.)),
+            transform: Transform::from_translation(Vec3::new(0., *last_y, config.pos_z)),
             ..default()
         };
         Some(LineBundle {
@@ -318,8 +317,9 @@ fn make_empty_line(
     }
 }
 
-pub fn settle_lines(
-    mut targets: Query<
+// bug: prev_heightこれ全boxの全Areaで共有しちゃってるくない？
+pub fn _settle_lines(
+    mut text_lines: Query<
         (
             &MessageTextLine,
             &mut Transform,
@@ -330,19 +330,19 @@ pub fn settle_lines(
         Without<TextArea>,
     >,
     text_char: Query<&Text, With<MessageTextChar>>,
-    text_box_query: Query<(&Sprite, &TypeTextConfig, &Parent), With<TextArea>>,
-    window_query: Query<&DialogBoxPhase>,
+    text_area_query: Query<(&Sprite, &TypeTextConfig, &Parent), With<TextArea>>,
+    dialogbox_query: Query<&DialogBoxPhase>,
 ) {
-    let mut sorted = targets.iter_mut().collect::<Vec<(
+    let mut sorted_tl = text_lines.iter_mut().collect::<Vec<(
         &MessageTextLine,
         Mut<Transform>,
         Mut<Sprite>,
         &Children,
         &Parent,
     )>>();
-    sorted.sort_by(|a, b| b.1.translation.y.partial_cmp(&a.1.translation.y).unwrap());
+    sorted_tl.sort_by(|a, b| b.1.translation.y.partial_cmp(&a.1.translation.y).unwrap());
     let mut prev_height = 0f32;
-    for (mtl, ref mut l_tf, ref mut sprite, children, parent) in sorted.iter_mut() {
+    for (mtl, ref mut l_tf, ref mut sprite, children, parent) in sorted_tl.iter_mut() {
         let text_size_list: Vec<f32> = text_char
             .iter_many(*children)
             .map(|c| {
@@ -352,8 +352,8 @@ pub fn settle_lines(
                     .unwrap_or_default()
             })
             .collect();
-        let text_box = text_box_query.get(parent.get()).ok();
-        let window = text_box.and_then(|x| window_query.get(x.2.get()).ok());
+        let text_area = text_area_query.get(parent.get()).ok();
+        let dialogbox = text_area.and_then(|x| dialogbox_query.get(x.2.get()).ok());
         let base_hight = sprite.custom_size.map(|x| x.y).unwrap_or_default();
         let line_width: f32 = text_size_list.iter().sum();
         let line_hight = text_size_list
@@ -362,16 +362,61 @@ pub fn settle_lines(
             .unwrap_or(base_hight);
         prev_height -= line_hight;
         sprite.custom_size = Some(Vec2::new(line_width, line_hight));
-        let box_width = text_box
+        let area_width = text_area
             .and_then(|b| b.0.custom_size.map(|s| s.x))
             .unwrap_or_default();
-        l_tf.translation.x = match mtl.alignment {
-            JustifyText::Center => (box_width - line_width) / 2.,
-            JustifyText::Right => box_width - line_width,
-            _ => 0.,
-        };
-        if let Some(DialogBoxPhase::Typing) = window {
+        if let Some(DialogBoxPhase::Typing) = dialogbox {
+            l_tf.translation.x = match mtl.alignment {
+                JustifyText::Center => (area_width - line_width) / 2.,
+                JustifyText::Right => area_width - line_width,
+                _ => 0.,
+            };
             l_tf.translation.y = prev_height
         };
+    }
+}
+
+pub fn settle_lines(
+    dialogbox_query: Query<(Entity, &DialogBoxPhase)>,
+    mut text_lines: Query<(&MessageTextLine, &mut Transform)>,
+    text_char: Query<&Text, With<MessageTextChar>>,
+    mut sprite_query: Query<&mut Sprite>,
+    children_query: Query<&Children>,
+) {
+    for (db_entity, phase) in &dialogbox_query {
+        if *phase != DialogBoxPhase::Typing { continue; }
+        let Ok(ta_entities) = children_query.get(db_entity)  else { continue; };
+        for ta_entity in ta_entities {
+            let mut prev_height = 0f32;
+            let Ok(tl_entities) = children_query.get(*ta_entity)  else { continue; };
+            for tl_entity in tl_entities {
+                let Ok((mtl, mut l_tf)) = text_lines.get_mut(*tl_entity) else { continue; };
+                let Ok(mut tl_spr) = sprite_query.get_mut(*tl_entity) else { continue; };
+                let Ok(tx_entities) = children_query.get(*tl_entity)  else { continue; };
+                let mut text_size_list: Vec<f32> = Vec::new();
+                for tx_entity in tx_entities {
+                    let Ok(text) = text_char.get(*tx_entity) else { continue; };
+                    let text_size = text.sections.first().map(|x| x.style.font_size);
+                    text_size_list.push(text_size.unwrap_or_default());
+                }
+                let base_hight = tl_spr.custom_size.map(|x| x.y).unwrap_or_default();
+                let line_width: f32 = text_size_list.iter().sum();
+                let line_height =
+                    text_size_list
+                        .iter()
+                        .reduce(|x, y| if x > y { x } else { y })
+                        .unwrap_or(&base_hight);
+                prev_height -= line_height;
+                tl_spr.custom_size = Some(Vec2::new(line_width, *line_height));
+                let Ok(ta_spr) = sprite_query.get(*ta_entity) else { continue; };
+                let area_width = ta_spr.custom_size.map(|s| s.x).unwrap_or_default();
+                l_tf.translation.x = match mtl.alignment {
+                    JustifyText::Center => (area_width - line_width) / 2.,
+                    JustifyText::Right => area_width - line_width,
+                    _ => 0.,
+                };
+                l_tf.translation.y = prev_height
+            }
+        }
     }
 }
