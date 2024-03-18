@@ -18,9 +18,6 @@ pub struct InputForSkipping {
     pub target_text_box: Option<Entity>,
 }
 
-#[derive(Reflect, Default, Debug, PartialEq)]
-pub struct SimpleWait;
-
 #[derive(Reflect, Default, Debug)]
 pub struct BreakWait {
     pub target_text_box: Option<Entity>,

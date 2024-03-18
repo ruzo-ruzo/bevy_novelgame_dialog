@@ -9,7 +9,7 @@ fn main() {
         .add_plugins((
             DefaultPlugins,
             dialog_box::DialogBoxPlugin::default(),
-            // fox_background::FoxBackgroundPlugin,
+            fox_background::FoxBackgroundPlugin,
             DebugTextAreaPlugin,
         ))
         .add_systems(Startup, waiting_sprite_setup)
@@ -31,14 +31,14 @@ fn start_message(
     if !*is_started {
         let mut buttons_vec = choice_buttons.iter().collect::<Vec<_>>();
         let font_vec = [
-                "UnifrakturMaguntia/UnifrakturMaguntia-Regular.ttf",
-                "赤薔薇/akabara-cinderella.ttf",
-                "网风雅宋/网风雅宋.ttf",
-                "noto/NotoEmoji-VariableFont_wght.ttf",
-            ]
-            .iter()
-            .map(|s| String::from("fonts/".to_owned() + s))
-            .collect::<Vec<_>>();
+            "UnifrakturMaguntia/UnifrakturMaguntia-Regular.ttf",
+            "赤薔薇/akabara-cinderella.ttf",
+            "网风雅宋/网风雅宋.ttf",
+            "noto/NotoEmoji-VariableFont_wght.ttf",
+        ]
+        .iter()
+        .map(|s| String::from("fonts/".to_owned() + s))
+        .collect::<Vec<_>>();
         let frame_tac = TextAreaConfig {
             font_paths: font_vec.clone(),
             feeding: FeedingStyle::Scroll { size: 0, sec: 0.5 },
@@ -62,11 +62,13 @@ fn start_message(
             main_alignment: JustifyText::Center,
             ..default()
         };
-        let tac_list = (0 .. 4).map(|i| TextAreaConfig {
-            area_origin: Vec2::new(-220.0, -30.0 - 140.0*(i as f32)),
-            area_name: format!("Button Area {i:02}"),
-            .. tac_base.clone()
-        }).collect::<Vec<_>>();
+        let tac_list = (0..4)
+            .map(|i| TextAreaConfig {
+                area_origin: Vec2::new(-220.0, -30.0 - 140.0 * (i as f32)),
+                area_name: format!("Button Area {i:02}"),
+                ..tac_base.clone()
+            })
+            .collect::<Vec<_>>();
         buttons_vec.sort_by_key(|x| x.1 .0);
         ow_event.send(OpenDialogEvent {
             script_path: "scripts/reload_test.bds#テストヘッダー2".to_string(),
@@ -156,7 +158,11 @@ fn waiting_sprite_setup(
 ) {
     let texture_handle = asset_server.load("textures/ui/cursor.png");
     let texture_atlas = TextureAtlasLayout::from_grid(Vec2::new(44.0, 56.0), 1, 2, None, None);
-    let animation_indices = AnimationIndices { first: 0, last: 1, step: 1 };
+    let animation_indices = AnimationIndices {
+        first: 0,
+        last: 1,
+        step: 1,
+    };
     let texture_atlas_handle = texture_atlases.add(texture_atlas);
     let mut sprite = Sprite::default();
     sprite.anchor = Anchor::BottomLeft;
@@ -205,38 +211,38 @@ fn setup_choice_images(mut commands: Commands, asset_server: Res<AssetServer>) {
         border: BorderRect::rectangle(44., 52.),
         ..default()
     });
-    for i in 0 .. 4 {
+    for i in 0..4 {
         let button_sprite_bundle = SpriteBundle {
             sprite: Sprite {
-                color: Color::rgba(1., 1., 1., 0.3),
+                // color: Color::rgba(1., 1., 1., 0.3),
                 custom_size: Some(Vec2::new(400., 100.)),
                 ..default()
             },
             texture: button_image_handle.clone(),
-            transform: Transform::from_xyz(0.0, -80.0 - 140.0*(i as f32), 0.6),
+            transform: Transform::from_xyz(0.0, -70.0 - 140.0 * (i as f32), 0.6),
             ..default()
         };
         commands.spawn((button_sprite_bundle, button_slice.clone(), ChoiceButton(i)));
     }
     let cursor_sprite_bundle = SpriteBundle {
-            sprite: Sprite {
-                custom_size: Some(Vec2::new(480., 200.)),
-                ..default()
-            },
-            texture: choicing_frame_image_handle,
-            transform: Transform::from_xyz(-2., 200., 0.3),
+        sprite: Sprite {
+            custom_size: Some(Vec2::new(480., 200.)),
             ..default()
+        },
+        texture: choicing_frame_image_handle,
+        transform: Transform::from_xyz(-2., 200., 0.3),
+        ..default()
     };
     commands.spawn((cursor_sprite_bundle, choicing_frame_slice, ChoiceCursor));
     let frame_sprite_bundle = SpriteBundle {
-            sprite: Sprite {
-                color: Color::rgba(1., 1., 1., 0.3),
-                custom_size: Some(Vec2::new(600., 100.)),
-                ..default()
-            },
-            texture: dialog_box_image_handle,
-            transform: Transform::from_xyz(0., 100., 1.1),
+        sprite: Sprite {
+            // color: Color::rgba(1., 1., 1., 0.3),
+            custom_size: Some(Vec2::new(600., 100.)),
             ..default()
+        },
+        texture: dialog_box_image_handle,
+        transform: Transform::from_xyz(0., 100., 1.1),
+        ..default()
     };
     commands.spawn((frame_sprite_bundle, dialog_box_slice, ChoiceFrame));
 }

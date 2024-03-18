@@ -30,6 +30,9 @@ pub struct TextArea {
 #[derive(Component, Debug)]
 pub struct Current;
 
+#[derive(Component)]
+pub struct Instant;
+
 #[derive(Component, Debug)]
 pub struct TypeTextConfig {
     pub fonts: Vec<Handle<Font>>,
@@ -97,7 +100,7 @@ pub enum DialogBoxPhase {
     Typing,
     WaitingAction,
     Feeding,
-    Pending,
+    Fixed,
     SinkingDown,
 }
 
@@ -145,7 +148,7 @@ pub enum WaitBrakerStyle {
     },
 }
 
-#[derive(Component, Debug, Clone, Copy, PartialEq)]
+#[derive(Debug, Clone, Copy, PartialEq)]
 pub enum SelectVector {
     Vertical,
     Horizon,
@@ -155,9 +158,11 @@ pub enum SelectVector {
 pub struct ChoiceBoxState {
     main_dialog_box: Entity,
     choice_box_entity: Option<Entity>,
+    text_area_names: Vec<String>,
     button_entities: Vec<Entity>,
     target_list: Vec<(String, String)>,
     select_vector: SelectVector,
+    sinkdown: SinkDownType,
 }
 
 #[derive(Component, Clone)]
@@ -167,6 +172,7 @@ pub struct ChoiceBoxConfig {
     pub button_text_areas: Vec<TextAreaConfig>,
     pub dialog_box_name: String,
     pub popup: PopupType,
+    pub sinkdown: SinkDownType,
     pub select_vector: SelectVector,
     pub background_scaling_per_button: Vec2,
     pub background_scaling_anchor: Anchor,
@@ -202,6 +208,7 @@ impl Default for ChoiceBoxConfig {
             ],
             dialog_box_name: "Choice Box".to_string(),
             popup: PopupType::Scale { sec: 0.8 },
+            sinkdown: SinkDownType::Scale { sec: 0.8 },
             select_vector: SelectVector::Vertical,
             background_scaling_per_button: Vec2::new(0., 100.),
             background_scaling_anchor: Anchor::TopLeft,

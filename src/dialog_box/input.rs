@@ -1,5 +1,6 @@
 use crate::dialog_box::DialogBoxCamera;
 use crate::read_script::*;
+use crate::SelectVector;
 use bevy::prelude::*;
 use bevy::window::PrimaryWindow;
 
@@ -12,11 +13,20 @@ pub struct WaitInputGo {
     pub area: Rect,
 }
 
+#[derive(Component)]
+pub struct Pending;
+
+#[derive(Component)]
+pub struct Selective {
+    pub key_vector: SelectVector,
+    pub number: usize,
+}
+
 // ToDo: 長押しで連続スキップできるようにしときたい
 #[allow(clippy::nonminimal_bool)]
 pub fn go_selected(
     mut commands: Commands,
-    target_query: Query<(Entity, &WaitInputGo)>,
+    target_query: Query<(Entity, &WaitInputGo), Without<Pending>>,
     selected_query: Query<Entity, With<Selected>>,
     window_query: Query<&Window, With<PrimaryWindow>>,
     camera_query: Query<(&Camera, &GlobalTransform), With<DialogBoxCamera>>,

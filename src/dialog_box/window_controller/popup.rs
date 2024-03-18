@@ -39,7 +39,7 @@ pub fn open_window(
         };
         let mw = match window_config.dialog_box_entity {
             Some(entity) => entity,
-            None => commands.spawn(mw_spirte).id(),
+            None => commands.spawn((mw_spirte, Instant)).id(),
         };
         let additional_mw = (Hidden, window_config.template_open_choice.clone());
         let layer = RenderLayers::layer(setup_config.render_layer);

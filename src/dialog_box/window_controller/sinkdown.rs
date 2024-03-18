@@ -6,10 +6,8 @@ pub struct ScalingDown {
     pub sub_per_sec: f32,
 }
 
-#[derive(Reflect, Default, Debug)]
-pub struct SinkDownWindow {
-    pub sink_type: SinkDownType,
-}
+#[derive(Component)]
+pub struct Despawning;
 
 #[derive(Component, Debug)]
 pub struct WaitSinkingTrigger {
@@ -131,7 +129,7 @@ pub fn start_window_sink(
                             });
                             *ws = DialogBoxPhase::SinkingDown;
                         }
-                        SinkDownType::Fix => *ws = DialogBoxPhase::Pending,
+                        SinkDownType::Fix => *ws = DialogBoxPhase::Fixed,
                     }
                 }
             }
@@ -147,10 +145,47 @@ pub fn scaling_down(
     for (entity, mut tf, ScalingDown { sub_per_sec: aps }) in &mut db_query {
         if tf.scale.x <= 0.0 {
             tf.scale = Vec3::new(0., 0., 0.);
-            commands.entity(entity).despawn_recursive();
+            commands
+                .entity(entity)
+                .remove::<ScalingDown>()
+                .insert(Despawning);
         } else {
             tf.scale.x -= time.delta_seconds() * aps;
             tf.scale.y -= time.delta_seconds() * aps;
         };
+    }
+}
+
+pub fn despawn_dialog_box(
+    mut commands: Commands,
+    db_query: Query<Entity, (With<DialogBox>, With<Despawning>)>,
+    ta_query: Query<(Entity, &WaitBrakerStyle), With<TextArea>>,
+    ch_query: Query<&Children>,
+    instant_query: Query<&Instant>,
+) {
+    for db_entity in &db_query {
+        commands
+            .entity(db_entity)
+            .retain::<DialogBoxBundle>()
+            .remove::<Despawning>();
+        if instant_query.get(db_entity).is_ok() {
+            commands.entity(db_entity).despawn();
+        }
+        let Ok(children) = ch_query.get(db_entity) else {
+            continue;
+        };
+        for childe in children {
+            if let Ok((ta_entity, wbs)) = ta_query.get(*childe) {
+                if let WaitBrakerStyle::Input {
+                    icon_entity: Some(i_entity),
+                    ..
+                } = wbs
+                {
+                    commands.entity(ta_entity).remove_children(&[*i_entity]);
+                }
+            } else if ta_query.get(*childe).is_ok() {
+                commands.entity(*childe).despawn_recursive();
+            }
+        }
     }
 }

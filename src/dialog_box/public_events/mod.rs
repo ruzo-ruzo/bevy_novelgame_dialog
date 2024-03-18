@@ -37,8 +37,8 @@ impl Default for OpenDialogEvent {
     }
 }
 
-#[derive(Event, Clone)]
-pub struct BottunSelectedEvent(pub usize);
+#[derive(Event)]
+pub struct SelectedEvent(pub Entity);
 
-#[derive(Event, Clone)]
-pub struct BottunClickedEvent(pub usize);
+#[derive(Event)]
+pub struct GoSelectedEvent(pub Entity);

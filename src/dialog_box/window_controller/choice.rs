@@ -1,21 +1,23 @@
 use super::*;
+use crate::dialog_box::*;
 use crate::read_script::*;
 
 #[derive(Event, Default, Debug, Reflect)]
 pub struct SetupChoice {
-    pub target_list: Vec<(String, String)>,
+    target_list: Vec<(String, String)>,
 }
 
-#[derive(Event, Default, Debug)]
+#[derive(Reflect, Default, Debug)]
 pub struct ChoosenEvent {
     pub choosen_event: String,
+    pub choice_box_state_entity: Option<Entity>,
 }
 
 #[allow(clippy::type_complexity)]
 pub fn open_choice_box(
     mut commands: Commands,
     mut db_query: Query<
-        (Entity, &ChoiceBoxConfig, &mut DialogBoxPhase),
+        (Entity, &ChoiceBoxConfig, &mut DialogBoxPhase, &Children),
         (With<Current>, With<DialogBox>),
     >,
     mut vis_query: Query<&mut Visibility>,
@@ -23,20 +25,19 @@ pub fn open_choice_box(
     mut sp_query: Query<&mut Sprite>,
     mut tf_query: Query<&mut Transform>,
     mut events: EventReader<BdsEvent>,
-    // mut wrapper: EventWriter<ChoosenEvent>,
     setup_config: Res<SetupConfig>,
     mut ow_event: EventWriter<OpenDialogEvent>,
 ) {
     for event_wrapper in events.read() {
         if let Some(SetupChoice { target_list: tl }) = event_wrapper.get_opt::<SetupChoice>() {
-            if let Ok((db_entity, cbc, mut dbs)) = db_query.get_single_mut() {
+            if let Ok((db_entity, cbc, mut dbs, children)) = db_query.get_single_mut() {
                 let background_entity = if let Some(entity) = cbc.background_entity {
                     entity
                 } else {
                     commands.spawn(SpriteBundle::default()).id()
                 };
-                let ta_names = cbc
-                    .button_text_areas
+                let culled_tas = &cbc.button_text_areas[0..tl.len()];
+                let ta_names = culled_tas
                     .iter()
                     .map(|c| c.area_name.clone())
                     .collect::<Vec<_>>();
@@ -46,6 +47,8 @@ pub fn open_choice_box(
                     choice_box_entity: None,
                     target_list: tl.clone(),
                     select_vector: cbc.select_vector,
+                    sinkdown: cbc.sinkdown,
+                    text_area_names: ta_names.clone(),
                 };
                 cc_query.iter().for_each(|e| {
                     commands.entity(e).remove::<Current>();
@@ -58,13 +61,13 @@ pub fn open_choice_box(
                     *vis = Visibility::Hidden;
                 }
                 let size = tl.len() as f32;
-                let x_expand = cbc.background_scaling_per_button.x*size;
-                let y_expand = cbc.background_scaling_per_button.y*size;
+                let x_expand = cbc.background_scaling_per_button.x * size;
+                let y_expand = cbc.background_scaling_per_button.y * size;
                 let (x_dir, y_dir) = get_slide_direction(cbc.background_scaling_anchor);
                 if let Ok(mut sp) = sp_query.get_mut(background_entity) {
-                    sp.custom_size = sp.custom_size.map(|Vec2 { x, y }| {
-                            Vec2::new( x + x_expand, y + y_expand )
-                    });
+                    sp.custom_size = sp
+                        .custom_size
+                        .map(|Vec2 { x, y }| Vec2::new(x + x_expand, y + y_expand));
                 }
                 for entity in &cbc.button_entities {
                     if let Ok(mut vis) = vis_query.get_mut(*entity) {
@@ -79,18 +82,20 @@ pub fn open_choice_box(
                         .entity(*entity)
                         .insert(RenderLayers::layer(setup_config.render_layer));
                     if let Ok(mut tf) = tf_query.get_mut(*entity) {
-                        tf.translation.x += x_dir*x_expand/2.0;
-                        tf.translation.y +=y_dir*y_expand/2.0;
+                        tf.translation.x += x_dir * x_expand / 2.0;
+                        tf.translation.y += y_dir * y_expand / 2.0;
                     }
                 }
-                let slided_text_area_configs = cbc.button_text_areas.iter().map(|base|{
-                    TextAreaConfig {
+                let slided_text_area_configs = culled_tas
+                    .iter()
+                    .map(|base| TextAreaConfig {
                         area_origin: Vec2::new(
-                            base.area_origin.x + x_dir*x_expand/2.0,
-                            base.area_origin.y + y_dir*y_expand/2.0,
+                            base.area_origin.x + x_dir * x_expand / 2.0,
+                            base.area_origin.y + y_dir * y_expand / 2.0,
                         ),
-                        .. base.clone()
-                    }}).collect::<Vec<_>>();
+                        ..base.clone()
+                    })
+                    .collect::<Vec<_>>();
                 let opening_event = OpenDialogEvent {
                     dialog_box_entity: Some(background_entity),
                     dialog_box_name: cbc.dialog_box_name.clone(),
@@ -99,33 +104,34 @@ pub fn open_choice_box(
                     text_area_configs: slided_text_area_configs,
                     ..default()
                 };
-                // ow_event.send(opening_event);
-                // *dbs = DialogBoxPhase::Pending;
+                ow_event.send(opening_event);
+                *dbs = DialogBoxPhase::Fixed;
+                for childe in children {
+                    commands.entity(*childe).insert(Pending);
+                }
             }
-            wrapper.send(ChoosenEvent {
-                choosen_event: tl[0].1.clone(),
-            });
         }
     }
 }
 
-fn get_slide_direction(anchor: Anchor)  -> (f32, f32) {
+fn get_slide_direction(anchor: Anchor) -> (f32, f32) {
     let mut x_direction = 0.0;
     let mut y_direction = 0.0;
     if anchor == Anchor::TopLeft || anchor == Anchor::TopCenter || anchor == Anchor::TopRight {
-            y_direction = 1.0;
+        y_direction = 1.0;
+    } else if anchor == Anchor::BottomLeft
+        || anchor == Anchor::BottomCenter
+        || anchor == Anchor::BottomRight
+    {
+        y_direction = -1.0;
     }
-    else if anchor == 
-        Anchor::BottomLeft || anchor == Anchor::BottomCenter || anchor == Anchor::BottomRight {
-            y_direction = -1.0;
-    }
-    if anchor ==
-        Anchor::TopLeft || anchor == Anchor::CenterLeft || anchor == Anchor::BottomLeft {
-            x_direction = -1.0;
-    }
-    else if anchor == 
-        Anchor::TopRight || anchor == Anchor::CenterRight || anchor == Anchor::BottomRight {
-            x_direction = 1.0;
+    if anchor == Anchor::TopLeft || anchor == Anchor::CenterLeft || anchor == Anchor::BottomLeft {
+        x_direction = -1.0;
+    } else if anchor == Anchor::TopRight
+        || anchor == Anchor::CenterRight
+        || anchor == Anchor::BottomRight
+    {
+        x_direction = 1.0;
     }
     (x_direction, y_direction)
 }
@@ -151,27 +157,92 @@ fn make_choice_order(
 }
 
 pub fn setup_choice(
-    mut cb_query: Query<&mut ChoiceBoxState, With<Current>>,
-    db_query: Query<(Entity, &DialogBoxPhase),  With<Current>>,
+    mut commands: Commands,
+    mut cb_query: Query<(Entity, &mut ChoiceBoxState), With<Current>>,
+    db_query: Query<(Entity, &DialogBoxPhase, &Children), With<Current>>,
+    ta_query: Query<(Entity, &TextArea, &GlobalTransform, &Sprite)>,
+    app_type_registry: Res<AppTypeRegistry>,
 ) {
-    if let Ok(mut cbs) = cb_query.get_single_mut(){
+    if let Ok((cbs_entity, mut cbs)) = cb_query.get_single_mut() {
         if cbs.choice_box_entity.is_none() {
-            if let Ok((entity, dbp)) = db_query.get_single() {
-                if *dbp != DialogBoxPhase::Pending  { cbs.choice_box_entity = Some(entity) };
+            if let Ok((entity, dbp, children)) = db_query.get_single() {
+                if *dbp != DialogBoxPhase::Fixed {
+                    cbs.choice_box_entity = Some(entity)
+                };
+                for (ta_name, i) in cbs.text_area_names.iter().zip(0..) {
+                    let target = cbs
+                        .target_list
+                        .get(i)
+                        .map(|x| x.1.clone())
+                        .unwrap_or_default();
+                    let ron_base = ChoosenEvent {
+                        choosen_event: target,
+                        choice_box_state_entity: Some(cbs_entity),
+                    };
+                    let ron = write_ron(&app_type_registry, ron_base).unwrap_or_default();
+                    for (ta_entity, ta, tf, sp) in ta_query.iter_many(children) {
+                        if &ta.name == ta_name {
+                            let wa = WaitInputGo {
+                                ron: ron.clone(),
+                                area: get_rect(tf, sp),
+                            };
+                            let se = Selective {
+                                key_vector: cbs.select_vector,
+                                number: i,
+                            };
+                            commands.entity(ta_entity).insert((wa, se));
+                        }
+                    }
+                }
             }
         }
     }
 }
 
+fn get_rect(tf: &GlobalTransform, sp: &Sprite) -> Rect {
+    let base_size = sp.custom_size.unwrap_or_default();
+    let bottom_left = Vec2::new(tf.translation().x, tf.translation().y - base_size.y);
+    let top_right = Vec2::new(bottom_left.x + base_size.x, tf.translation().y);
+    Rect::from_corners(bottom_left, top_right)
+}
+
 pub fn close_choice_phase(
-    // mut db_query: Query<&DialogBoxPhase, With<DialogBox>>,
-    mut events: EventReader<ChoosenEvent>,
-    mut wrapper: EventWriter<BdsEvent>,
+    mut commands: Commands,
+    cbs_query: Query<&ChoiceBoxState>,
+    children_query: Query<&Children>,
+    mut db_query: Query<&mut DialogBoxPhase>,
+    mut events: EventReader<BdsEvent>,
+    mut gs_writer: EventWriter<GoSinking>,
     app_type_registry: Res<AppTypeRegistry>,
 ) {
-    for ChoosenEvent { choosen_event: ce } in events.read() {
-        if let Ok(next) = read_ron(&app_type_registry, ce) {
-            wrapper.send(BdsEvent { value: next });
+    for event_wrapper in events.read() {
+        if let Some(ChoosenEvent {
+            choosen_event: ce,
+            choice_box_state_entity: Some(cbse),
+        }) = event_wrapper.get_opt::<ChoosenEvent>()
+        {
+            if let Ok(next) = read_ron(&app_type_registry, ce) {
+                commands.add(|w: &mut World| {
+                    w.send_event(BdsEvent { value: next });
+                });
+            }
+            if let Ok(cbs) = cbs_query.get(cbse) {
+                let close = GoSinking {
+                    target: cbs.choice_box_entity,
+                    sink_type: cbs.sinkdown,
+                };
+                gs_writer.send(close);
+                commands.entity(cbs.main_dialog_box).insert(Current);
+                if let Ok(children) = children_query.get(cbs.main_dialog_box) {
+                    for childe in children {
+                        commands.entity(*childe).remove::<Pending>();
+                    }
+                }
+                if let Ok(mut dbp) = db_query.get_mut(cbs.main_dialog_box) {
+                    *dbp = DialogBoxPhase::Typing;
+                }
+                commands.entity(cbse).despawn();
+            }
         }
     }
 }

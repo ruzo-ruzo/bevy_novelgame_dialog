@@ -203,6 +203,7 @@ pub fn scroll_lines(
                     .first()
                     .and_then(|x| x.2.custom_size.map(|s| s.y))
                     .unwrap_or_default();
+                // info!("height: {height}");
                 for (l_entity, ref mut tf, _, ref mut sf) in target_lines.iter_mut() {
                     tf.translation.y += height * sf.line_per_sec * time.delta_seconds();
                     if tf.translation.y >= -height {

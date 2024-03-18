@@ -3,7 +3,7 @@ use bevy::prelude::*;
 use crate::read_script::*;
 use crate::*;
 
-// Reflect登録必須
+// Reflect登録必須。逆にEventは要らない
 
 // Simple String Event的なのを追加したい
 
@@ -36,6 +36,10 @@ pub fn load_bds(
     }
 }
 
+#[derive(Reflect, Default, Debug, PartialEq)]
+pub struct SimpleWait;
+
+// 倍数版欲しいかも
 #[derive(Reflect, Default, Debug)]
 pub struct ChangeFontSize {
     pub size: f32,
@@ -111,4 +115,9 @@ pub fn change_current_dialog_box(
             }
         }
     }
+}
+
+#[derive(Reflect, Default, Debug)]
+pub struct SinkDownWindow {
+    pub sink_type: SinkDownType,
 }

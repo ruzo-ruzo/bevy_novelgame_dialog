@@ -58,6 +58,7 @@ impl Plugin for DialogBoxPlugin {
             .register_type::<(String, String)>()
             .register_type::<Vec<(String, String)>>()
             .register_type::<SetupChoice>()
+            .register_type::<ChoosenEvent>()
             .register_type::<SinkDownWindow>()
             .register_type::<Option<Entity>>()
             .register_type::<InputForFeeding>()
@@ -69,7 +70,6 @@ impl Plugin for DialogBoxPlugin {
             .add_event::<OpenDialogEvent>()
             .add_event::<FeedWaitingEvent>()
             .add_event::<StartFeedingEvent>()
-            .add_event::<ChoosenEvent>()
             .add_event::<GoSinking>()
             .add_event::<BdsEvent>()
             .configure_sets(
@@ -89,6 +89,7 @@ impl Plugin for DialogBoxPlugin {
             .add_systems(Update, change_current_dialog_box.in_set(PhaseSet::Setting))
             .add_systems(Update, change_font_size.in_set(PhaseSet::Setting))
             .add_systems(Update, setup_choice.in_set(PhaseSet::Setting))
+            .add_systems(Update, despawn_dialog_box.in_set(PhaseSet::Setting))
             .add_systems(Update, settle_wating_icon.in_set(PhaseSet::Progress))
             .add_systems(Update, settle_lines.in_set(PhaseSet::Progress))
             .add_systems(Update, text_wipe.in_set(PhaseSet::Progress))
