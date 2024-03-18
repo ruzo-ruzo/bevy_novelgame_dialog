@@ -1,6 +1,5 @@
 use super::*;
 use crate::dialog_box::*;
-use crate::read_script::*;
 
 #[derive(Event, Default, Debug, Reflect)]
 pub struct SetupChoice {

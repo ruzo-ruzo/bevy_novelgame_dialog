@@ -164,13 +164,6 @@ pub fn despawn_dialog_box(
     instant_query: Query<&Instant>,
 ) {
     for db_entity in &db_query {
-        commands
-            .entity(db_entity)
-            .retain::<DialogBoxBundle>()
-            .remove::<Despawning>();
-        if instant_query.get(db_entity).is_ok() {
-            commands.entity(db_entity).despawn();
-        }
         let Ok(children) = ch_query.get(db_entity) else {
             continue;
         };
@@ -186,6 +179,13 @@ pub fn despawn_dialog_box(
             } else if ta_query.get(*childe).is_ok() {
                 commands.entity(*childe).despawn_recursive();
             }
+        }
+        commands
+            .entity(db_entity)
+            .remove::<DialogBoxBundle>()
+            .remove::<Despawning>();
+        if instant_query.get(db_entity).is_ok() {
+            commands.entity(db_entity).despawn();
         }
     }
 }
