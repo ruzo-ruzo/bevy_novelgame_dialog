@@ -81,6 +81,7 @@ pub fn open_window(
                     ..default()
                 },
                 transform: Transform::from_translation(t_cfg.area_origin.extend(0.0)),
+                // transform: Transform::from_translation(t_cfg.area_origin.extend(10.0)),
                 ..default()
             };
             let tai = commands.spawn((tab, ta_sprite, layer)).id();

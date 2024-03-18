@@ -159,7 +159,8 @@ pub fn scaling_down(
 pub fn despawn_dialog_box(
     mut commands: Commands,
     db_query: Query<Entity, (With<DialogBox>, With<Despawning>)>,
-    ta_query: Query<(Entity, &WaitBrakerStyle), With<TextArea>>,
+    wa_query: Query<(Entity, &WaitBrakerStyle), With<TextArea>>,
+    ta_query: Query<Entity, (With<TextArea>, Without<WaitBrakerStyle>)>,
     ch_query: Query<&Children>,
     instant_query: Query<&Instant>,
 ) {
@@ -168,7 +169,7 @@ pub fn despawn_dialog_box(
             continue;
         };
         for childe in children {
-            if let Ok((ta_entity, wbs)) = ta_query.get(*childe) {
+            if let Ok((ta_entity, wbs)) = wa_query.get(*childe) {
                 if let WaitBrakerStyle::Input {
                     icon_entity: Some(i_entity),
                     ..
@@ -176,7 +177,9 @@ pub fn despawn_dialog_box(
                 {
                     commands.entity(ta_entity).remove_children(&[*i_entity]);
                 }
-            } else if ta_query.get(*childe).is_ok() {
+                commands.entity(*childe).despawn_recursive();
+            }
+            if ta_query.get(*childe).is_ok() {
                 commands.entity(*childe).despawn_recursive();
             }
         }

@@ -48,6 +48,8 @@ pub fn open_choice_box(
                     select_vector: cbc.select_vector,
                     sinkdown: cbc.sinkdown,
                     text_area_names: ta_names.clone(),
+                    background_scaling_per_button: cbc.background_scaling_per_button,
+                    background_scaling_anchor: cbc.background_scaling_anchor,
                 };
                 cc_query.iter().for_each(|e| {
                     commands.entity(e).remove::<Current>();
@@ -240,7 +242,40 @@ pub fn close_choice_phase(
                 if let Ok(mut dbp) = db_query.get_mut(cbs.main_dialog_box) {
                     *dbp = DialogBoxPhase::Typing;
                 }
-                commands.entity(cbse).despawn();
+            }
+        }
+    }
+}
+
+pub fn reinstatement_external_entities(
+    mut commands: Commands,
+    cbs_query: Query<(Entity, &ChoiceBoxState)>,
+    ta_query: Query<&TextArea>,
+    children_query: Query<&Children>,
+    mut sp_query: Query<&mut Sprite>,
+    mut tf_query: Query<&mut Transform>,
+){
+    for (state_entity, cbs) in &cbs_query{
+        if let Some(cb_entity) = cbs.choice_box_entity {
+            if let Ok(cb_children) = children_query.get(cb_entity) {
+                if  ta_query.iter_many(cb_children).next() .is_none()  {
+                    let size = cbs.target_list.len() as f32;
+                    let x_expand = cbs.background_scaling_per_button.x * size;
+                    let y_expand = cbs.background_scaling_per_button.y * size;
+                    let (x_dir, y_dir) = get_slide_direction(cbs.background_scaling_anchor);
+                    if let Ok(mut sp) = sp_query.get_mut(cb_entity) {
+                        sp.custom_size = sp
+                            .custom_size
+                            .map(|Vec2 { x, y }| Vec2::new(x - x_expand, y - y_expand));
+                    }
+                    for entity in &cbs.button_entities {
+                        if let Ok(mut tf) = tf_query.get_mut(*entity) {
+                            tf.translation.x -= x_dir * x_expand / 2.0;
+                            tf.translation.y -= y_dir * y_expand / 2.0;
+                        }
+                    }
+                    commands.entity(state_entity).despawn();
+                }
             }
         }
     }

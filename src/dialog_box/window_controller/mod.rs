@@ -163,6 +163,8 @@ pub struct ChoiceBoxState {
     target_list: Vec<(String, String)>,
     select_vector: SelectVector,
     sinkdown: SinkDownType,
+    background_scaling_per_button: Vec2,
+    background_scaling_anchor: Anchor,
 }
 
 #[derive(Component, Clone)]
