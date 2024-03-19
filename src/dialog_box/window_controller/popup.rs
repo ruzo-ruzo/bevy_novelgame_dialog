@@ -5,6 +5,7 @@ use bevy::render::view::Visibility::Visible;
 pub fn open_window(
     mut commands: Commands,
     db_query: Query<Entity, (With<Current>, With<DialogBox>)>,
+    mut tf_query: Query<&mut Transform>,
     mut ow_event: EventReader<OpenDialogEvent>,
     asset_server: Res<AssetServer>,
     setup_config: Res<SetupConfig>,
@@ -41,6 +42,9 @@ pub fn open_window(
             Some(entity) => entity,
             None => commands.spawn((mw_spirte, Instant)).id(),
         };
+        if let Ok(mut tf) = tf_query.get_mut(mw) {
+            tf.scale = Vec3::ONE;
+        }
         let additional_mw = (Hidden, window_config.template_open_choice.clone());
         let layer = RenderLayers::layer(setup_config.render_layer);
         commands

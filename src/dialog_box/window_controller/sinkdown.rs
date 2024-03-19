@@ -176,8 +176,13 @@ pub fn despawn_dialog_box(
                 } = wbs
                 {
                     commands.entity(ta_entity).remove_children(&[*i_entity]);
+                    for ta_ch  in ch_query.iter_descendants(ta_entity) {
+                        if ta_ch != *i_entity {
+                            commands.entity(ta_ch).despawn();
+                        }
+                    }
                 }
-                commands.entity(*childe).despawn_recursive();
+                // commands.entity(*childe).despawn_recursive();
             }
             if ta_query.get(*childe).is_ok() {
                 commands.entity(*childe).despawn_recursive();
