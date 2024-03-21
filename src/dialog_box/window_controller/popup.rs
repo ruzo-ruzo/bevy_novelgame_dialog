@@ -21,7 +21,7 @@ pub fn open_window(
                 name: window_config.dialog_box_name.clone(),
             },
             state: DialogBoxPhase::Preparing,
-            waitting: window_config.wait_breaker,
+            waitting: window_config.wait_breaker.clone(),
             script: LoadedScript {
                 bds_handle: asset_server.load(script_path),
                 bdt_handle: asset_server.load(window_config.template_path.clone()),

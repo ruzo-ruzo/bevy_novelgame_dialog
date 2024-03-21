@@ -27,6 +27,11 @@ pub struct TextArea {
     pub name: String,
 }
 
+#[derive(Component, Debug, Default)]
+pub struct WaitingIcon {
+    pub name: String,
+}
+
 #[derive(Component, Debug)]
 pub struct Current;
 
@@ -137,21 +142,22 @@ pub enum FeedingStyle {
     // Fade,
 }
 
-#[derive(Component, Debug, Clone, Copy, PartialEq)]
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub enum SelectVector {
+    Vertical,
+    Horizon,
+}
+
+//ここから下ComponentにEntityつっこむのヤバいので後で直す
+#[derive(Component, Debug, Clone, PartialEq)]
 pub enum WaitBrakerStyle {
     Auto {
         wait_sec: f32,
     },
     Input {
-        icon_entity: Option<Entity>,
+        icon_name: String,
         is_icon_moving_to_last: bool,
     },
-}
-
-#[derive(Debug, Clone, Copy, PartialEq)]
-pub enum SelectVector {
-    Vertical,
-    Horizon,
 }
 
 #[derive(Component)]

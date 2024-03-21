@@ -27,7 +27,9 @@ pub fn setup_feed_starter(
     mut commands: Commands,
     window_query: Query<(Entity, &WaitBrakerStyle)>,
     text_box_query: Query<(Entity, &Parent, &GlobalTransform, &Sprite), With<TextArea>>,
-    selected_query: Query<Entity, With<Selected>>,
+    w_icon_query: Query<(Entity, &WaitingIcon)>,
+    current_query: Query<&Current>,
+    // selected_query: Query<Entity, With<Selected>>,
     mut waitting_event: EventReader<FeedWaitingEvent>,
     type_registry: Res<AppTypeRegistry>,
 ) {
@@ -35,6 +37,10 @@ pub fn setup_feed_starter(
         for (w_entity, wbs) in &window_query {
             for (tb_entity, parent, tb_tf, tb_sp) in &text_box_query {
                 if event.target_window == w_entity && w_entity == parent.get() {
+                    if current_query.get(tb_entity).is_err(){
+                        commands.entity(tb_entity).remove::<Selected>();
+                        continue;
+                    }
                     match wbs {
                         WaitBrakerStyle::Auto { wait_sec: break_ws } => {
                             commands.entity(tb_entity).insert(WaitFeedingTrigger {
@@ -45,15 +51,16 @@ pub fn setup_feed_starter(
                             });
                         }
                         WaitBrakerStyle::Input {
-                            icon_entity: icon_opt,
+                            icon_name: ic_name,
                             ..
                         } => {
-                            if let Some(ic_entity) = icon_opt {
+                            let icon_opt =  w_icon_query.iter().find(|x|*ic_name == x.1.name);
+                            if let Some((ic_entity, _)) = icon_opt {
                                 let tt = TypingTimer {
                                     timer: Timer::from_seconds(event.wait_sec, TimerMode::Once),
                                 };
-                                commands.entity(*ic_entity).insert(tt);
-                                commands.entity(*ic_entity).set_parent(tb_entity);
+                                commands.entity(ic_entity).insert(tt);
+                                commands.entity(ic_entity).set_parent(tb_entity);
                             }
                             let ron_iff = write_ron(
                                 &type_registry,
@@ -65,9 +72,6 @@ pub fn setup_feed_starter(
                             let wig =
                                 make_wig_for_skip(tb_entity, tb_tf, tb_sp, ron_iff, &type_registry);
                             commands.entity(tb_entity).insert(wig);
-                            for s_entity in &selected_query {
-                                commands.entity(s_entity).remove::<Selected>();
-                            }
                             commands.entity(tb_entity).insert(Selected);
                         }
                     }
@@ -203,7 +207,6 @@ pub fn scroll_lines(
                     .first()
                     .and_then(|x| x.2.custom_size.map(|s| s.y))
                     .unwrap_or_default();
-                // info!("height: {height}");
                 for (l_entity, ref mut tf, _, ref mut sf) in target_lines.iter_mut() {
                     tf.translation.y += height * sf.line_per_sec * time.delta_seconds();
                     if tf.translation.y >= -height {

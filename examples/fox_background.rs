@@ -10,7 +10,7 @@ fn main() {
             DefaultPlugins,
             dialog_box::DialogBoxPlugin::default(),
             fox_background::FoxBackgroundPlugin,
-            // DebugTextAreaPlugin,
+            DebugTextAreaPlugin,
         ))
         .add_systems(Startup, waiting_sprite_setup)
         .add_systems(Startup, setup_messageframe)
@@ -22,7 +22,6 @@ fn main() {
 
 fn start_message(
     mut ow_event: EventWriter<OpenDialogEvent>,
-    waiting_sprite: Query<Entity, With<WaitingSprite>>,
     background: Query<Entity, With<DialogBoxBackground>>,
     choice_frame: Query<Entity, With<ChoiceFrame>>,
     choice_buttons: Query<(Entity, &ChoiceButton)>,
@@ -77,7 +76,7 @@ fn start_message(
             dialog_box_entity: Some(background.single()),
             position: Vec2::new(0., -200.),
             wait_breaker: WaitBrakerStyle::Input {
-                icon_entity: waiting_sprite.get_single().ok(),
+                icon_name: "Main Icon".to_string(),
                 is_icon_moving_to_last: true,
             },
             template_open_choice: ChoiceBoxConfig {
@@ -179,6 +178,7 @@ fn waiting_sprite_setup(
         },
         animation_indices,
         AnimationTimer(Timer::from_seconds(0.5, TimerMode::Repeating)),
+        WaitingIcon { name: "Main Icon".to_string() },
         WaitingSprite,
     ));
 }

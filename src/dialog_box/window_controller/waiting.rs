@@ -1,11 +1,8 @@
 use super::super::*;
 use bevy::render::view::RenderLayers;
-// use bevy::utils::Duration;
 
-#[derive(Component, Debug)]
-pub struct WaitingIcon {
-    is_settled: bool,
-}
+#[derive(Component)]
+pub struct Settled;
 
 #[derive(Reflect, Default, Debug)]
 pub struct InputForFeeding {
@@ -27,6 +24,7 @@ pub struct BreakWait {
 pub fn simple_wait(
     mut commands: Commands,
     mut window_query: Query<(Entity, &mut DialogBoxPhase, &WaitBrakerStyle), With<DialogBox>>,
+    w_icon_query: Query<(Entity,&WaitingIcon)>,
     text_box_query: Query<
         (Entity, &GlobalTransform, &Sprite, &Parent),
         (With<Current>, With<TextArea>),
@@ -40,7 +38,7 @@ pub fn simple_wait(
         if event_wrapper.get_opt::<SimpleWait>() == Some(SimpleWait) {
             for (mw_entity, mut ws, wbs) in &mut window_query {
                 if let WaitBrakerStyle::Input {
-                    icon_entity: icon_opt,
+                    icon_name: ic_name,
                     ..
                 } = wbs
                 {
@@ -59,13 +57,14 @@ pub fn simple_wait(
                         }
                         let (_, _, _, _, last_timer) =
                             initialize_typing_data(&last_data, tb_entity);
-                        if let Some(ic_entity) = icon_opt {
+                        let ic_opt = w_icon_query.iter().find(|x|x.1.name == *ic_name);
+                        if let Some((ic_entity, _)) = ic_opt {
                             let time = last_timer.timer.remaining_secs();
                             let tt = TypingTimer {
                                 timer: Timer::from_seconds(time, TimerMode::Once),
                             };
-                            commands.entity(*ic_entity).insert(tt);
-                            commands.entity(*ic_entity).set_parent(tb_entity);
+                            commands.entity(ic_entity).insert(tt);
+                            commands.entity(ic_entity).set_parent(tb_entity);
                         }
                         for s_entity in &selected_query {
                             commands.entity(s_entity).remove::<Selected>();
@@ -80,9 +79,10 @@ pub fn simple_wait(
 }
 
 pub fn restart_typing(
+    mut commands: Commands,
     mut window_query: Query<(Entity, &mut DialogBoxPhase, &WaitBrakerStyle), With<DialogBox>>,
     text_box_query: Query<&Parent, With<TextArea>>,
-    mut icon_query: Query<(&mut Visibility, &mut WaitingIcon)>,
+    mut icon_query: Query<(Entity, &mut Visibility, &mut WaitingIcon)>,
     mut bds_reader: EventReader<BdsEvent>,
 ) {
     for event_wrapper in bds_reader.read() {
@@ -97,12 +97,13 @@ pub fn restart_typing(
                     }
                 }
                 if let WaitBrakerStyle::Input {
-                    icon_entity: Some(ic_entity),
+                    icon_name: ic_name,
                     ..
                 } = wbs
                 {
-                    if let Ok((mut ic_vis, mut wi)) = icon_query.get_mut(*ic_entity) {
-                        *wi = WaitingIcon { is_settled: false };
+                    let ic_opt = icon_query.iter_mut().find(|x|x.2.name == *ic_name);
+                    if let Some((ic_entity, mut ic_vis, _)) = ic_opt {
+                        commands.entity(ic_entity).remove::<Settled>();
                         *ic_vis = Visibility::Hidden;
                     }
                 }
@@ -113,24 +114,21 @@ pub fn restart_typing(
 
 pub fn waiting_icon_setting(
     mut commands: Commands,
+    w_icon_query: Query<(Entity, &WaitingIcon), Without<WritingStyle>>,
     wbs_query: Query<(&RenderLayers, &WaitBrakerStyle)>,
-    no_tag: Query<Entity, Without<WaitingIcon>>,
 ) {
     for (layer, wbs) in &wbs_query {
         if let WaitBrakerStyle::Input {
-            icon_entity: Some(ic_entity),
+            icon_name: ic_name,
             ..
         } = wbs
         {
-            for no_tag_entity in &no_tag {
-                if *ic_entity == no_tag_entity {
-                    commands.entity(*ic_entity).insert((
-                        WaitingIcon { is_settled: false },
-                        WritingStyle::Put,
-                        *layer,
-                        Visibility::Hidden,
-                    ));
-                }
+            if let Some((ic_entity, _)) = w_icon_query.iter().find(|x|x.1.name == *ic_name) {
+                commands.entity(ic_entity).insert((
+                    WritingStyle::Put,
+                    *layer,
+                    Visibility::Hidden,
+                ));
             }
         }
     }
@@ -138,41 +136,43 @@ pub fn waiting_icon_setting(
 
 #[allow(clippy::type_complexity)]
 pub fn settle_wating_icon(
+    mut commands: Commands,
     window_query: Query<(Entity, &DialogBoxPhase, &WaitBrakerStyle), With<DialogBox>>,
     text_box_query: Query<(Entity, &Parent, &TypeTextConfig), With<TextArea>>,
-    mut icon_query: Query<
-        (&mut Transform, &mut WaitingIcon),
-        (Without<MessageTextLine>, Without<MessageTextChar>),
+    mut float_icon_query: Query<
+        (Entity, &mut Transform, &mut WaitingIcon),
+        (Without<MessageTextLine>, Without<MessageTextChar>, Without<Settled>),
     >,
+    settle_icon_query: Query<(Entity, &WaitingIcon), With<Settled>>,
     last_data: LastTextData,
 ) {
     for (mw_entity, ws, wbs) in &window_query {
         if let WaitBrakerStyle::Input {
-            icon_entity: Some(ic_entity),
+            icon_name: ic_name,
             is_icon_moving_to_last: move_flag,
         } = wbs
         {
-            if let Ok((mut ic_tf, mut wi)) = icon_query.get_mut(*ic_entity) {
-                let WaitingIcon {
-                    is_settled: settled,
-                } = &mut *wi;
-                if *ws == DialogBoxPhase::WaitingAction {
-                    if *settled {
-                        return;
-                    }
-                    if let Some((tb_entity, _, config)) =
-                        text_box_query.iter().find(|(_, p, _)| p.get() == mw_entity)
-                    {
-                        let (_, _, last_x, last_y, _) =
-                            initialize_typing_data(&last_data, tb_entity);
-                        if *move_flag {
-                            ic_tf.translation =
-                                Vec3::new(last_x + config.text_style.font_size, last_y, 1.);
+            if *ws == DialogBoxPhase::WaitingAction {
+                for (ic_entity, mut ic_tf, wi) in &mut float_icon_query {
+                    if wi.name == *ic_name {
+                        if let Some((tb_entity, _, config)) =
+                            text_box_query.iter().find(|(_, p, _)| p.get() == mw_entity)
+                        {
+                            let (_, _, last_x, last_y, _) =
+                                initialize_typing_data(&last_data, tb_entity);
+                            if *move_flag {
+                                ic_tf.translation =
+                                    Vec3::new(last_x + config.text_style.font_size, last_y, 1.);
+                            }
                         }
+                        commands.entity(ic_entity).insert(Settled);
                     }
-                    *settled = true;
-                } else {
-                    *settled = false;
+                }
+            } else {
+                for (ic_entity, wi) in &settle_icon_query {
+                    if wi.name == *ic_name {
+                        commands.entity(ic_entity).remove::<Settled>();
+                    }
                 }
             }
         }

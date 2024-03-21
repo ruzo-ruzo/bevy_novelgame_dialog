@@ -158,34 +158,26 @@ pub fn scaling_down(
 
 pub fn despawn_dialog_box(
     mut commands: Commands,
-    db_query: Query<Entity, (With<DialogBox>, With<Despawning>)>,
-    wa_query: Query<(Entity, &WaitBrakerStyle), With<TextArea>>,
-    ta_query: Query<Entity, (With<TextArea>, Without<WaitBrakerStyle>)>,
+    db_query: Query<(Entity, &WaitBrakerStyle), (With<DialogBox>, With<Despawning>)>,
+    w_icon_query: Query<(Entity,&WaitingIcon)>,
     ch_query: Query<&Children>,
     instant_query: Query<&Instant>,
 ) {
-    for db_entity in &db_query {
-        let Ok(children) = ch_query.get(db_entity) else {
-            continue;
-        };
-        for childe in children {
-            if let Ok((ta_entity, wbs)) = wa_query.get(*childe) {
-                if let WaitBrakerStyle::Input {
-                    icon_entity: Some(i_entity),
-                    ..
-                } = wbs
-                {
-                    commands.entity(ta_entity).remove_children(&[*i_entity]);
-                    for ta_ch  in ch_query.iter_descendants(ta_entity) {
-                        if ta_ch != *i_entity {
-                            commands.entity(ta_ch).despawn();
-                        }
+    for (db_entity, wbs) in &db_query {
+        if let WaitBrakerStyle::Input {
+            icon_name: ic_name,
+            ..
+        } = wbs
+        {
+            for childe in ch_query.iter_descendants(db_entity) {
+                let ic_opt = w_icon_query.iter().find(|x|x.1.name == *ic_name);
+                if let Some((ic_entity, _)) = ic_opt {
+                    if childe ==ic_entity {
+                        commands.entity(db_entity).remove_children(&[ic_entity]);
+                    } else {
+                        commands.entity(childe).despawn();
                     }
                 }
-                // commands.entity(*childe).despawn_recursive();
-            }
-            if ta_query.get(*childe).is_ok() {
-                commands.entity(*childe).despawn_recursive();
             }
         }
         commands
