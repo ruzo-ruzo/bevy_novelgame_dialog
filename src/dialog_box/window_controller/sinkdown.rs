@@ -158,25 +158,27 @@ pub fn scaling_down(
 
 pub fn despawn_dialog_box(
     mut commands: Commands,
-    db_query: Query<(Entity, &WaitBrakerStyle), (With<DialogBox>, With<Despawning>)>,
-    w_icon_query: Query<(Entity,&WaitingIcon)>,
+    db_query: Query<Entity, (With<DialogBox>, With<Despawning>)>,
+    w_icon_query: Query<&WaitingIcon>,
+    ta_query: Query<Entity,With<TextArea>>,
     ch_query: Query<&Children>,
     instant_query: Query<&Instant>,
 ) {
-    for (db_entity, wbs) in &db_query {
-        if let WaitBrakerStyle::Input {
-            icon_name: ic_name,
-            ..
-        } = wbs
-        {
-            for childe in ch_query.iter_descendants(db_entity) {
-                let ic_opt = w_icon_query.iter().find(|x|x.1.name == *ic_name);
-                if let Some((ic_entity, _)) = ic_opt {
-                    if childe ==ic_entity {
-                        commands.entity(db_entity).remove_children(&[ic_entity]);
-                    } else {
-                        commands.entity(childe).despawn();
+    for db_entity in &db_query {
+        if let Ok(tb_children) = ch_query.get(db_entity) {
+            for tb_childe in tb_children {
+                if let Ok(ta_entity) = ta_query.get(*tb_childe) {
+                    if let Ok(ta_children) = ch_query.get(ta_entity) {
+                        for ta_childe in ta_children {
+                            if let Ok(wi) = w_icon_query.get(*ta_childe) {
+                                commands.entity(ta_entity).remove_children(&[*ta_childe]);
+                                commands.entity(*ta_childe).remove::<Settled>();
+                            } else {
+                                commands.entity(*ta_childe).despawn_recursive();
+                            }
+                        }
                     }
+                    commands.entity(ta_entity).despawn();
                 }
             }
         }

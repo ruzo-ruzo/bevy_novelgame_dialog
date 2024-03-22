@@ -4,6 +4,7 @@ use bevy::render::view::RenderLayers;
 #[derive(Component)]
 pub struct Settled;
 
+// この辺のEntity持たせてる奴Currentでよくない？
 #[derive(Reflect, Default, Debug)]
 pub struct InputForFeeding {
     pub target_text_box: Option<Entity>,
@@ -25,7 +26,7 @@ pub fn simple_wait(
     mut commands: Commands,
     mut window_query: Query<(Entity, &mut DialogBoxPhase, &WaitBrakerStyle), With<DialogBox>>,
     w_icon_query: Query<(Entity,&WaitingIcon)>,
-    text_box_query: Query<
+    text_area_query: Query<
         (Entity, &GlobalTransform, &Sprite, &Parent),
         (With<Current>, With<TextArea>),
     >,
@@ -42,7 +43,7 @@ pub fn simple_wait(
                     ..
                 } = wbs
                 {
-                    for (tb_entity, tb_tf, tb_sp, parent) in &text_box_query {
+                    for (tb_entity, tb_tf, tb_sp, parent) in &text_area_query {
                         if parent.get() == mw_entity {
                             let ron = write_ron(
                                 &type_registry,
