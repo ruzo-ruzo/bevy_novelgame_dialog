@@ -102,6 +102,7 @@ impl Default for TextAreaConfig {
 pub enum DialogBoxPhase {
     Preparing,
     PoppingUp,
+    WaitToType,
     Typing,
     WaitingAction,
     Feeding,

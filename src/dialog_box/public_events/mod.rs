@@ -38,7 +38,11 @@ impl Default for OpenDialogEvent {
 }
 
 #[derive(Event)]
-pub struct SelectedEvent(pub Entity);
+pub struct SelectedEvent {
+    pub text_area_name: String,
+}
 
 #[derive(Event)]
-pub struct GoSelectedEvent(pub Entity);
+pub struct GoSelectedEvent {
+    pub text_area_name: String,
+}

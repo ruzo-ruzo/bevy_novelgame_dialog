@@ -4,7 +4,7 @@ use bevy::render::view::RenderLayers;
 #[derive(Component)]
 pub struct Settled;
 
-// この辺のEntity持たせてる奴Currentでよくない？
+// この辺のEntity持たせてる奴Currentかnameでよくない？
 #[derive(Reflect, Default, Debug)]
 pub struct InputForFeeding {
     pub target_text_box: Option<Entity>,
@@ -24,7 +24,7 @@ pub struct BreakWait {
 #[allow(clippy::type_complexity)]
 pub fn simple_wait(
     mut commands: Commands,
-    mut window_query: Query<(Entity, &mut DialogBoxPhase, &WaitBrakerStyle), With<DialogBox>>,
+    mut window_query: Query<(Entity, &mut DialogBoxPhase, &WaitBrakerStyle), (With<Current>, With<DialogBox>)>,
     w_icon_query: Query<(Entity,&WaitingIcon)>,
     text_area_query: Query<
         (Entity, &GlobalTransform, &Sprite, &Parent),

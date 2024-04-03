@@ -178,7 +178,9 @@ fn waiting_sprite_setup(
         },
         animation_indices,
         AnimationTimer(Timer::from_seconds(0.5, TimerMode::Repeating)),
-        WaitingIcon { name: "Main Icon".to_string() },
+        WaitingIcon {
+            name: "Main Icon".to_string(),
+        },
         WaitingSprite,
     ));
 }

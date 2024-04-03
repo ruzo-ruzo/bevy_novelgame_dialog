@@ -8,8 +8,15 @@ impl Plugin for DebugTextAreaPlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(Update, monitor_db_state);
         app.add_systems(Update, monitor_bds_event);
+        // app.add_systems(Update, _temporary_update_system);
     }
 }
+
+// pub fn _temporary_update_system(
+    // line_query: Query<&DialogBox ,Changed<Current>>,
+// ) {
+    
+// }
 
 pub fn monitor_db_state(dbs_query: Query<(&DialogBox, &DialogBoxPhase), Changed<DialogBoxPhase>>) {
     for (db, dbs) in &dbs_query {

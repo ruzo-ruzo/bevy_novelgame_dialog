@@ -129,7 +129,10 @@ pub fn start_window_sink(
                             });
                             *ws = DialogBoxPhase::SinkingDown;
                         }
-                        SinkDownType::Fix => *ws = DialogBoxPhase::Fixed,
+                        SinkDownType::Fix => {
+                            *ws = DialogBoxPhase::Fixed;
+                            commands.entity(entity).remove::<Current>();
+                        },
                     }
                 }
             }
@@ -160,7 +163,7 @@ pub fn despawn_dialog_box(
     mut commands: Commands,
     db_query: Query<Entity, (With<DialogBox>, With<Despawning>)>,
     w_icon_query: Query<&WaitingIcon>,
-    ta_query: Query<Entity,With<TextArea>>,
+    ta_query: Query<Entity, With<TextArea>>,
     ch_query: Query<&Children>,
     instant_query: Query<&Instant>,
 ) {
@@ -170,9 +173,8 @@ pub fn despawn_dialog_box(
                 if let Ok(ta_entity) = ta_query.get(*tb_childe) {
                     if let Ok(ta_children) = ch_query.get(ta_entity) {
                         for ta_childe in ta_children {
-                            if let Ok(wi) = w_icon_query.get(*ta_childe) {
+                            if w_icon_query.get(*ta_childe).is_ok() {
                                 commands.entity(ta_entity).remove_children(&[*ta_childe]);
-                                commands.entity(*ta_childe).remove::<Settled>();
                             } else {
                                 commands.entity(*ta_childe).despawn_recursive();
                             }
@@ -185,9 +187,32 @@ pub fn despawn_dialog_box(
         commands
             .entity(db_entity)
             .remove::<DialogBoxBundle>()
+            .remove::<Current>()
             .remove::<Despawning>();
         if instant_query.get(db_entity).is_ok() {
             commands.entity(db_entity).despawn();
+        }
+    }
+}
+
+pub fn start_next_typing(
+    mut commands: Commands,
+    mut pending_query: Query<(Entity, &mut DialogBoxPhase) ,(With<DialogBox>, With<Pending>)>,
+    current_db_query: Query<&Current, (With<DialogBox>, Without<Pending>)>,
+    children_query: Query<&Children>,
+){
+    if current_db_query.iter().next().is_none() {
+        if let Ok((db_entity, mut dbp)) = pending_query.get_single_mut() {
+            if *dbp == DialogBoxPhase::WaitToType {
+                commands.entity(db_entity).remove::<Pending>();
+                commands.entity(db_entity).insert(Current);
+                if let Ok(children) = children_query.get(db_entity) {
+                    for childe in children {
+                        commands.entity(*childe).remove::<Pending>();
+                    }
+                }
+                *dbp = DialogBoxPhase::Typing;
+            }
         }
     }
 }

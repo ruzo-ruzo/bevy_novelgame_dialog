@@ -90,7 +90,11 @@ impl Plugin for DialogBoxPlugin {
             .add_systems(Update, change_font_size.in_set(PhaseSet::Setting))
             .add_systems(Update, setup_choice.in_set(PhaseSet::Setting))
             .add_systems(Update, despawn_dialog_box.in_set(PhaseSet::Setting))
-            .add_systems(Update, reinstatement_external_entities.in_set(PhaseSet::Setting))
+            .add_systems(Update, start_next_typing.in_set(PhaseSet::Setting))
+            .add_systems(
+                Update,
+                reinstatement_external_entities.in_set(PhaseSet::Setting),
+            )
             .add_systems(Update, settle_wating_icon.in_set(PhaseSet::Progress))
             .add_systems(Update, settle_lines.in_set(PhaseSet::Progress))
             .add_systems(Update, text_wipe.in_set(PhaseSet::Progress))

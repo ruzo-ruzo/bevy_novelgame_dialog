@@ -210,7 +210,6 @@ fn get_rect(tf: &GlobalTransform, sp: &Sprite) -> Rect {
 pub fn close_choice_phase(
     mut commands: Commands,
     cbs_query: Query<&ChoiceBoxState>,
-    children_query: Query<&Children>,
     mut db_query: Query<&mut DialogBoxPhase>,
     mut events: EventReader<BdsEvent>,
     mut gs_writer: EventWriter<GoSinking>,
@@ -233,14 +232,9 @@ pub fn close_choice_phase(
                     sink_type: cbs.sinkdown,
                 };
                 gs_writer.send(close);
-                commands.entity(cbs.main_dialog_box).insert(Current);
-                if let Ok(children) = children_query.get(cbs.main_dialog_box) {
-                    for childe in children {
-                        commands.entity(*childe).remove::<Pending>();
-                    }
-                }
+                commands.entity(cbs.main_dialog_box).insert(Pending);
                 if let Ok(mut dbp) = db_query.get_mut(cbs.main_dialog_box) {
-                    *dbp = DialogBoxPhase::Typing;
+                    *dbp = DialogBoxPhase::WaitToType;
                 }
             }
         }
@@ -254,11 +248,11 @@ pub fn reinstatement_external_entities(
     children_query: Query<&Children>,
     mut sp_query: Query<&mut Sprite>,
     mut tf_query: Query<&mut Transform>,
-){
-    for (state_entity, cbs) in &cbs_query{
+) {
+    for (state_entity, cbs) in &cbs_query {
         if let Some(cb_entity) = cbs.choice_box_entity {
             if let Ok(cb_children) = children_query.get(cb_entity) {
-                if  ta_query.iter_many(cb_children).next() .is_none()  {
+                if ta_query.iter_many(cb_children).next().is_none() {
                     let size = cbs.target_list.len() as f32;
                     let x_expand = cbs.background_scaling_per_button.x * size;
                     let y_expand = cbs.background_scaling_per_button.y * size;

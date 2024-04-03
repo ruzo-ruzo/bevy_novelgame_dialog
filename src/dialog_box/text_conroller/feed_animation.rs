@@ -37,7 +37,7 @@ pub fn setup_feed_starter(
         for (w_entity, wbs) in &window_query {
             for (tb_entity, parent, tb_tf, tb_sp) in &text_box_query {
                 if event.target_window == w_entity && w_entity == parent.get() {
-                    if current_query.get(tb_entity).is_err(){
+                    if current_query.get(tb_entity).is_err() {
                         commands.entity(tb_entity).remove::<Selected>();
                         continue;
                     }
@@ -51,10 +51,9 @@ pub fn setup_feed_starter(
                             });
                         }
                         WaitBrakerStyle::Input {
-                            icon_name: ic_name,
-                            ..
+                            icon_name: ic_name, ..
                         } => {
-                            let icon_opt =  w_icon_query.iter().find(|x|*ic_name == x.1.name);
+                            let icon_opt = w_icon_query.iter().find(|x| *ic_name == x.1.name);
                             if let Some((ic_entity, _)) = icon_opt {
                                 let tt = TypingTimer {
                                     timer: Timer::from_seconds(event.wait_sec, TimerMode::Once),
