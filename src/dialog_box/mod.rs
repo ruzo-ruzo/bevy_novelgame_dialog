@@ -2,20 +2,21 @@ use crate::read_script::*;
 use bevy::prelude::*;
 
 mod input;
+pub mod public;
 mod setup;
 mod text_conroller;
 pub mod window_controller;
-pub mod public;
 
-use window_controller::choice::*;
 use bds_event::*;
 use input::*;
-use public::events::*;
+use public::components::*;
 use public::configs::*;
+use public::events::*;
 use setup::*;
 use text_conroller::feed_animation::*;
 use text_conroller::typing_animations::*;
 use text_conroller::*;
+use window_controller::choice::*;
 use window_controller::popup::*;
 use window_controller::sinkdown::*;
 use window_controller::waiting::*;

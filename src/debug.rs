@@ -13,9 +13,9 @@ impl Plugin for DebugTextAreaPlugin {
 }
 
 // pub fn _temporary_update_system(
-    // line_query: Query<&DialogBox ,Changed<Current>>,
+// line_query: Query<&DialogBox ,Changed<Current>>,
 // ) {
-    
+
 // }
 
 pub fn monitor_db_state(dbs_query: Query<(&DialogBox, &DialogBoxPhase), Changed<DialogBoxPhase>>) {

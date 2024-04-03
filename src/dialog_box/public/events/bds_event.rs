@@ -1,8 +1,9 @@
 use bevy::prelude::*;
 
-use crate::read_script::*;
-use crate::dialog_box::window_controller::*;
+use crate::dialog_box::public::components::*;
 use crate::dialog_box::public::configs::*;
+use crate::dialog_box::window_controller::*;
+use crate::read_script::*;
 
 // Reflect登録必須。逆にEventは要らない
 

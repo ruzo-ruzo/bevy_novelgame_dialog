@@ -1,9 +1,6 @@
 use super::*;
 use crate::read_script::split_path_and_section;
-use bevy::render::view::{
-    RenderLayers,
-    Visibility::*,
-};
+use bevy::render::view::{RenderLayers, Visibility::*};
 
 pub fn open_window(
     mut commands: Commands,
@@ -88,7 +85,6 @@ pub fn open_window(
                     ..default()
                 },
                 transform: Transform::from_translation(t_cfg.area_origin.extend(0.0)),
-                // transform: Transform::from_translation(t_cfg.area_origin.extend(10.0)),
                 ..default()
             };
             let tai = commands.spawn((tab, ta_sprite, layer)).id();

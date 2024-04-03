@@ -132,7 +132,7 @@ pub fn start_window_sink(
                         SinkDownType::Fix => {
                             *ws = DialogBoxPhase::Fixed;
                             commands.entity(entity).remove::<Current>();
-                        },
+                        }
                     }
                 }
             }
@@ -197,10 +197,10 @@ pub fn despawn_dialog_box(
 
 pub fn remove_pending(
     mut commands: Commands,
-    mut pending_query: Query<(Entity, &mut DialogBoxPhase) ,(With<DialogBox>, With<Pending>)>,
+    mut pending_query: Query<(Entity, &mut DialogBoxPhase), (With<DialogBox>, With<Pending>)>,
     current_db_query: Query<&Current, (With<DialogBox>, Without<Pending>)>,
     children_query: Query<&Children>,
-){
+) {
     if current_db_query.iter().next().is_none() {
         if let Ok((db_entity, mut dbp)) = pending_query.get_single_mut() {
             commands.entity(db_entity).remove::<Pending>();

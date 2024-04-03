@@ -1,7 +1,4 @@
-use bevy::{
-    prelude::*,
-    sprite::Anchor,
-};
+use bevy::{prelude::*, sprite::Anchor};
 
 pub mod choice;
 pub mod popup;
@@ -9,9 +6,10 @@ pub mod sinkdown;
 pub mod waiting;
 
 use super::setup::SetupConfig;
+use crate::dialog_box::public::components::*;
+use crate::dialog_box::public::configs::*;
 use crate::dialog_box::OpenDialogEvent;
 use crate::read_script::*;
-use crate::dialog_box::public::configs::*;
 
 #[derive(Component, Debug)]
 pub struct DialogBox {

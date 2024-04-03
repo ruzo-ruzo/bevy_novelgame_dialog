@@ -1,6 +1,6 @@
-use crate::dialog_box::DialogBoxCamera;
-use crate::dialog_box::window_controller::*;
 use crate::dialog_box::public::configs::*;
+use crate::dialog_box::window_controller::*;
+use crate::dialog_box::DialogBoxCamera;
 use crate::read_script::*;
 use bevy::prelude::*;
 use bevy::window::PrimaryWindow;
