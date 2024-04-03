@@ -1,6 +1,6 @@
 pub mod bds_event;
 
-use super::window_controller::*;
+use crate::dialog_box::public::configs::*;
 use crate::read_script::*;
 use bevy::prelude::*;
 

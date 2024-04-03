@@ -1,5 +1,6 @@
 use super::*;
 use crate::dialog_box::*;
+use bevy::render::view::RenderLayers;
 
 #[derive(Event, Default, Debug, Reflect)]
 pub struct SetupChoice {
@@ -143,7 +144,7 @@ fn make_choice_order(
     text_area_names: &[String],
 ) -> Option<Vec<Order>> {
     let header = r#"<script>{
-        "bevy_novelgame_dialog::dialog_box::public_events::bds_event::ChangeCurrentTextArea": 
+        "bevy_novelgame_dialog::dialog_box::public::events::bds_event::ChangeCurrentTextArea": 
         (target_dialog_box_name: ""#;
     let midpoint = r#"",  next_current_text_area_name: ""#;
     let footer = r#"",),}</script>"#;

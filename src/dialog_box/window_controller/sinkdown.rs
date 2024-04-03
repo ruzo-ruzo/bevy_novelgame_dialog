@@ -195,7 +195,7 @@ pub fn despawn_dialog_box(
     }
 }
 
-pub fn start_next_typing(
+pub fn remove_pending(
     mut commands: Commands,
     mut pending_query: Query<(Entity, &mut DialogBoxPhase) ,(With<DialogBox>, With<Pending>)>,
     current_db_query: Query<&Current, (With<DialogBox>, Without<Pending>)>,
@@ -203,14 +203,14 @@ pub fn start_next_typing(
 ){
     if current_db_query.iter().next().is_none() {
         if let Ok((db_entity, mut dbp)) = pending_query.get_single_mut() {
-            if *dbp == DialogBoxPhase::WaitToType {
-                commands.entity(db_entity).remove::<Pending>();
-                commands.entity(db_entity).insert(Current);
-                if let Ok(children) = children_query.get(db_entity) {
-                    for childe in children {
-                        commands.entity(*childe).remove::<Pending>();
-                    }
+            commands.entity(db_entity).remove::<Pending>();
+            commands.entity(db_entity).insert(Current);
+            if let Ok(children) = children_query.get(db_entity) {
+                for childe in children {
+                    commands.entity(*childe).remove::<Pending>();
                 }
+            }
+            if *dbp == DialogBoxPhase::WaitToType {
                 *dbp = DialogBoxPhase::Typing;
             }
         }

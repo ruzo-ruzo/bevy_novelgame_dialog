@@ -1,6 +1,7 @@
 use crate::dialog_box::DialogBoxCamera;
+use crate::dialog_box::window_controller::*;
+use crate::dialog_box::public::configs::*;
 use crate::read_script::*;
-use crate::SelectVector;
 use bevy::prelude::*;
 use bevy::window::PrimaryWindow;
 
@@ -12,9 +13,6 @@ pub struct WaitInputGo {
     pub ron: String,
     pub area: Rect,
 }
-
-#[derive(Component)]
-pub struct Pending;
 
 #[derive(Component)]
 pub struct Selective {

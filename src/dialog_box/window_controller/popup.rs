@@ -1,6 +1,9 @@
 use super::*;
 use crate::read_script::split_path_and_section;
-use bevy::render::view::Visibility::Visible;
+use bevy::render::view::{
+    RenderLayers,
+    Visibility::*,
+};
 
 pub fn open_window(
     mut commands: Commands,

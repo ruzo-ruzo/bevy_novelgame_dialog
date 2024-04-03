@@ -255,7 +255,7 @@ fn jump_event(input: &str) -> IResult<&str, ParsedOrder> {
     let path_target = separated_pair(is_not(" \t"), space1, is_not(")"));
     let link = delimited(char('('), path_target, char(')'));
     let head =
-        r#"{"bevy_novelgame_dialog::dialog_box::public_events::bds_event::LoadBds": (path: ""#;
+        r#"{"bevy_novelgame_dialog::dialog_box::public::events::bds_event::LoadBds": (path: ""#;
     let middle = r#"",target_name: "#;
     let last = r#",),}"#;
     let to_ron = map(link, |(t, p)| [head, t, middle, p, last].concat());
@@ -450,7 +450,7 @@ mod parse_bds_tests {
 
     #[test]
     fn test_jump_event() {
-        let ron = "{\"bevy_novelgame_dialog::dialog_box::public_events::bds_event::LoadBds\": (path: \"abc\",target_name: \"def\",),}";
+        let ron = "{\"bevy_novelgame_dialog::dialog_box::public::events::bds_event::LoadBds\": (path: \"abc\",target_name: \"def\",),}";
         let link = ParsedOrder::OrderWrapper(Order::ThroghEvent {
             ron: ron.to_string(),
         });
@@ -459,7 +459,7 @@ mod parse_bds_tests {
 
     #[test]
     fn test_choice() {
-        let ron = "{\"bevy_novelgame_dialog::dialog_box::window_controller::choice::SetupChoice\": (target_list: [(\"efg\", \"{\\\"bevy_novelgame_dialog::dialog_box::public_events::bds_event::LoadBds\\\": (path: \\\"abc\\\",target_name: \\\"def\\\",),}\"),(\"nop\", \"{\\\"bevy_novelgame_dialog::dialog_box::public_events::bds_event::LoadBds\\\": (path: \\\"hij\\\",target_name: \\\"klm\\\",),}\"),],),}";
+        let ron = "{\"bevy_novelgame_dialog::dialog_box::window_controller::choice::SetupChoice\": (target_list: [(\"efg\", \"{\\\"bevy_novelgame_dialog::dialog_box::public::events::bds_event::LoadBds\\\": (path: \\\"abc\\\",target_name: \\\"def\\\",),}\"),(\"nop\", \"{\\\"bevy_novelgame_dialog::dialog_box::public::events::bds_event::LoadBds\\\": (path: \\\"hij\\\",target_name: \\\"klm\\\",),}\"),],),}";
         let link = ParsedOrder::OrderWrapper(Order::ThroghEvent {
             ron: ron.to_string(),
         });

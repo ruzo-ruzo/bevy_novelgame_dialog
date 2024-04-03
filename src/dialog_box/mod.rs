@@ -2,15 +2,16 @@ use crate::read_script::*;
 use bevy::prelude::*;
 
 mod input;
-pub mod public_events;
 mod setup;
 mod text_conroller;
 pub mod window_controller;
+pub mod public;
 
-use crate::choice::*;
+use window_controller::choice::*;
 use bds_event::*;
 use input::*;
-use public_events::*;
+use public::events::*;
+use public::configs::*;
 use setup::*;
 use text_conroller::feed_animation::*;
 use text_conroller::typing_animations::*;
@@ -90,7 +91,7 @@ impl Plugin for DialogBoxPlugin {
             .add_systems(Update, change_font_size.in_set(PhaseSet::Setting))
             .add_systems(Update, setup_choice.in_set(PhaseSet::Setting))
             .add_systems(Update, despawn_dialog_box.in_set(PhaseSet::Setting))
-            .add_systems(Update, start_next_typing.in_set(PhaseSet::Setting))
+            .add_systems(Update, remove_pending.in_set(PhaseSet::Setting))
             .add_systems(
                 Update,
                 reinstatement_external_entities.in_set(PhaseSet::Setting),
