@@ -40,10 +40,6 @@ pub enum PopupType {
 
 #[derive(Component, Debug, Clone, PartialEq)]
 pub enum WaitBrakerStyle {
-    Auto {
-        wait_sec: f32,
-    },
-    Input {
-        is_icon_moving_to_last: bool,
-    },
+    Auto { wait_sec: f32 },
+    Input { is_icon_moving_to_last: bool },
 }

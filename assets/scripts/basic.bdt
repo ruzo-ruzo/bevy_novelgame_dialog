@@ -1,5 +1,5 @@
 "\[wait\]","<script>{
-    "bevy_novelgame_dialog::dialog_box::public::events::bds_event::SimpleWait":(),
+    ""bevy_novelgame_dialog::dialog_box::public::events::bds_event::SimpleWait"":(),
 }</script>"
 "\[link\]",""
 "\[(?<text>.*?)\]\((?<link>.*?)\)","${text}(${link})"

@@ -26,8 +26,11 @@ pub fn open_window(
         } else {
             LoadedScript {
                 bds_handle_opt: Some(asset_server.load(script_path)),
-                bdt_handle_list: window_config.template_path.iter()
-                    .map(|x|asset_server.load(x.clone())).collect(),
+                bdt_handle_list: window_config
+                    .template_path
+                    .iter()
+                    .map(|x| asset_server.load(x.clone()))
+                    .collect(),
                 target_section: script_section,
                 order_list: None,
             }

@@ -144,11 +144,15 @@ pub fn script_on_load(
 ) {
     for mut loaded_script in &mut loaded_script_query {
         if loaded_script.order_list.is_none() {
-            let script_opt =
-                loaded_script.bds_handle_opt.clone().and_then(|x|script_assets.get(x));
-            let template_list = loaded_script.bdt_handle_list.iter()
-                .filter_map(|x|template_assets.get(x))
-                .map(|x|x.template.clone())
+            let script_opt = loaded_script
+                .bds_handle_opt
+                .clone()
+                .and_then(|x| script_assets.get(x));
+            let template_list = loaded_script
+                .bdt_handle_list
+                .iter()
+                .filter_map(|x| template_assets.get(x))
+                .map(|x| x.template.clone())
                 .collect::<Vec<_>>();
             if let Some(bds) = script_opt {
                 let parsed =

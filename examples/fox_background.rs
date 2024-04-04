@@ -70,9 +70,12 @@ fn start_message(
             .collect::<Vec<_>>();
         buttons_vec.sort_by_key(|x| x.1 .0);
         ow_event.send(OpenDialogEvent {
-            dialog_box_name:  "Main Box".to_string(),
+            dialog_box_name: "Main Box".to_string(),
             script_path: "scripts/reload_test.md#テストヘッダー2".to_string(),
-            template_path: vec!["scripts/test.csv".to_string(), "scripts/basic.bdt".to_string()],
+            template_path: vec![
+                "scripts/test.csv".to_string(),
+                "scripts/basic.bdt".to_string(),
+            ],
             text_area_configs: vec![frame_tac],
             dialog_box_entity: Some(background.single()),
             position: Vec2::new(0., -200.),

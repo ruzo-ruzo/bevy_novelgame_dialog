@@ -50,8 +50,9 @@ pub fn setup_feed_starter(
                             });
                         }
                         WaitBrakerStyle::Input { .. } => {
-                            let icon_opt =
-                                w_icon_query.iter().find(|x| *db_name == x.1.target_window_name);
+                            let icon_opt = w_icon_query
+                                .iter()
+                                .find(|x| *db_name == x.1.target_window_name);
                             if let Some((ic_entity, _)) = icon_opt {
                                 let tt = TypingTimer {
                                     timer: Timer::from_seconds(event.wait_sec, TimerMode::Once),

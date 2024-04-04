@@ -47,13 +47,13 @@ pub fn simple_wait(
                             },
                         )
                         .unwrap_or_default();
-                        let wig =
-                            make_wig_for_skip(tb_entity, tb_tf, tb_sp, ron, &type_registry);
+                        let wig = make_wig_for_skip(tb_entity, tb_tf, tb_sp, ron, &type_registry);
                         commands.entity(tb_entity).insert(wig);
                     }
-                    let (_, _, _, _, last_timer) =
-                        initialize_typing_data(&last_data, tb_entity);
-                    let ic_opt = w_icon_query.iter().find(|x| x.1.target_window_name == *db_name);
+                    let (_, _, _, _, last_timer) = initialize_typing_data(&last_data, tb_entity);
+                    let ic_opt = w_icon_query
+                        .iter()
+                        .find(|x| x.1.target_window_name == *db_name);
                     if let Some((ic_entity, _)) = ic_opt {
                         let time = last_timer.timer.remaining_secs();
                         let tt = TypingTimer {
@@ -91,7 +91,9 @@ pub fn restart_typing(
                         *ws = DialogBoxPhase::Typing;
                     }
                 }
-                let ic_opt = icon_query.iter_mut().find(|x| x.2.target_window_name == *db_name);
+                let ic_opt = icon_query
+                    .iter_mut()
+                    .find(|x| x.2.target_window_name == *db_name);
                 if let Some((ic_entity, mut ic_vis, _)) = ic_opt {
                     commands.entity(ic_entity).remove::<Settled>();
                     *ic_vis = Visibility::Hidden;
@@ -107,13 +109,15 @@ pub fn waiting_icon_setting(
     wbs_query: Query<(&RenderLayers, &WaitBrakerStyle, &DialogBox)>,
 ) {
     for (layer, wbs, DialogBox { name: db_name }) in &wbs_query {
-        if let WaitBrakerStyle::Input {..} = wbs {
-            if let Some((ic_entity, _)) =
-                w_icon_query.iter().find(|x| x.1.target_window_name == *db_name) {
+        if let WaitBrakerStyle::Input { .. } = wbs {
+            if let Some((ic_entity, _)) = w_icon_query
+                .iter()
+                .find(|x| x.1.target_window_name == *db_name)
+            {
                 commands
                     .entity(ic_entity)
                     .insert((WritingStyle::Put, *layer, Visibility::Hidden));
-                }
+            }
         }
     }
 }
@@ -136,7 +140,8 @@ pub fn settle_wating_icon(
 ) {
     for (mw_entity, ws, wbs, DialogBox { name: db_name }) in &window_query {
         if let WaitBrakerStyle::Input {
-            is_icon_moving_to_last: move_flag, ..
+            is_icon_moving_to_last: move_flag,
+            ..
         } = wbs
         {
             if *ws == DialogBoxPhase::WaitingAction {
