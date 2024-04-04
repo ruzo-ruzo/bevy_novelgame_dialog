@@ -2,6 +2,21 @@ use super::*;
 use crate::dialog_box::*;
 use bevy::render::view::RenderLayers;
 
+// ComponentにEntityつっこむのヤバいので後で直す
+// 名前の重複を防ぐ機構を入れた方がいいかもしれない
+#[derive(Component)]
+pub struct ChoiceBoxState {
+    main_dialog_box_name: String,
+    text_area_names: Vec<String>,
+    choice_box_entity: Option<Entity>,
+    choice_box_name: String,
+    target_list: Vec<(String, String)>,
+    select_vector: SelectVector,
+    sinkdown: SinkDownType,
+    background_scaling_per_button: Vec2,
+    background_scaling_anchor: Anchor,
+}
+
 #[derive(Event, Default, Debug, Reflect)]
 pub struct SetupChoice {
     target_list: Vec<(String, String)>,
@@ -17,11 +32,12 @@ pub struct ChoosenEvent {
 pub fn open_choice_box(
     mut commands: Commands,
     mut db_query: Query<
-        (Entity, &ChoiceBoxConfig, &mut DialogBoxPhase, &Children),
-        (With<Current>, With<DialogBox>),
+        (&ChoiceBoxConfig, &mut DialogBoxPhase, &Children, &DialogBox),
+        With<Current>,
     >,
     mut vis_query: Query<&mut Visibility>,
     cc_query: Query<Entity, (With<ChoiceBoxState>, With<Current>)>,
+    cb_query: Query<(Entity, &ChoiceButton)>,
     mut sp_query: Query<&mut Sprite>,
     mut tf_query: Query<&mut Transform>,
     mut events: EventReader<BdsEvent>,
@@ -30,21 +46,26 @@ pub fn open_choice_box(
 ) {
     for event_wrapper in events.read() {
         if let Some(SetupChoice { target_list: tl }) = event_wrapper.get_opt::<SetupChoice>() {
-            if let Ok((db_entity, cbc, mut dbs, children)) = db_query.get_single_mut() {
+            if let Ok((cbc, mut dbs, children, db)) = db_query.get_single_mut() {
                 let background_entity = if let Some(entity) = cbc.background_entity {
                     entity
                 } else {
                     commands.spawn(SpriteBundle::default()).id()
                 };
+                let button_entities = cb_query
+                    .iter()
+                    .filter(|x| x.1.target_window_name == cbc.dialog_box_name)
+                    .map(|x| x.0)
+                    .collect::<Vec<_>>();
                 let culled_tas = &cbc.button_text_areas[0..tl.len()];
                 let ta_names = culled_tas
                     .iter()
                     .map(|c| c.area_name.clone())
                     .collect::<Vec<_>>();
                 let cs = ChoiceBoxState {
-                    main_dialog_box: db_entity,
-                    button_entities: cbc.button_entities.clone(),
+                    main_dialog_box_name: db.name.clone(),
                     choice_box_entity: None,
+                    choice_box_name: cbc.dialog_box_name.clone(),
                     target_list: tl.clone(),
                     select_vector: cbc.select_vector,
                     sinkdown: cbc.sinkdown,
@@ -57,7 +78,7 @@ pub fn open_choice_box(
                 });
                 commands
                     .entity(background_entity)
-                    .push_children(&cbc.button_entities);
+                    .push_children(&button_entities);
                 commands.spawn((cs, Current));
                 if let Ok(mut vis) = vis_query.get_mut(background_entity) {
                     *vis = Visibility::Hidden;
@@ -71,10 +92,9 @@ pub fn open_choice_box(
                         .custom_size
                         .map(|Vec2 { x, y }| Vec2::new(x + x_expand, y + y_expand));
                 }
-                for entity in &cbc.button_entities {
+                for (i, entity) in button_entities.iter().enumerate() {
                     if let Ok(mut vis) = vis_query.get_mut(*entity) {
-                        let index = cbc.button_entities.iter().position(|x| x == entity);
-                        if index.unwrap() >= tl.len() {
+                        if i >= tl.len() {
                             *vis = Visibility::Hidden;
                         } else {
                             *vis = Visibility::Inherited;
@@ -211,7 +231,7 @@ fn get_rect(tf: &GlobalTransform, sp: &Sprite) -> Rect {
 pub fn close_choice_phase(
     mut commands: Commands,
     cbs_query: Query<&ChoiceBoxState>,
-    mut db_query: Query<&mut DialogBoxPhase>,
+    mut db_query: Query<(Entity, &DialogBox, &mut DialogBoxPhase)>,
     mut events: EventReader<BdsEvent>,
     mut gs_writer: EventWriter<GoSinking>,
     app_type_registry: Res<AppTypeRegistry>,
@@ -233,9 +253,11 @@ pub fn close_choice_phase(
                     sink_type: cbs.sinkdown,
                 };
                 gs_writer.send(close);
-                commands.entity(cbs.main_dialog_box).insert(Pending);
-                if let Ok(mut dbp) = db_query.get_mut(cbs.main_dialog_box) {
-                    *dbp = DialogBoxPhase::WaitToType;
+                for (db_entity, db, mut dbp) in &mut db_query {
+                    if db.name == cbs.main_dialog_box_name {
+                        commands.entity(db_entity).insert(Pending);
+                        *dbp = DialogBoxPhase::WaitToType;
+                    }
                 }
             }
         }
@@ -245,6 +267,7 @@ pub fn close_choice_phase(
 pub fn reinstatement_external_entities(
     mut commands: Commands,
     cbs_query: Query<(Entity, &ChoiceBoxState)>,
+    cb_query: Query<(Entity, &ChoiceButton)>,
     ta_query: Query<&TextArea>,
     children_query: Query<&Children>,
     mut sp_query: Query<&mut Sprite>,
@@ -263,8 +286,11 @@ pub fn reinstatement_external_entities(
                             .custom_size
                             .map(|Vec2 { x, y }| Vec2::new(x - x_expand, y - y_expand));
                     }
-                    for entity in &cbs.button_entities {
-                        if let Ok(mut tf) = tf_query.get_mut(*entity) {
+                    let cb_entities = cb_query
+                        .iter()
+                        .filter(|x| x.1.target_window_name == cbs.choice_box_name);
+                    for (entity, _) in cb_entities {
+                        if let Ok(mut tf) = tf_query.get_mut(entity) {
                             tf.translation.x -= x_dir * x_expand / 2.0;
                             tf.translation.y -= y_dir * y_expand / 2.0;
                         }

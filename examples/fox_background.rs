@@ -24,11 +24,9 @@ fn start_message(
     mut ow_event: EventWriter<OpenDialogEvent>,
     background: Query<Entity, With<DialogBoxBackground>>,
     choice_frame: Query<Entity, With<ChoiceFrame>>,
-    choice_buttons: Query<(Entity, &ChoiceButton)>,
     mut is_started: Local<bool>,
 ) {
     if !*is_started {
-        let mut buttons_vec = choice_buttons.iter().collect::<Vec<_>>();
         let font_vec = [
             "UnifrakturMaguntia/UnifrakturMaguntia-Regular.ttf",
             "赤薔薇/akabara-cinderella.ttf",
@@ -68,7 +66,6 @@ fn start_message(
                 ..tac_base.clone()
             })
             .collect::<Vec<_>>();
-        buttons_vec.sort_by_key(|x| x.1 .0);
         ow_event.send(OpenDialogEvent {
             dialog_box_name: "Main Box".to_string(),
             script_path: "scripts/reload_test.md#テストヘッダー2".to_string(),
@@ -84,7 +81,7 @@ fn start_message(
             },
             template_open_choice: ChoiceBoxConfig {
                 background_entity: choice_frame.get_single().ok(),
-                button_entities: buttons_vec.iter().map(|x| x.0).collect::<Vec<_>>(),
+                dialog_box_name: "Choice Box".to_string(),
                 button_text_areas: tac_list,
                 background_scaling_per_button: Vec2::new(0.0, 140.0),
                 background_scaling_anchor: Anchor::TopCenter,
@@ -194,9 +191,6 @@ fn waiting_sprite_setup(
 struct ChoiceFrame;
 
 #[derive(Component)]
-struct ChoiceButton(usize);
-
-#[derive(Component)]
 struct ChoiceCursor;
 
 fn setup_choice_images(mut commands: Commands, asset_server: Res<AssetServer>) {
@@ -227,7 +221,11 @@ fn setup_choice_images(mut commands: Commands, asset_server: Res<AssetServer>) {
             transform: Transform::from_xyz(0.0, -70.0 - 140.0 * (i as f32), 0.6),
             ..default()
         };
-        commands.spawn((button_sprite_bundle, button_slice.clone(), ChoiceButton(i)));
+        let cb = ChoiceButton {
+            target_window_name: "Choice Box".to_string(),
+            sort_number: i,
+        };
+        commands.spawn((button_sprite_bundle, button_slice.clone(), cb));
     }
     let cursor_sprite_bundle = SpriteBundle {
         sprite: Sprite {

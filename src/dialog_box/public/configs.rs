@@ -60,7 +60,6 @@ impl Default for TextAreaConfig {
 #[derive(Component, Clone)]
 pub struct ChoiceBoxConfig {
     pub background_entity: Option<Entity>,
-    pub button_entities: Vec<Entity>,
     pub button_text_areas: Vec<TextAreaConfig>,
     pub dialog_box_name: String,
     pub popup: PopupType,
@@ -80,7 +79,6 @@ impl Default for ChoiceBoxConfig {
         };
         ChoiceBoxConfig {
             background_entity: None,
-            button_entities: Vec::new(),
             button_text_areas: vec![
                 TextAreaConfig {
                     area_name: "Button Area 01".to_string(),

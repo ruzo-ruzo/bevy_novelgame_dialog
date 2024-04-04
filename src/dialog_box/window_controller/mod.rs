@@ -57,18 +57,3 @@ pub enum DialogBoxPhase {
     Fixed,
     SinkingDown,
 }
-
-// ComponentにEntityつっこむのヤバいので後で直す
-// 名前の重複を防ぐ機構を入れた方がいいかもしれない
-#[derive(Component)]
-pub struct ChoiceBoxState {
-    main_dialog_box: Entity,
-    choice_box_entity: Option<Entity>,
-    text_area_names: Vec<String>,
-    button_entities: Vec<Entity>,
-    target_list: Vec<(String, String)>,
-    select_vector: SelectVector,
-    sinkdown: SinkDownType,
-    background_scaling_per_button: Vec2,
-    background_scaling_anchor: Anchor,
-}

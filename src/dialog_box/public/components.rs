@@ -5,6 +5,12 @@ pub struct WaitingIcon {
     pub target_window_name: String,
 }
 
+#[derive(Component)]
+pub struct ChoiceButton {
+    pub target_window_name: String,
+    pub sort_number: usize,
+}
+
 #[derive(Component, Debug, Clone, Copy, PartialEq, Default, Reflect)]
 pub enum SinkDownType {
     #[default]
