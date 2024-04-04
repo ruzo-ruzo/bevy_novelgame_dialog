@@ -8,3 +8,4 @@
 "\[wait\]","<script>{
     "bevy_novelgame_dialog::dialog_box::public::events::bds_event::SimpleWait":(),
 }</script>"
+"\[(?<text>.*?)\]\((?<link>.*?)\)","${text}(${link})"
