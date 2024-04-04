@@ -19,9 +19,12 @@ enum ParsedOrder {
 
 pub fn read_script<S1: AsRef<str>, S2: AsRef<str>>(
     input: S1,
-    template: S2,
+    templates: &[S2],
 ) -> HashMap<String, Vec<Order>> {
-    let replaced = replace_by_template(input, template);
+    let mut replaced = String::from(input.as_ref());
+    for t in templates {
+        replaced = replace_by_template(replaced, t);
+    }
     read_bds(replaced)
 }
 

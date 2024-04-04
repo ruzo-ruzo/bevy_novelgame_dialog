@@ -2,7 +2,7 @@ use bevy::prelude::*;
 
 #[derive(Component, Debug, Default)]
 pub struct WaitingIcon {
-    pub name: String,
+    pub target_window_name: String,
 }
 
 #[derive(Component, Debug, Clone, Copy, PartialEq, Default, Reflect)]
@@ -44,7 +44,6 @@ pub enum WaitBrakerStyle {
         wait_sec: f32,
     },
     Input {
-        icon_name: String,
         is_icon_moving_to_last: bool,
     },
 }

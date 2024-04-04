@@ -1,0 +1,10 @@
+"\[close\]","<script>{
+    "bevy_novelgame_dialog::dialog_box::public::events::bds_event::SinkDownWindow": (
+	sink_type: Scale(
+			sec: 0.8,
+		),
+    ),
+}</script>"
+"\[wait\]","<script>{
+    "bevy_novelgame_dialog::dialog_box::public::events::bds_event::SimpleWait":(),
+}</script>"

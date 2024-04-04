@@ -45,8 +45,8 @@ pub enum Order {
 
 #[derive(Component, Debug)]
 pub struct LoadedScript {
-    pub bds_handle: Handle<BMWScript>,
-    pub bdt_handle: Handle<BMWTemplate>,
+    pub bds_handle_opt: Option<Handle<BMWScript>>,
+    pub bdt_handle_list: Vec<Handle<BMWTemplate>>,
     pub target_section: String,
     pub order_list: Option<Vec<Order>>,
 }
@@ -144,12 +144,15 @@ pub fn script_on_load(
 ) {
     for mut loaded_script in &mut loaded_script_query {
         if loaded_script.order_list.is_none() {
-            let script_opt = script_assets.get(&loaded_script.bds_handle);
-            let template_opt = template_assets.get(&loaded_script.bdt_handle);
-            if let (Some(bds), Some(bdt)) = (script_opt, template_opt) {
-                // info!("script is {}, \r\n section is {}", bds.script, loaded_script.target_section);
+            let script_opt =
+                loaded_script.bds_handle_opt.clone().and_then(|x|script_assets.get(x));
+            let template_list = loaded_script.bdt_handle_list.iter()
+                .filter_map(|x|template_assets.get(x))
+                .map(|x|x.template.clone())
+                .collect::<Vec<_>>();
+            if let Some(bds) = script_opt {
                 let parsed =
-                    parse_script(&bds.script, &bdt.template, &loaded_script.target_section);
+                    parse_script(&bds.script, &template_list, &loaded_script.target_section);
                 loaded_script.order_list = Some(parsed);
             }
         }
@@ -182,10 +185,10 @@ pub fn write_ron<R: Reflect>(
 
 pub fn parse_script<S1: AsRef<str>, S2: AsRef<str>, S3: AsRef<str>>(
     base: S1,
-    template: S2,
+    templates: &[S2],
     section: S3,
 ) -> Vec<Order> {
-    let orders = read_script(base, template);
+    let orders = read_script(base, templates);
     // info!("{orders:?}");
     orders[section.as_ref()].clone().into_iter().rev().collect()
 }

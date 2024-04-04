@@ -16,22 +16,29 @@ pub fn open_window(
         });
         let (script_path, script_section) =
             split_path_and_section(window_config.script_path.clone());
+        let loaded_script = if window_config.raw_orders.is_some() {
+            LoadedScript {
+                bds_handle_opt: None,
+                bdt_handle_list: Vec::new(),
+                target_section: script_section,
+                order_list: window_config.raw_orders.clone(),
+            }
+        } else {
+            LoadedScript {
+                bds_handle_opt: Some(asset_server.load(script_path)),
+                bdt_handle_list: window_config.template_path.iter()
+                    .map(|x|asset_server.load(x.clone())).collect(),
+                target_section: script_section,
+                order_list: None,
+            }
+        };
         let mwb = DialogBoxBundle {
             dialog_box: DialogBox {
                 name: window_config.dialog_box_name.clone(),
             },
             state: DialogBoxPhase::Preparing,
             waitting: window_config.wait_breaker.clone(),
-            script: LoadedScript {
-                bds_handle: asset_server.load(script_path),
-                bdt_handle: asset_server.load(window_config.template_path.clone()),
-                target_section: script_section,
-                order_list: if window_config.raw_orders.is_some() {
-                    window_config.raw_orders.clone()
-                } else {
-                    None
-                },
-            },
+            script: loaded_script,
             popup_type: window_config.popup,
         };
         let mw_spirte = SpriteBundle {
@@ -85,6 +92,7 @@ pub fn open_window(
                     ..default()
                 },
                 transform: Transform::from_translation(t_cfg.area_origin.extend(0.0)),
+                // transform: Transform::from_translation(t_cfg.area_origin.extend(10.0)),
                 ..default()
             };
             let tai = commands.spawn((tab, ta_sprite, layer)).id();

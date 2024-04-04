@@ -70,13 +70,13 @@ fn start_message(
             .collect::<Vec<_>>();
         buttons_vec.sort_by_key(|x| x.1 .0);
         ow_event.send(OpenDialogEvent {
-            script_path: "scripts/reload_test.bds#テストヘッダー2".to_string(),
-            template_path: "scripts/test.bdt".to_string(),
+            dialog_box_name:  "Main Box".to_string(),
+            script_path: "scripts/reload_test.md#テストヘッダー2".to_string(),
+            template_path: vec!["scripts/test.csv".to_string(), "scripts/basic.bdt".to_string()],
             text_area_configs: vec![frame_tac],
             dialog_box_entity: Some(background.single()),
             position: Vec2::new(0., -200.),
             wait_breaker: WaitBrakerStyle::Input {
-                icon_name: "Main Icon".to_string(),
                 is_icon_moving_to_last: true,
             },
             template_open_choice: ChoiceBoxConfig {
@@ -179,7 +179,7 @@ fn waiting_sprite_setup(
         animation_indices,
         AnimationTimer(Timer::from_seconds(0.5, TimerMode::Repeating)),
         WaitingIcon {
-            name: "Main Icon".to_string(),
+            target_window_name: "Main Box".to_string(),
         },
         WaitingSprite,
     ));

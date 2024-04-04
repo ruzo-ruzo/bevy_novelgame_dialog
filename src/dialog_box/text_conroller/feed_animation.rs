@@ -25,16 +25,15 @@ pub struct ScrollFeed {
 #[allow(clippy::type_complexity)]
 pub fn setup_feed_starter(
     mut commands: Commands,
-    window_query: Query<(Entity, &WaitBrakerStyle)>,
+    window_query: Query<(Entity, &WaitBrakerStyle, &DialogBox)>,
     text_box_query: Query<(Entity, &Parent, &GlobalTransform, &Sprite), With<TextArea>>,
     w_icon_query: Query<(Entity, &WaitingIcon)>,
     current_query: Query<&Current>,
-    // selected_query: Query<Entity, With<Selected>>,
     mut waitting_event: EventReader<FeedWaitingEvent>,
     type_registry: Res<AppTypeRegistry>,
 ) {
     for event in waitting_event.read() {
-        for (w_entity, wbs) in &window_query {
+        for (w_entity, wbs, DialogBox { name: db_name }) in &window_query {
             for (tb_entity, parent, tb_tf, tb_sp) in &text_box_query {
                 if event.target_window == w_entity && w_entity == parent.get() {
                     if current_query.get(tb_entity).is_err() {
@@ -50,10 +49,9 @@ pub fn setup_feed_starter(
                                 ),
                             });
                         }
-                        WaitBrakerStyle::Input {
-                            icon_name: ic_name, ..
-                        } => {
-                            let icon_opt = w_icon_query.iter().find(|x| *ic_name == x.1.name);
+                        WaitBrakerStyle::Input { .. } => {
+                            let icon_opt =
+                                w_icon_query.iter().find(|x| *db_name == x.1.target_window_name);
                             if let Some((ic_entity, _)) = icon_opt {
                                 let tt = TypingTimer {
                                     timer: Timer::from_seconds(event.wait_sec, TimerMode::Once),

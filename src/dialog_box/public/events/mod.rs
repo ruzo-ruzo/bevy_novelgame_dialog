@@ -5,6 +5,7 @@ use crate::dialog_box::public::configs::*;
 use crate::read_script::*;
 use bevy::prelude::*;
 
+// templateは複数指定できるようにしておきたい。
 #[derive(Event)]
 pub struct OpenDialogEvent {
     pub dialog_box_name: String,
@@ -13,7 +14,7 @@ pub struct OpenDialogEvent {
     pub popup: PopupType,
     pub wait_breaker: WaitBrakerStyle,
     pub script_path: String,
-    pub template_path: String,
+    pub template_path: Vec<String>,
     pub raw_orders: Option<Vec<Order>>,
     pub template_open_choice: ChoiceBoxConfig,
     pub text_area_configs: Vec<TextAreaConfig>,
@@ -29,7 +30,7 @@ impl Default for OpenDialogEvent {
             popup: PopupType::Scale { sec: 0.8 },
             wait_breaker: WaitBrakerStyle::Auto { wait_sec: 1.5 },
             script_path: "scripts/message.bds".to_string(),
-            template_path: "scripts/template.bdt".to_string(),
+            template_path: vec!["scripts/template.bdt".to_string()],
             raw_orders: None,
             template_open_choice: ChoiceBoxConfig::default(),
             text_area_configs: vec![TextAreaConfig::default()],

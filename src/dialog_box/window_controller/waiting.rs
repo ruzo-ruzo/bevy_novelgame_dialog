@@ -24,10 +24,7 @@ pub struct BreakWait {
 #[allow(clippy::type_complexity)]
 pub fn simple_wait(
     mut commands: Commands,
-    mut window_query: Query<
-        (Entity, &mut DialogBoxPhase, &WaitBrakerStyle),
-        (With<Current>, With<DialogBox>),
-    >,
+    mut window_query: Query<(Entity, &mut DialogBoxPhase, &DialogBox), With<Current>>,
     w_icon_query: Query<(Entity, &WaitingIcon)>,
     text_area_query: Query<
         (Entity, &GlobalTransform, &Sprite, &Parent),
@@ -40,42 +37,37 @@ pub fn simple_wait(
 ) {
     for event_wrapper in bds_reader.read() {
         if event_wrapper.get_opt::<SimpleWait>() == Some(SimpleWait) {
-            for (mw_entity, mut ws, wbs) in &mut window_query {
-                if let WaitBrakerStyle::Input {
-                    icon_name: ic_name, ..
-                } = wbs
-                {
-                    for (tb_entity, tb_tf, tb_sp, parent) in &text_area_query {
-                        if parent.get() == mw_entity {
-                            let ron = write_ron(
-                                &type_registry,
-                                BreakWait {
-                                    target_text_box: Some(tb_entity),
-                                },
-                            )
-                            .unwrap_or_default();
-                            let wig =
-                                make_wig_for_skip(tb_entity, tb_tf, tb_sp, ron, &type_registry);
-                            commands.entity(tb_entity).insert(wig);
-                        }
-                        let (_, _, _, _, last_timer) =
-                            initialize_typing_data(&last_data, tb_entity);
-                        let ic_opt = w_icon_query.iter().find(|x| x.1.name == *ic_name);
-                        if let Some((ic_entity, _)) = ic_opt {
-                            let time = last_timer.timer.remaining_secs();
-                            let tt = TypingTimer {
-                                timer: Timer::from_seconds(time, TimerMode::Once),
-                            };
-                            commands.entity(ic_entity).insert(tt);
-                            commands.entity(ic_entity).set_parent(tb_entity);
-                        }
-                        for s_entity in &selected_query {
-                            commands.entity(s_entity).remove::<Selected>();
-                        }
-                        commands.entity(tb_entity).insert(Selected);
+            for (mw_entity, mut ws, DialogBox { name: db_name }) in &mut window_query {
+                for (tb_entity, tb_tf, tb_sp, parent) in &text_area_query {
+                    if parent.get() == mw_entity {
+                        let ron = write_ron(
+                            &type_registry,
+                            BreakWait {
+                                target_text_box: Some(tb_entity),
+                            },
+                        )
+                        .unwrap_or_default();
+                        let wig =
+                            make_wig_for_skip(tb_entity, tb_tf, tb_sp, ron, &type_registry);
+                        commands.entity(tb_entity).insert(wig);
                     }
-                    *ws = DialogBoxPhase::WaitingAction;
+                    let (_, _, _, _, last_timer) =
+                        initialize_typing_data(&last_data, tb_entity);
+                    let ic_opt = w_icon_query.iter().find(|x| x.1.target_window_name == *db_name);
+                    if let Some((ic_entity, _)) = ic_opt {
+                        let time = last_timer.timer.remaining_secs();
+                        let tt = TypingTimer {
+                            timer: Timer::from_seconds(time, TimerMode::Once),
+                        };
+                        commands.entity(ic_entity).insert(tt);
+                        commands.entity(ic_entity).set_parent(tb_entity);
+                    }
+                    for s_entity in &selected_query {
+                        commands.entity(s_entity).remove::<Selected>();
+                    }
+                    commands.entity(tb_entity).insert(Selected);
                 }
+                *ws = DialogBoxPhase::WaitingAction;
             }
         }
     }
@@ -83,7 +75,7 @@ pub fn simple_wait(
 
 pub fn restart_typing(
     mut commands: Commands,
-    mut window_query: Query<(Entity, &mut DialogBoxPhase, &WaitBrakerStyle), With<DialogBox>>,
+    mut window_query: Query<(Entity, &mut DialogBoxPhase, &DialogBox)>,
     text_box_query: Query<&Parent, With<TextArea>>,
     mut icon_query: Query<(Entity, &mut Visibility, &mut WaitingIcon)>,
     mut bds_reader: EventReader<BdsEvent>,
@@ -93,21 +85,16 @@ pub fn restart_typing(
             target_text_box: Some(tb_entity),
         }) = event_wrapper.get_opt::<BreakWait>()
         {
-            for (mw_entity, mut ws, wbs) in &mut window_query {
+            for (mw_entity, mut ws, DialogBox { name: db_name }) in &mut window_query {
                 if let Ok(tb_parent) = text_box_query.get(tb_entity) {
                     if tb_parent.get() == mw_entity && DialogBoxPhase::WaitingAction == *ws {
                         *ws = DialogBoxPhase::Typing;
                     }
                 }
-                if let WaitBrakerStyle::Input {
-                    icon_name: ic_name, ..
-                } = wbs
-                {
-                    let ic_opt = icon_query.iter_mut().find(|x| x.2.name == *ic_name);
-                    if let Some((ic_entity, mut ic_vis, _)) = ic_opt {
-                        commands.entity(ic_entity).remove::<Settled>();
-                        *ic_vis = Visibility::Hidden;
-                    }
+                let ic_opt = icon_query.iter_mut().find(|x| x.2.target_window_name == *db_name);
+                if let Some((ic_entity, mut ic_vis, _)) = ic_opt {
+                    commands.entity(ic_entity).remove::<Settled>();
+                    *ic_vis = Visibility::Hidden;
                 }
             }
         }
@@ -117,18 +104,16 @@ pub fn restart_typing(
 pub fn waiting_icon_setting(
     mut commands: Commands,
     w_icon_query: Query<(Entity, &WaitingIcon), Without<WritingStyle>>,
-    wbs_query: Query<(&RenderLayers, &WaitBrakerStyle)>,
+    wbs_query: Query<(&RenderLayers, &WaitBrakerStyle, &DialogBox)>,
 ) {
-    for (layer, wbs) in &wbs_query {
-        if let WaitBrakerStyle::Input {
-            icon_name: ic_name, ..
-        } = wbs
-        {
-            if let Some((ic_entity, _)) = w_icon_query.iter().find(|x| x.1.name == *ic_name) {
+    for (layer, wbs, DialogBox { name: db_name }) in &wbs_query {
+        if let WaitBrakerStyle::Input {..} = wbs {
+            if let Some((ic_entity, _)) =
+                w_icon_query.iter().find(|x| x.1.target_window_name == *db_name) {
                 commands
                     .entity(ic_entity)
                     .insert((WritingStyle::Put, *layer, Visibility::Hidden));
-            }
+                }
         }
     }
 }
@@ -136,7 +121,7 @@ pub fn waiting_icon_setting(
 #[allow(clippy::type_complexity)]
 pub fn settle_wating_icon(
     mut commands: Commands,
-    window_query: Query<(Entity, &DialogBoxPhase, &WaitBrakerStyle), With<DialogBox>>,
+    window_query: Query<(Entity, &DialogBoxPhase, &WaitBrakerStyle, &DialogBox)>,
     text_box_query: Query<(Entity, &Parent, &TypeTextConfig), With<TextArea>>,
     mut float_icon_query: Query<
         (Entity, &mut Transform, &mut WaitingIcon),
@@ -149,15 +134,14 @@ pub fn settle_wating_icon(
     settle_icon_query: Query<(Entity, &WaitingIcon), With<Settled>>,
     last_data: LastTextData,
 ) {
-    for (mw_entity, ws, wbs) in &window_query {
+    for (mw_entity, ws, wbs, DialogBox { name: db_name }) in &window_query {
         if let WaitBrakerStyle::Input {
-            icon_name: ic_name,
-            is_icon_moving_to_last: move_flag,
+            is_icon_moving_to_last: move_flag, ..
         } = wbs
         {
             if *ws == DialogBoxPhase::WaitingAction {
                 for (ic_entity, mut ic_tf, wi) in &mut float_icon_query {
-                    if wi.name == *ic_name {
+                    if wi.target_window_name == *db_name {
                         if let Some((tb_entity, _, config)) =
                             text_box_query.iter().find(|(_, p, _)| p.get() == mw_entity)
                         {
@@ -173,7 +157,7 @@ pub fn settle_wating_icon(
                 }
             } else {
                 for (ic_entity, wi) in &settle_icon_query {
-                    if wi.name == *ic_name {
+                    if wi.target_window_name == *db_name {
                         commands.entity(ic_entity).remove::<Settled>();
                     }
                 }

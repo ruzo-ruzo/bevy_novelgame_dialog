@@ -29,7 +29,7 @@ pub fn load_bds(
             for (DialogBox { name: db_name }, mut ls) in &mut db_query {
                 if db_name == &n {
                     let (file, section) = split_path_and_section(&p);
-                    ls.bds_handle = asset_server.load(file);
+                    ls.bds_handle_opt = Some(asset_server.load(file));
                     ls.target_section = section;
                     ls.order_list = None;
                 }

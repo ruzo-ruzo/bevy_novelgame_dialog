@@ -155,7 +155,7 @@ fn make_choice_order(
         ));
         script.push_str(text);
     }
-    Some(parse_script(&script, "", ""))
+    Some(parse_script(&script, &[""], ""))
 }
 
 pub fn setup_choice(
