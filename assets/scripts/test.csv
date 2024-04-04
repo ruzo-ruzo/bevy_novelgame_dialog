@@ -1,4 +1,11 @@
-"\*(?<t>.*?)\*", "<script>{
+"\[close\]","<script>{
+    "bevy_novelgame_dialog::dialog_box::public::events::bds_event::SinkDownWindow": (
+	sink_type: Scale(
+			sec: 0.8,
+		),
+    ),
+}</script>"
+"\*(?<t>.*?)\*","<script>{
     "bevy_novelgame_dialog::dialog_box::public::events::bds_event::ChangeFontSize": (
         size: 35.0,
 ),}</script>
