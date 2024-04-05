@@ -17,6 +17,8 @@ fn main() {
         .add_systems(Startup, setup_choice_images)
         .add_systems(Update, start_message)
         .add_systems(Update, animate_sprite)
+        .add_systems(Update, move_cursor)
+        .add_systems(Update, hide_cursor)
         .run();
 }
 
@@ -186,6 +188,7 @@ fn waiting_sprite_setup(
 }
 
 //----------
+use bevy::render::view::RenderLayers;
 
 #[derive(Component)]
 struct ChoiceFrame;
@@ -227,16 +230,6 @@ fn setup_choice_images(mut commands: Commands, asset_server: Res<AssetServer>) {
         };
         commands.spawn((button_sprite_bundle, button_slice.clone(), cb));
     }
-    let cursor_sprite_bundle = SpriteBundle {
-        sprite: Sprite {
-            custom_size: Some(Vec2::new(480., 200.)),
-            ..default()
-        },
-        texture: choicing_frame_image_handle,
-        transform: Transform::from_xyz(-2., 200., 0.3),
-        ..default()
-    };
-    commands.spawn((cursor_sprite_bundle, choicing_frame_slice, ChoiceCursor));
     let frame_sprite_bundle = SpriteBundle {
         sprite: Sprite {
             // color: Color::rgba(1., 1., 1., 0.3),
@@ -247,7 +240,59 @@ fn setup_choice_images(mut commands: Commands, asset_server: Res<AssetServer>) {
         transform: Transform::from_xyz(0., 100., 1.1),
         ..default()
     };
-    commands.spawn((frame_sprite_bundle, dialog_box_slice, ChoiceFrame));
+    let cursor_sprite_bundle = SpriteBundle {
+        sprite: Sprite {
+            custom_size: Some(Vec2::new(480., 200.)),
+            ..default()
+        },
+        texture: choicing_frame_image_handle,
+        transform: Transform::from_xyz(-2., 200., 0.3),
+        visibility: Visibility::Hidden,
+        ..default()
+    };
+    commands
+        .spawn((frame_sprite_bundle, dialog_box_slice, ChoiceFrame))
+        .with_children(|c|
+            { c.spawn((
+                cursor_sprite_bundle,
+                choicing_frame_slice,
+                ChoiceCursor,
+                RenderLayers::layer(2)
+            ));}
+        );
+}
+
+fn move_cursor(
+    mut cursor_query: Query<(Entity, &mut Visibility), With<ChoiceCursor>>,
+    button_query: Query<(Entity, &ChoiceButton)>,
+    mut tf_query: Query<&mut Transform>,
+    mut events: EventReader<SelectedEvent>,
+){
+    for se in events.read() {
+        let cb_opt = button_query.iter().find(|x|x.1.sort_number == se.select_number);
+        if let Some((button_entity, _)) = cb_opt {
+            if let Ok((choice_entity, mut vis)) = cursor_query.get_single_mut() {
+                let cb_y_opt = tf_query.get(button_entity).map(|x|x.translation.y);
+                if let Ok(mut cc_tf) = tf_query.get_mut(choice_entity){
+                    cc_tf.translation.y = cb_y_opt.unwrap_or_default() + 5.0;
+                }
+                *vis = Visibility::Inherited;
+            }
+        }
+    }
+}
+
+fn hide_cursor(
+    mut cursor_query: Query<&mut Visibility, With<ChoiceCursor>>,
+    mut events: EventReader<FinisClosingBox>,
+){
+    for fcb in events.read() {
+        if fcb.dialog_box_name == "Choice Box".to_string() {
+            if let Ok(mut vis) = cursor_query.get_single_mut() {
+                *vis = Visibility::Hidden;
+            }
+        }
+    }
 }
 
 //----------

@@ -161,13 +161,14 @@ pub fn scaling_down(
 
 pub fn despawn_dialog_box(
     mut commands: Commands,
-    db_query: Query<Entity, (With<DialogBox>, With<Despawning>)>,
+    db_query: Query<(Entity, &DialogBox), With<Despawning>>,
     w_icon_query: Query<&WaitingIcon>,
     ta_query: Query<Entity, With<TextArea>>,
     ch_query: Query<&Children>,
     instant_query: Query<&Instant>,
+    mut event: EventWriter<FinisClosingBox>,
 ) {
-    for db_entity in &db_query {
+    for (db_entity, db) in &db_query {
         if let Ok(tb_children) = ch_query.get(db_entity) {
             for tb_childe in tb_children {
                 if let Ok(ta_entity) = ta_query.get(*tb_childe) {
@@ -192,6 +193,7 @@ pub fn despawn_dialog_box(
         if instant_query.get(db_entity).is_ok() {
             commands.entity(db_entity).despawn();
         }
+        event.send(FinisClosingBox{ dialog_box_name: db.name.clone() });
     }
 }
 

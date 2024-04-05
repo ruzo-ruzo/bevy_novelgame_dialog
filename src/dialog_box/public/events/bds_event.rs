@@ -132,15 +132,18 @@ pub struct BdsSignal {
     pub signal: String,
 }
 
-pub fn send_bds_signal (
+pub fn send_bds_signal(
     mut bds_events: EventReader<BdsEvent>,
     mut signal_events: EventWriter<BdsSignal>,
 ) {
     for event_wrapper in bds_events.read() {
         if let Some(SimpleStringSignal {
             signal: base_signal,
-        }) = event_wrapper.get_opt::<SimpleStringSignal>() {
-            signal_events.send(BdsSignal { signal:  base_signal.clone()});
+        }) = event_wrapper.get_opt::<SimpleStringSignal>()
+        {
+            signal_events.send(BdsSignal {
+                signal: base_signal.clone(),
+            });
         }
     }
 }

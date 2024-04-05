@@ -52,3 +52,8 @@ pub struct GoSelectedEvent {
     pub dialog_box_name: String,
     pub text_area_name: String,
 }
+
+#[derive(Event)]
+pub struct FinisClosingBox {
+    pub dialog_box_name: String,
+}

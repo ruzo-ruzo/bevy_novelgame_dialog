@@ -1,5 +1,5 @@
-use crate::dialog_box::window_controller::*;
 use crate::dialog_box::input::*;
+use crate::dialog_box::window_controller::*;
 use crate::read_script::*;
 use bevy::prelude::*;
 
@@ -14,18 +14,17 @@ impl Plugin for DebugTextAreaPlugin {
     }
 }
 
-pub fn too_many_selected(
-    ta_query: Query<&TextArea ,(With<Selected>, Without<Pending>)>,
-) {
+pub fn too_many_selected(ta_query: Query<&TextArea, (With<Selected>, Without<Pending>)>) {
     let selected_num = ta_query.iter().len();
     if selected_num > 1 {
-        error!("there are {:?} non pending selected text areas.", selected_num);
+        error!(
+            "there are {:?} non pending selected text areas.",
+            selected_num
+        );
     }
 }
 
-pub fn too_many_current_dialog_box(
-    ta_query: Query<&DialogBox , With<Current>>,
-) {
+pub fn too_many_current_dialog_box(ta_query: Query<&DialogBox, With<Current>>) {
     let current_num = ta_query.iter().len();
     if current_num > 1 {
         error!("there are {:?} current dialog boxes.", current_num);

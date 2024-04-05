@@ -69,12 +69,15 @@ impl Plugin for DialogBoxPlugin {
             .register_type::<SinkDownType>()
             .register_type::<SimpleWait>()
             .register_type::<BreakWait>()
+            .register_type::<SimpleStringSignal>()
             .add_event::<OpenDialogEvent>()
             .add_event::<FeedWaitingEvent>()
             .add_event::<StartFeedingEvent>()
             .add_event::<SelectedEvent>()
             .add_event::<GoSelectedEvent>()
             .add_event::<GoSinking>()
+            .add_event::<FinisClosingBox>()
+            .add_event::<BdsSignal>()
             .add_event::<BdsEvent>()
             .configure_sets(
                 Update,
