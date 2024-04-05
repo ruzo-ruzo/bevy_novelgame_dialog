@@ -195,6 +195,7 @@ pub fn despawn_dialog_box(
     }
 }
 
+#[allow(clippy::type_complexity)]
 pub fn remove_pending(
     mut commands: Commands,
     mut pending_query: Query<(Entity, &mut DialogBoxPhase), (With<DialogBox>, With<Pending>)>,

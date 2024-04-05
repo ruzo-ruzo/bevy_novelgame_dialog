@@ -27,7 +27,8 @@ pub struct Selective {
 #[allow(clippy::nonminimal_bool)]
 pub fn go_selected(
     mut commands: Commands,
-    target_query: Query<(Entity, &WaitInputGo), Without<Pending>>,
+    target_query: Query<(Entity, &WaitInputGo, &TextArea, &Parent), Without<Pending>>,
+    dialog_box_query: Query<&DialogBox>,
     selected_query: Query<Entity, (With<Selected>, Without<Pending>)>,
     window_query: Query<&Window, With<PrimaryWindow>>,
     camera_query: Query<(&Camera, &GlobalTransform), With<DialogBoxCamera>>,
@@ -36,6 +37,7 @@ pub fn go_selected(
     touches: Res<Touches>,
     gamepad_buttons: Res<ButtonInput<GamepadButton>>,
     mut bds_event: EventWriter<BdsEvent>,
+    mut go_event: EventWriter<GoSelectedEvent>,
     gamepads: Res<Gamepads>,
     type_registry: Res<AppTypeRegistry>,
 ) {
@@ -50,7 +52,7 @@ pub fn go_selected(
                 .map(|y| (x, y))
         })
         .and_then(|(c, p)| c.0.viewport_to_world_2d(c.1, p));
-    for (target_entity, wig) in &target_query {
+    for (target_entity, wig, ta, ta_parent) in &target_query {
         let mut touched_position_list = touches
             .iter_just_pressed()
             .filter_map(|t| camera_query.get_single().ok().map(|c| (c, t)))
@@ -72,6 +74,11 @@ pub fn go_selected(
             if let Ok(ref_value) = read_ron(&type_registry, wig.ron.clone()) {
                 bds_event.send(BdsEvent { value: ref_value });
             }
+            let db_name_opt = dialog_box_query.get(ta_parent.get()).map(|x|x.name.clone());
+            go_event.send(GoSelectedEvent {
+                dialog_box_name: ta.name.clone(),
+                text_area_name: db_name_opt.unwrap_or_default(),
+            });
             commands.entity(target_entity).remove::<WaitInputGo>();
         }
     }
@@ -143,7 +150,7 @@ pub fn shift_selected(
                 key_vector: SelectVector::Vertical,
             },.. )) = vertical_targets.iter().find(|x|x.0 == selected_entity) {
                 let max_size = vertical_targets.iter().len() - 1;
-                let next_num = if *selected_num <= 0 { max_size} else { selected_num - 1 };
+                let next_num = if *selected_num == 0 { max_size} else { selected_num - 1 };
                 let next_opt = vertical_targets.iter().find(|x| x.1.number == next_num);
                 next_select_opt = next_opt.map(|x|x.0);
             }
@@ -179,7 +186,7 @@ pub fn shift_selected(
                 key_vector: SelectVector::Horizon,
             },.. )) = horizen_targets.iter().find(|x|x.0 == selected_entity) {
                 let max_size = horizen_targets.iter().len() - 1;
-                let next_num = if *selected_num <= 0 { max_size} else { selected_num - 1 };
+                let next_num = if *selected_num == 0 { max_size} else { selected_num - 1 };
                 let next_opt = horizen_targets.iter().find(|x| x.1.number == next_num);
                 next_select_opt = next_opt.map(|x|x.0);
             }

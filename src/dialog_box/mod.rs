@@ -1,7 +1,7 @@
 use crate::read_script::*;
 use bevy::prelude::*;
 
-mod input;
+pub mod input;
 pub mod public;
 mod setup;
 mod text_conroller;
@@ -117,6 +117,7 @@ impl Plugin for DialogBoxPlugin {
             .add_systems(Update, trigger_feeding_by_event.in_set(PhaseSet::Fire))
             .add_systems(Update, go_selected.in_set(PhaseSet::Fire))
             .add_systems(Update, shift_selected.in_set(PhaseSet::Fire))
+            .add_systems(Update, send_bds_signal.in_set(PhaseSet::Fire))
             .add_systems(
                 Update,
                 skip_feeding.in_set(PhaseSet::Fire).after(add_new_text),

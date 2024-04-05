@@ -5,9 +5,7 @@ use crate::dialog_box::public::configs::*;
 use crate::dialog_box::window_controller::*;
 use crate::read_script::*;
 
-// Reflect登録必須。逆にEventは要らない
-
-// Simple String Event的なのを追加したい
+// Reflect登録必須。逆にEventは基本要らない
 
 #[derive(Reflect, Default, Debug)]
 pub struct LoadBds {
@@ -122,4 +120,27 @@ pub fn change_current_dialog_box(
 #[derive(Reflect, Default, Debug)]
 pub struct SinkDownWindow {
     pub sink_type: SinkDownType,
+}
+
+#[derive(Reflect, Default, Debug)]
+pub struct SimpleStringSignal {
+    pub signal: String,
+}
+
+#[derive(Event, Default, Debug)]
+pub struct BdsSignal {
+    pub signal: String,
+}
+
+pub fn send_bds_signal (
+    mut bds_events: EventReader<BdsEvent>,
+    mut signal_events: EventWriter<BdsSignal>,
+) {
+    for event_wrapper in bds_events.read() {
+        if let Some(SimpleStringSignal {
+            signal: base_signal,
+        }) = event_wrapper.get_opt::<SimpleStringSignal>() {
+            signal_events.send(BdsSignal { signal:  base_signal.clone()});
+        }
+    }
 }
