@@ -4,7 +4,7 @@ use bevy::render::view::RenderLayers;
 #[derive(Component)]
 pub struct Settled;
 
-// この辺のEntity持たせてる奴Currentかnameでよくない？
+// Todo: この辺のEntity持たせてる奴Currentかnameにする
 #[derive(Reflect, Default, Debug)]
 pub struct InputForFeeding {
     pub target_text_box: Option<Entity>,

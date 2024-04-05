@@ -5,7 +5,7 @@ use crate::dialog_box::public::configs::*;
 use crate::read_script::*;
 use bevy::prelude::*;
 
-// templateは複数指定できるようにしておきたい。
+// Todo: Entity直接送るのやめさせる
 #[derive(Event)]
 pub struct OpenDialogEvent {
     pub dialog_box_name: String,
@@ -39,12 +39,16 @@ impl Default for OpenDialogEvent {
     }
 }
 
-#[derive(Event)]
+#[derive(Event, Debug)]
 pub struct SelectedEvent {
+    pub dialog_box_name: String,
     pub text_area_name: String,
+    pub select_vector: SelectVector,
+    pub select_number: usize,
 }
 
 #[derive(Event)]
 pub struct GoSelectedEvent {
+    pub dialog_box_name: String,
     pub text_area_name: String,
 }

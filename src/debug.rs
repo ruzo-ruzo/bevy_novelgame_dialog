@@ -12,10 +12,13 @@ impl Plugin for DebugTextAreaPlugin {
     }
 }
 
+// use crate::dialog_box::input::*;
 // pub fn _temporary_update_system(
-// line_query: Query<&DialogBox ,Changed<Current>>,
+    // ta_query: Query<&TextArea ,Changed<Selected>>,
 // ) {
-
+    // for ta in &ta_query {
+        // info!("☛ {:?}", ta.name);
+    // }
 // }
 
 pub fn monitor_db_state(dbs_query: Query<(&DialogBox, &DialogBoxPhase), Changed<DialogBoxPhase>>) {

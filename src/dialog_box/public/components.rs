@@ -31,6 +31,8 @@ pub enum TypingTiming {
 pub enum WritingStyle {
     Wipe { sec: f32 },
     Put,
+    // Scroll  { size: usize, sec: f32 },
+    // Fade,
 }
 
 #[derive(Component, Debug, Clone, Copy, PartialEq)]

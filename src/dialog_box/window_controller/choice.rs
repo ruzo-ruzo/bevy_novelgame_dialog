@@ -2,8 +2,8 @@ use super::*;
 use crate::dialog_box::*;
 use bevy::render::view::RenderLayers;
 
-// ComponentにEntityつっこむのヤバいので後で直す
-// 名前の重複を防ぐ機構を入れた方がいいかもしれない
+// Todo: ComponentにEntityつっこむのヤバいので後で直す
+// Todo: 名前の重複を防ぐ機構を入れた方がいいかもしれない
 #[derive(Component)]
 pub struct ChoiceBoxState {
     main_dialog_box_name: String,
@@ -191,7 +191,7 @@ pub fn setup_choice(
                 if *dbp != DialogBoxPhase::Fixed {
                     cbs.choice_box_entity = Some(entity)
                 };
-                for (ta_name, i) in cbs.text_area_names.iter().zip(0..) {
+                for (i, ta_name) in cbs.text_area_names.iter().enumerate() {
                     let target = cbs
                         .target_list
                         .get(i)

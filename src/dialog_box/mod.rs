@@ -72,6 +72,8 @@ impl Plugin for DialogBoxPlugin {
             .add_event::<OpenDialogEvent>()
             .add_event::<FeedWaitingEvent>()
             .add_event::<StartFeedingEvent>()
+            .add_event::<SelectedEvent>()
+            .add_event::<GoSelectedEvent>()
             .add_event::<GoSinking>()
             .add_event::<BdsEvent>()
             .configure_sets(
@@ -114,6 +116,7 @@ impl Plugin for DialogBoxPlugin {
             .add_systems(Update, close_choice_phase.in_set(PhaseSet::Fire))
             .add_systems(Update, trigger_feeding_by_event.in_set(PhaseSet::Fire))
             .add_systems(Update, go_selected.in_set(PhaseSet::Fire))
+            .add_systems(Update, shift_selected.in_set(PhaseSet::Fire))
             .add_systems(
                 Update,
                 skip_feeding.in_set(PhaseSet::Fire).after(add_new_text),
