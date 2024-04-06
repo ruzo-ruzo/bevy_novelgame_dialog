@@ -44,7 +44,7 @@ fn start_message(
             feeding: FeedingStyle::Scroll { size: 0, sec: 0.5 },
             font_color: Color::DARK_GRAY,
             area_origin: Vec2::new(-540.0, 70.0),
-            area_size: Vec2::new(1060.0, 140.0),
+            area_size: Vec2::new(1010.0, 140.0),
             // main_alignment: JustifyText::Center,
             // writing:WritingStyle::Wipe{ sec: 0.7 },
             // writing:WritingStyle::Put,
@@ -71,10 +71,10 @@ fn start_message(
             .collect::<Vec<_>>();
         ow_event.send(OpenDialogEvent {
             dialog_box_name: "Main Box".to_string(),
-            script_path: "scripts/reload_test.md#テストヘッダー2".to_string(),
+            script_path: "scripts/starter.md".to_string(),
             template_path: vec![
-                "scripts/test.csv".to_string(),
-                "scripts/basic.bdt".to_string(),
+                "scripts/sample.csv".to_string(),
+                "scripts/basic.csv".to_string(),
             ],
             text_area_configs: vec![frame_tac],
             dialog_box_entity: Some(background.single()),
@@ -242,7 +242,7 @@ fn setup_choice_images(mut commands: Commands, asset_server: Res<AssetServer>) {
             ..default()
         },
         texture: dialog_box_image_handle,
-        transform: Transform::from_xyz(0., 100., 1.1),
+        transform: Transform::from_xyz(0., 0., 1.1),
         ..default()
     };
     let pushed_sprite_bundle = SpriteBundle {
@@ -346,6 +346,7 @@ fn button_clicked(
 mod fox_background {
     use bevy::{pbr::CascadeShadowConfigBuilder, prelude::*, utils::Duration};
     use std::f32::consts::PI;
+    use crate::bds_event::*;
 
     pub struct FoxBackgroundPlugin;
 
@@ -358,7 +359,7 @@ mod fox_background {
             .add_systems(Startup, setup)
             .add_systems(
                 Update,
-                (setup_scene_once_loaded, keyboard_animation_control),
+                (setup_scene_once_loaded, signal_animation_control),
             );
         }
     }
@@ -434,33 +435,30 @@ mod fox_background {
             }
         }
     }
-
-    fn keyboard_animation_control(
-        keyboard_input: Res<ButtonInput<KeyCode>>,
+    
+    fn signal_animation_control(
         mut animation_player: Query<&mut AnimationPlayer>,
         animations: Res<Animations>,
-        mut current_animation: Local<usize>,
+        mut signal_events: EventReader<BdsSignal>,
     ) {
-        if let Ok(mut player) = animation_player.get_single_mut() {
-            if keyboard_input.just_pressed(KeyCode::ArrowLeft) {
-                let anim_len = animations.0.len();
-                *current_animation = (*current_animation + anim_len - 1) % anim_len;
-                player
-                    .play_with_transition(
-                        animations.0[*current_animation].clone_weak(),
+        for BdsSignal{ signal: sig } in signal_events.read() {
+            if let Ok(mut player) = animation_player.get_single_mut() {
+                if *sig == "Fox run".to_string() {
+                    player.play_with_transition(
+                        animations.0[0].clone_weak(),
                         Duration::from_millis(250),
-                    )
-                    .repeat();
-            }
-
-            if keyboard_input.just_pressed(KeyCode::ArrowRight) {
-                *current_animation = (*current_animation + 1) % animations.0.len();
-                player
-                    .play_with_transition(
-                        animations.0[*current_animation].clone_weak(),
+                    ).repeat();
+                } else if *sig == "Fox walk".to_string() {
+                    player.play_with_transition(
+                        animations.0[1].clone_weak(),
                         Duration::from_millis(250),
-                    )
-                    .repeat();
+                    ).repeat();
+                } else if *sig == "Fox stop".to_string() {
+                    player.play_with_transition(
+                        animations.0[2].clone_weak(),
+                        Duration::from_millis(250),
+                    ).repeat();
+                }
             }
         }
     }

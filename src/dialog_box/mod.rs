@@ -105,6 +105,7 @@ impl Plugin for DialogBoxPlugin {
             .add_systems(Update, settle_wating_icon.in_set(PhaseSet::Progress))
             .add_systems(Update, settle_lines.in_set(PhaseSet::Progress))
             .add_systems(Update, text_wipe.in_set(PhaseSet::Progress))
+            .add_systems(Update, hide_waiting_icon.in_set(PhaseSet::Progress))
             .add_systems(Update, scaling_up.in_set(PhaseSet::Progress))
             .add_systems(Update, scaling_down.in_set(PhaseSet::Progress))
             .add_systems(Update, scroll_lines.in_set(PhaseSet::Progress))
