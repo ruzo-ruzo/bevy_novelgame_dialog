@@ -18,7 +18,8 @@ fn main() {
         .add_systems(Update, start_message)
         .add_systems(Update, animate_sprite)
         .add_systems(Update, move_cursor)
-        .add_systems(Update, hide_cursor)
+        .add_systems(Update, reset_images)
+        .add_systems(Update, button_clicked)
         .run();
 }
 
@@ -196,8 +197,12 @@ struct ChoiceFrame;
 #[derive(Component)]
 struct ChoiceCursor;
 
+#[derive(Component)]
+struct PushedButton;
+
 fn setup_choice_images(mut commands: Commands, asset_server: Res<AssetServer>) {
     let button_image_handle = asset_server.load("textures/ui/choice_buttons/button_default.png");
+    let pushed_image_handle = asset_server.load("textures/ui/choice_buttons/button_pushed.png");
     let choicing_frame_image_handle =
         asset_server.load("textures/ui/choice_buttons/choicing_frame.png");
     let dialog_box_image_handle = asset_server.load("textures/ui/dialog_box_01.png");
@@ -240,6 +245,16 @@ fn setup_choice_images(mut commands: Commands, asset_server: Res<AssetServer>) {
         transform: Transform::from_xyz(0., 100., 1.1),
         ..default()
     };
+    let pushed_sprite_bundle = SpriteBundle {
+        sprite: Sprite {
+            custom_size: Some(Vec2::new(400., 100.)),
+            ..default()
+        },
+        texture: pushed_image_handle,
+        transform: Transform::from_xyz(0.0, -70.0, 0.7),
+        visibility: Visibility::Hidden,
+        ..default()
+    };
     let cursor_sprite_bundle = SpriteBundle {
         sprite: Sprite {
             custom_size: Some(Vec2::new(480., 200.)),
@@ -257,8 +272,14 @@ fn setup_choice_images(mut commands: Commands, asset_server: Res<AssetServer>) {
                 cursor_sprite_bundle,
                 choicing_frame_slice,
                 ChoiceCursor,
-                RenderLayers::layer(2)
-            ));}
+                RenderLayers::layer(2),
+            ));
+             c.spawn((
+                pushed_sprite_bundle,
+                PushedButton,
+                button_slice,
+                RenderLayers::layer(2),
+             )); }
         );
 }
 
@@ -282,14 +303,39 @@ fn move_cursor(
     }
 }
 
-fn hide_cursor(
+fn reset_images(
     mut cursor_query: Query<&mut Visibility, With<ChoiceCursor>>,
+    mut pushed_query: Query<&mut Visibility, (With<PushedButton>, Without<ChoiceCursor>)>,
     mut events: EventReader<FinisClosingBox>,
 ){
     for fcb in events.read() {
         if fcb.dialog_box_name == "Choice Box".to_string() {
             if let Ok(mut vis) = cursor_query.get_single_mut() {
                 *vis = Visibility::Hidden;
+            }
+            if let Ok(mut vis) = pushed_query.get_single_mut() {
+                *vis = Visibility::Hidden;
+            }
+        }
+    }
+}
+
+fn button_clicked(
+    mut pushed_query: Query<(&mut Transform, &mut Visibility), With<PushedButton>>,
+    button_query: Query<(&Transform, &ChoiceButton), Without<PushedButton>>,
+    mut events: EventReader<GoSelectedEvent>,
+){
+    for gse in events.read() {
+        if gse.dialog_box_name == "Choice Box".to_string() {
+            for (button_tf, cb) in &button_query {
+                let ta_name = format!("Button Area {:02}", cb.sort_number);
+                if gse.text_area_name == ta_name {
+                    if let Ok((mut pushed_tf, mut vis)) = pushed_query.get_single_mut() {
+                        *pushed_tf = *button_tf;
+                        pushed_tf.translation.z += 0.1;
+                        *vis = Visibility::Inherited;
+                    }
+                }
             }
         }
     }

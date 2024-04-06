@@ -78,8 +78,8 @@ pub fn go_selected(
                 .get(ta_parent.get())
                 .map(|x| x.name.clone());
             go_event.send(GoSelectedEvent {
-                dialog_box_name: ta.name.clone(),
-                text_area_name: db_name_opt.unwrap_or_default(),
+                dialog_box_name: db_name_opt.unwrap_or_default(),
+                text_area_name: ta.name.clone(),
             });
             commands.entity(target_entity).remove::<WaitInputGo>();
         }
