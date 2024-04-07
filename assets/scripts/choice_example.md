@@ -1,25 +1,25 @@
-# テストヘッダー1
+# 選択肢
 選択肢ボックスを開きます。[wait]
-* [きつね歩いて](choice_example.md#テストヘッダー2)
-* [きつね止まって](choice_example.md#テストヘッダー3)
-* [きつね走って](choice_example.md#テストヘッダー4)
+* [きつね歩いて](choice_example.md#歩く)
+* [きつね止まって](choice_example.md#止まる)
+* [きつね走って](choice_example.md#走る)
 * [別の話](explain02.md#その他の話)
 
-<h1>テストヘッダー2</h1>
+<h1>歩く</h1>
 きつねが歩きます[wait]
 [signal: Fox walk]
 
-[link](choice_example.md#テストヘッダー1)
+[link](choice_example.md#選択肢)
 
-テストヘッダー3
+止まる
 ===========
 きつねが止まります[wait]
 [signal: Fox stop]
 
-[link](choice_example.md#テストヘッダー1)
+[link](choice_example.md#選択肢)
 
-# テストヘッダー4
+# 走る
 きつねが走ります[wait]
 [signal: Fox run]
 
-[link](choice_example.md#テストヘッダー1)
+[link](choice_example.md#選択肢)

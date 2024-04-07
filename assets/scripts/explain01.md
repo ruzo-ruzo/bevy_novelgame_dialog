@@ -32,7 +32,7 @@ glyphが存在しなければ下位順位のfontを自動で選んでくれま�
 [link](explain01.md#選択肢)
 
 # 選択肢
-* [きつねの行動を変える](choice_example.md#テストヘッダー1)
+* [きつねの行動を変える](choice_example.md#選択肢)
 * [ボタンの文字が上に張り付いてるの気持ち悪い](explain01.md#ボタンの話)
 * [閉じる](explain01.md#閉じる)
 
