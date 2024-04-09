@@ -9,7 +9,7 @@ fn main() {
     App::new()
         .add_plugins((
             DefaultPlugins,
-            ui_templates::RPGStyleTemplatePlugin::default(),
+            ui_templates::RPGStyleUIPlugin::default(),
             fox_background::FoxBackgroundPlugin,
             DebugTextAreaPlugin,
         ))
@@ -18,11 +18,11 @@ fn main() {
 }
 
 fn start_message(
-    mut open_message_event: EventWriter<OpenMessageEvent>,
+    mut open_message_event: EventWriter<OpenRPGStyleDialog>,
     mut is_started: Local<bool>,
 ) {
     if !*is_started {
-         let event = OpenMessageEvent { script_path: "scripts/starter.md".to_string() };
+         let event = OpenRPGStyleDialog { script_path: "scripts/starter.md".to_string() };
          open_message_event.send(event);
         *is_started = true;
     }

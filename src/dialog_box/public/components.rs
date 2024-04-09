@@ -2,12 +2,17 @@ use bevy::prelude::*;
 
 #[derive(Component, Debug, Default)]
 pub struct WaitingIcon {
-    pub target_window_name: String,
+    pub target_box_name: String,
+}
+
+#[derive(Component, Debug, Default)]
+pub struct DialogBoxBackground {
+    pub dialog_box_name: String,
 }
 
 #[derive(Component)]
 pub struct ChoiceButton {
-    pub target_window_name: String,
+    pub target_box_name: String,
     pub sort_number: usize,
 }
 

@@ -7,9 +7,8 @@ use bevy::prelude::*;
 
 // Todo: Entity直接送るのやめさせる
 #[derive(Event)]
-pub struct OpenDialogEvent {
+pub struct OpenDialog {
     pub dialog_box_name: String,
-    pub dialog_box_entity: Option<Entity>,
     pub position: Vec2,
     pub popup: PopupType,
     pub wait_breaker: WaitBrakerStyle,
@@ -21,11 +20,10 @@ pub struct OpenDialogEvent {
     pub main_text_area_name: String,
 }
 
-impl Default for OpenDialogEvent {
+impl Default for OpenDialog {
     fn default() -> Self {
-        OpenDialogEvent {
+        OpenDialog {
             dialog_box_name: "Main Box".to_string(),
-            dialog_box_entity: None,
             position: Vec2::new(0., 0.),
             popup: PopupType::Scale { sec: 0.8 },
             wait_breaker: WaitBrakerStyle::Auto { wait_sec: 1.5 },
@@ -40,7 +38,7 @@ impl Default for OpenDialogEvent {
 }
 
 #[derive(Event, Debug)]
-pub struct SelectedEvent {
+pub struct ButtonIsSelected {
     pub dialog_box_name: String,
     pub text_area_name: String,
     pub select_vector: SelectVector,
@@ -48,7 +46,7 @@ pub struct SelectedEvent {
 }
 
 #[derive(Event)]
-pub struct GoSelectedEvent {
+pub struct ButtonIsPushed {
     pub dialog_box_name: String,
     pub text_area_name: String,
 }

@@ -8,7 +8,7 @@ pub mod waiting;
 use super::setup::SetupConfig;
 use crate::dialog_box::public::components::*;
 use crate::dialog_box::public::configs::*;
-use crate::dialog_box::OpenDialogEvent;
+use crate::dialog_box::OpenDialog;
 use crate::read_script::*;
 
 #[derive(Component, Debug)]

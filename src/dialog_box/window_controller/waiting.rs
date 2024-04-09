@@ -53,7 +53,7 @@ pub fn simple_wait(
                     let (_, _, _, _, last_timer) = initialize_typing_data(&last_data, tb_entity);
                     let ic_opt = w_icon_query
                         .iter()
-                        .find(|x| x.1.target_window_name == *db_name);
+                        .find(|x| x.1.target_box_name == *db_name);
                     if let Some((ic_entity, _)) = ic_opt {
                         let time = last_timer.timer.remaining_secs();
                         let tt = TypingTimer {
@@ -93,7 +93,7 @@ pub fn restart_typing(
                 }
                 let ic_opt = icon_query
                     .iter_mut()
-                    .find(|x| x.2.target_window_name == *db_name);
+                    .find(|x| x.2.target_box_name == *db_name);
                 if let Some((ic_entity, mut ic_vis, _)) = ic_opt {
                     commands.entity(ic_entity).remove::<Settled>();
                     *ic_vis = Visibility::Hidden;
@@ -112,7 +112,7 @@ pub fn waiting_icon_setting(
         if let WaitBrakerStyle::Input { .. } = wbs {
             if let Some((ic_entity, _)) = w_icon_query
                 .iter()
-                .find(|x| x.1.target_window_name == *db_name)
+                .find(|x| x.1.target_box_name == *db_name)
             {
                 commands
                     .entity(ic_entity)
@@ -146,7 +146,7 @@ pub fn settle_wating_icon(
         {
             if *ws == DialogBoxPhase::WaitingAction {
                 for (ic_entity, mut ic_tf, wi) in &mut float_icon_query {
-                    if wi.target_window_name == *db_name {
+                    if wi.target_box_name == *db_name {
                         if let Some((tb_entity, _, config)) =
                             text_box_query.iter().find(|(_, p, _)| p.get() == mw_entity)
                         {
@@ -162,7 +162,7 @@ pub fn settle_wating_icon(
                 }
             } else {
                 for (ic_entity, wi) in &settle_icon_query {
-                    if wi.target_window_name == *db_name {
+                    if wi.target_box_name == *db_name {
                         commands.entity(ic_entity).remove::<Settled>();
                     }
                 }
@@ -304,7 +304,7 @@ pub fn hide_waiting_icon(
     dialog_box_query: Query<(&DialogBox, &DialogBoxPhase)>,
 ){
     if let Ok((icon, mut vis)) = icon_query.get_single_mut(){
-        let box_exists = dialog_box_query.iter().find(|x|x.0.name == icon.target_window_name);
+        let box_exists = dialog_box_query.iter().find(|x|x.0.name == icon.target_box_name);
         if let Some((_, phase)) = box_exists {
             if *phase != DialogBoxPhase::SinkingDown { return; }
         }

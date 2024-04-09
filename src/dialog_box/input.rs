@@ -37,7 +37,7 @@ pub fn go_selected(
     touches: Res<Touches>,
     gamepad_buttons: Res<ButtonInput<GamepadButton>>,
     mut bds_event: EventWriter<BdsEvent>,
-    mut go_event: EventWriter<GoSelectedEvent>,
+    mut go_event: EventWriter<ButtonIsPushed>,
     gamepads: Res<Gamepads>,
     type_registry: Res<AppTypeRegistry>,
 ) {
@@ -77,7 +77,7 @@ pub fn go_selected(
             let db_name_opt = dialog_box_query
                 .get(ta_parent.get())
                 .map(|x| x.name.clone());
-            go_event.send(GoSelectedEvent {
+            go_event.send(ButtonIsPushed {
                 dialog_box_name: db_name_opt.unwrap_or_default(),
                 text_area_name: ta.name.clone(),
             });
@@ -100,7 +100,7 @@ pub fn shift_selected(
     keys: Res<ButtonInput<KeyCode>>,
     gamepad_buttons: Res<ButtonInput<GamepadButton>>,
     gamepads: Res<Gamepads>,
-    mut select_event: EventWriter<SelectedEvent>,
+    mut select_event: EventWriter<ButtonIsSelected>,
 ) {
     let mut next_select_opt: Option<Entity> = None;
     let pointed_opt = camera_query
@@ -277,7 +277,7 @@ pub fn shift_selected(
         commands.entity(next_entity).insert(Selected);
         if let Ok((_, selective, ta, _, parent)) = selective_query.get(next_entity) {
             let db_name_opt = dialog_box_query.get(parent.get()).map(|x| x.name.clone());
-            let event = SelectedEvent {
+            let event = ButtonIsSelected {
                 dialog_box_name: db_name_opt.unwrap_or_default(),
                 text_area_name: ta.name.clone(),
                 select_vector: selective.key_vector,

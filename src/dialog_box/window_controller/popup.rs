@@ -4,9 +4,10 @@ use bevy::render::view::{RenderLayers, Visibility::*};
 
 pub fn open_window(
     mut commands: Commands,
+    bg_query: Query<(Entity, &DialogBoxBackground)>,
     db_query: Query<Entity, (With<Current>, With<DialogBox>)>,
     mut tf_query: Query<&mut Transform>,
-    mut ow_event: EventReader<OpenDialogEvent>,
+    mut ow_event: EventReader<OpenDialog>,
     asset_server: Res<AssetServer>,
     setup_config: Res<SetupConfig>,
 ) {
@@ -48,8 +49,9 @@ pub fn open_window(
             transform: Transform::from_translation(window_config.position.extend(0.0)),
             ..default()
         };
-        let mw = match window_config.dialog_box_entity {
-            Some(entity) => entity,
+        let bg_opt = bg_query.iter().find(|x|x.1.dialog_box_name == window_config.dialog_box_name);
+        let mw = match bg_opt {
+            Some((entity, _)) => entity,
             None => commands.spawn((mw_spirte, Instant)).id(),
         };
         if let Ok(mut tf) = tf_query.get_mut(mw) {

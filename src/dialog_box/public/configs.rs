@@ -59,9 +59,8 @@ impl Default for TextAreaConfig {
 // ComponentにEntityつっこむのヤバいので後で直す
 #[derive(Component, Clone)]
 pub struct ChoiceBoxConfig {
-    pub background_entity: Option<Entity>,
+    pub choice_box_name: String,
     pub button_text_areas: Vec<TextAreaConfig>,
-    pub dialog_box_name: String,
     pub popup: PopupType,
     pub sinkdown: SinkDownType,
     pub select_vector: SelectVector,
@@ -78,7 +77,6 @@ impl Default for ChoiceBoxConfig {
             ..default()
         };
         ChoiceBoxConfig {
-            background_entity: None,
             button_text_areas: vec![
                 TextAreaConfig {
                     area_name: "Button Area 01".to_string(),
@@ -96,7 +94,7 @@ impl Default for ChoiceBoxConfig {
                     ..basic_text_area
                 },
             ],
-            dialog_box_name: "Choice Box".to_string(),
+            choice_box_name: "Choice Box".to_string(),
             popup: PopupType::Scale { sec: 0.8 },
             sinkdown: SinkDownType::Scale { sec: 0.8 },
             select_vector: SelectVector::Vertical,

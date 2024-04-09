@@ -2,13 +2,11 @@ use super::*;
 use crate::dialog_box::*;
 use bevy::render::view::RenderLayers;
 
-// Todo: ComponentにEntityつっこむのヤバいので後で直す
 // Todo: 名前の重複を防ぐ機構を入れた方がいいかもしれない
 #[derive(Component)]
 pub struct ChoiceBoxState {
     main_dialog_box_name: String,
     text_area_names: Vec<String>,
-    choice_box_entity: Option<Entity>,
     choice_box_name: String,
     target_list: Vec<(String, String)>,
     select_vector: SelectVector,
@@ -38,23 +36,25 @@ pub fn open_choice_box(
     mut vis_query: Query<&mut Visibility>,
     cc_query: Query<Entity, (With<ChoiceBoxState>, With<Current>)>,
     cb_query: Query<(Entity, &ChoiceButton)>,
+    bg_query: Query<(Entity, &DialogBoxBackground)>,
     mut sp_query: Query<&mut Sprite>,
     mut tf_query: Query<&mut Transform>,
     mut events: EventReader<BdsEvent>,
     setup_config: Res<SetupConfig>,
-    mut ow_event: EventWriter<OpenDialogEvent>,
+    mut ow_event: EventWriter<OpenDialog>,
 ) {
     for event_wrapper in events.read() {
         if let Some(SetupChoice { target_list: tl }) = event_wrapper.get_opt::<SetupChoice>() {
             if let Ok((cbc, mut dbs, children, db)) = db_query.get_single_mut() {
-                let background_entity = if let Some(entity) = cbc.background_entity {
+                let bg_opt = bg_query.iter().find(|x|x.1.dialog_box_name == cbc.choice_box_name);
+                let background_entity = if let Some((entity, _)) = bg_opt {
                     entity
                 } else {
                     commands.spawn(SpriteBundle::default()).id()
                 };
                 let button_entities = cb_query
                     .iter()
-                    .filter(|x| x.1.target_window_name == cbc.dialog_box_name)
+                    .filter(|x| x.1.target_box_name == cbc.choice_box_name)
                     .map(|x| x.0)
                     .collect::<Vec<_>>();
                 let culled_tas = &cbc.button_text_areas[0..tl.len()];
@@ -64,8 +64,7 @@ pub fn open_choice_box(
                     .collect::<Vec<_>>();
                 let cs = ChoiceBoxState {
                     main_dialog_box_name: db.name.clone(),
-                    choice_box_entity: None,
-                    choice_box_name: cbc.dialog_box_name.clone(),
+                    choice_box_name: cbc.choice_box_name.clone(),
                     target_list: tl.clone(),
                     select_vector: cbc.select_vector,
                     sinkdown: cbc.sinkdown,
@@ -78,8 +77,8 @@ pub fn open_choice_box(
                 });
                 commands
                     .entity(background_entity)
+                    .insert(cs)
                     .push_children(&button_entities);
-                commands.spawn((cs, Current));
                 if let Ok(mut vis) = vis_query.get_mut(background_entity) {
                     *vis = Visibility::Hidden;
                 }
@@ -118,10 +117,9 @@ pub fn open_choice_box(
                         ..base.clone()
                     })
                     .collect::<Vec<_>>();
-                let opening_event = OpenDialogEvent {
-                    dialog_box_entity: Some(background_entity),
-                    dialog_box_name: cbc.dialog_box_name.clone(),
-                    raw_orders: make_choice_order(&tl, &cbc.dialog_box_name, &ta_names),
+                let opening_event = OpenDialog {
+                    dialog_box_name: cbc.choice_box_name.clone(),
+                    raw_orders: make_choice_order(&tl, &cbc.choice_box_name, &ta_names),
                     popup: cbc.popup,
                     text_area_configs: slided_text_area_configs,
                     ..default()
@@ -180,41 +178,33 @@ fn make_choice_order(
 
 pub fn setup_choice(
     mut commands: Commands,
-    mut cb_query: Query<(Entity, &mut ChoiceBoxState), With<Current>>,
-    db_query: Query<(Entity, &DialogBoxPhase, &Children), With<Current>>,
-    ta_query: Query<(Entity, &TextArea, &GlobalTransform, &Sprite)>,
+    cb_query: Query<(Entity, &ChoiceBoxState, &Children), With<Current>>,
+    ta_query: Query<(Entity, &TextArea, &GlobalTransform, &Sprite), Without<Selective>>,
     app_type_registry: Res<AppTypeRegistry>,
 ) {
-    if let Ok((cbs_entity, mut cbs)) = cb_query.get_single_mut() {
-        if cbs.choice_box_entity.is_none() {
-            if let Ok((entity, dbp, children)) = db_query.get_single() {
-                if *dbp != DialogBoxPhase::Fixed {
-                    cbs.choice_box_entity = Some(entity)
-                };
-                for (i, ta_name) in cbs.text_area_names.iter().enumerate() {
-                    let target = cbs
-                        .target_list
-                        .get(i)
-                        .map(|x| x.1.clone())
-                        .unwrap_or_default();
-                    let ron_base = ChoosenEvent {
-                        choosen_event: target,
-                        choice_box_state_entity: Some(cbs_entity),
+    if let Ok((cbs_entity, cbs, children)) = cb_query.get_single() {
+        for (i, ta_name) in cbs.text_area_names.iter().enumerate() {
+            let target = cbs
+                .target_list
+                .get(i)
+                .map(|x| x.1.clone())
+                .unwrap_or_default();
+            let ron_base = ChoosenEvent {
+                choosen_event: target,
+                choice_box_state_entity: Some(cbs_entity),
+            };
+            let ron = write_ron(&app_type_registry, ron_base).unwrap_or_default();
+            for (ta_entity, ta, tf, sp) in ta_query.iter_many(children) {
+                if &ta.name == ta_name {
+                    let wa = WaitInputGo {
+                        ron: ron.clone(),
+                        area: get_rect(tf, sp),
                     };
-                    let ron = write_ron(&app_type_registry, ron_base).unwrap_or_default();
-                    for (ta_entity, ta, tf, sp) in ta_query.iter_many(children) {
-                        if &ta.name == ta_name {
-                            let wa = WaitInputGo {
-                                ron: ron.clone(),
-                                area: get_rect(tf, sp),
-                            };
-                            let se = Selective {
-                                key_vector: cbs.select_vector,
-                                number: i,
-                            };
-                            commands.entity(ta_entity).insert((wa, se));
-                        }
-                    }
+                    let se = Selective {
+                        key_vector: cbs.select_vector,
+                        number: i,
+                    };
+                    commands.entity(ta_entity).insert((wa, se));
                 }
             }
         }
@@ -233,7 +223,6 @@ pub fn close_choice_phase(
     cbs_query: Query<&ChoiceBoxState>,
     mut db_query: Query<(Entity, &DialogBox, &mut DialogBoxPhase)>,
     mut events: EventReader<BdsEvent>,
-    mut gs_writer: EventWriter<GoSinking>,
     app_type_registry: Res<AppTypeRegistry>,
 ) {
     for event_wrapper in events.read() {
@@ -248,11 +237,12 @@ pub fn close_choice_phase(
                 });
             }
             if let Ok(cbs) = cbs_query.get(cbse) {
-                let close = GoSinking {
-                    target: cbs.choice_box_entity,
-                    sink_type: cbs.sinkdown,
+                let close = BdsEvent {
+                    value: Box::new(SinkDownWindow {
+                        sink_type: cbs.sinkdown,
+                    })
                 };
-                gs_writer.send(close);
+                commands.add(|w: &mut World| { w.send_event(close); });
                 for (db_entity, db, mut dbp) in &mut db_query {
                     if db.name == cbs.main_dialog_box_name {
                         commands.entity(db_entity).insert(Pending);
@@ -274,29 +264,27 @@ pub fn reinstatement_external_entities(
     mut tf_query: Query<&mut Transform>,
 ) {
     for (state_entity, cbs) in &cbs_query {
-        if let Some(cb_entity) = cbs.choice_box_entity {
-            if let Ok(cb_children) = children_query.get(cb_entity) {
-                if ta_query.iter_many(cb_children).next().is_none() {
-                    let size = cbs.target_list.len() as f32;
-                    let x_expand = cbs.background_scaling_per_button.x * size;
-                    let y_expand = cbs.background_scaling_per_button.y * size;
-                    let (x_dir, y_dir) = get_slide_direction(cbs.background_scaling_anchor);
-                    if let Ok(mut sp) = sp_query.get_mut(cb_entity) {
-                        sp.custom_size = sp
-                            .custom_size
-                            .map(|Vec2 { x, y }| Vec2::new(x - x_expand, y - y_expand));
-                    }
-                    let cb_entities = cb_query
-                        .iter()
-                        .filter(|x| x.1.target_window_name == cbs.choice_box_name);
-                    for (entity, _) in cb_entities {
-                        if let Ok(mut tf) = tf_query.get_mut(entity) {
-                            tf.translation.x -= x_dir * x_expand / 2.0;
-                            tf.translation.y -= y_dir * y_expand / 2.0;
-                        }
-                    }
-                    commands.entity(state_entity).despawn();
+        if let Ok(cb_children) = children_query.get(state_entity) {
+            if ta_query.iter_many(cb_children).next().is_none() {
+                let size = cbs.target_list.len() as f32;
+                let x_expand = cbs.background_scaling_per_button.x * size;
+                let y_expand = cbs.background_scaling_per_button.y * size;
+                let (x_dir, y_dir) = get_slide_direction(cbs.background_scaling_anchor);
+                if let Ok(mut sp) = sp_query.get_mut(state_entity) {
+                    sp.custom_size = sp
+                        .custom_size
+                        .map(|Vec2 { x, y }| Vec2::new(x - x_expand, y - y_expand));
                 }
+                let cb_entities = cb_query
+                    .iter()
+                    .filter(|x| x.1.target_box_name == cbs.choice_box_name);
+                for (entity, _) in cb_entities {
+                    if let Ok(mut tf) = tf_query.get_mut(entity) {
+                        tf.translation.x -= x_dir * x_expand / 2.0;
+                        tf.translation.y -= y_dir * y_expand / 2.0;
+                    }
+                }
+                commands.entity(state_entity).remove::<ChoiceBoxState>();
             }
         }
     }
