@@ -38,7 +38,8 @@ This plugin provides a novel-game-style dialog box for the Bevy engine. You can 
 
 [link](choice_example.md#選択肢)
 
-# 走る
+走る
+===========
 きつねが走ります[wait]
 [signal: Fox run]
 
