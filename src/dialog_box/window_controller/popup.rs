@@ -159,13 +159,15 @@ pub fn scaling_up(
     time: Res<Time>,
 ) {
     for (ent, mut tf, ScalingUp { add_per_sec: aps }, mut ws) in &mut db_query {
-        if *ws == DialogBoxPhase::PoppingUp && tf.scale.x >= 1.0 {
-            tf.scale = Vec3::new(1., 1., 1.);
-            *ws = DialogBoxPhase::Typing;
-            commands.entity(ent).remove::<ScalingUp>();
-        } else {
-            tf.scale.x += time.delta_seconds() * aps;
-            tf.scale.y += time.delta_seconds() * aps;
-        };
+        if *ws == DialogBoxPhase::PoppingUp {
+            if tf.scale.x >= 1.0 {
+                tf.scale = Vec3::new(1., 1., 1.);
+                *ws = DialogBoxPhase::Typing;
+                commands.entity(ent).remove::<ScalingUp>();
+            } else {
+                tf.scale.x += time.delta_seconds() * aps;
+                tf.scale.y += time.delta_seconds() * aps;
+            }
+        }
     }
 }

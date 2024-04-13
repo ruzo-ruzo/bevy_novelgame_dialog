@@ -23,7 +23,7 @@ pub struct SetupChoice {
 #[derive(Reflect, Default, Debug)]
 pub struct ChoosenEvent {
     pub choosen_event: String,
-    pub choice_box_state_entity: Option<Entity>,
+    pub choice_box_name: String,
 }
 
 #[allow(clippy::type_complexity)]
@@ -180,11 +180,11 @@ fn make_choice_order(
 
 pub fn setup_choice(
     mut commands: Commands,
-    cb_query: Query<(Entity, &ChoiceBoxState, &Children), With<Current>>,
+    cb_query: Query<(&ChoiceBoxState, &Children), With<Current>>,
     ta_query: Query<(Entity, &TextArea, &GlobalTransform, &Sprite), Without<Selective>>,
     app_type_registry: Res<AppTypeRegistry>,
 ) {
-    if let Ok((cbs_entity, cbs, children)) = cb_query.get_single() {
+    if let Ok((cbs, children)) = cb_query.get_single() {
         for (i, ta_name) in cbs.text_area_names.iter().enumerate() {
             let target = cbs
                 .target_list
@@ -193,7 +193,7 @@ pub fn setup_choice(
                 .unwrap_or_default();
             let ron_base = ChoosenEvent {
                 choosen_event: target,
-                choice_box_state_entity: Some(cbs_entity),
+                choice_box_name: cbs.choice_box_name.clone(),
             };
             let ron = write_ron(&app_type_registry, ron_base).unwrap_or_default();
             for (ta_entity, ta, tf, sp) in ta_query.iter_many(children) {
@@ -230,7 +230,7 @@ pub fn close_choice_phase(
     for event_wrapper in events.read() {
         if let Some(ChoosenEvent {
             choosen_event: ce,
-            choice_box_state_entity: Some(cbse),
+            choice_box_name: cb_name,
         }) = event_wrapper.get_opt::<ChoosenEvent>()
         {
             if let Ok(next) = read_ron(&app_type_registry, ce) {
@@ -238,17 +238,17 @@ pub fn close_choice_phase(
                     w.send_event(BdsEvent { value: next });
                 });
             }
-            if let Ok(cbs) = cbs_query.get(cbse) {
-                let close = BdsEvent {
-                    value: Box::new(SinkDownWindow {
-                        sink_type: cbs.sinkdown,
-                    }),
-                };
-                commands.add(|w: &mut World| {
-                    w.send_event(close);
-                });
+            if let Some(cbs) = cbs_query.iter().find(|x| x.choice_box_name == cb_name) {
                 for (db_entity, db, mut dbp) in &mut db_query {
                     if db.name == cbs.main_dialog_box_name {
+                        let close = BdsEvent {
+                            value: Box::new(SinkDownWindow {
+                                sink_type: cbs.sinkdown,
+                            }),
+                        };
+                        commands.add(|w: &mut World| {
+                            w.send_event(close);
+                        });
                         commands.entity(db_entity).insert(Pending);
                         *dbp = DialogBoxPhase::WaitToType;
                     }
@@ -260,13 +260,19 @@ pub fn close_choice_phase(
 
 pub fn reinstatement_external_entities(
     mut commands: Commands,
-    cbs_query: Query<(Entity, &ChoiceBoxState)>,
+    cbs_query: Query<(Entity, &ChoiceBoxState), Without<DialogBox>>,
     cb_query: Query<(Entity, &ChoiceButton)>,
     ta_query: Query<&TextArea>,
     children_query: Query<&Children>,
     mut sp_query: Query<&mut Sprite>,
     mut tf_query: Query<&mut Transform>,
+    mut events: EventReader<BdsEvent>,
 ) {
+    for event_wrapper in events.read() {
+        if let Some(SetupChoice { .. }) = event_wrapper.get_opt::<SetupChoice>() {
+            return;
+        }
+    }
     for (state_entity, cbs) in &cbs_query {
         if let Ok(cb_children) = children_query.get(state_entity) {
             if ta_query.iter_many(cb_children).next().is_none() {
