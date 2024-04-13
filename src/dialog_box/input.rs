@@ -24,6 +24,7 @@ pub struct Selective {
 }
 
 // ToDo: 長押しで連続スキップできるようにしときたい
+// マウス連打の時だけなんかおかしくなる？
 #[allow(clippy::nonminimal_bool)]
 pub fn go_selected(
     mut commands: Commands,

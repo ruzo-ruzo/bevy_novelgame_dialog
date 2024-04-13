@@ -193,7 +193,9 @@ pub fn despawn_dialog_box(
         if instant_query.get(db_entity).is_ok() {
             commands.entity(db_entity).despawn();
         }
-        event.send(FinisClosingBox{ dialog_box_name: db.name.clone() });
+        event.send(FinisClosingBox {
+            dialog_box_name: db.name.clone(),
+        });
     }
 }
 

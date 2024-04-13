@@ -1,9 +1,8 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 #[allow(unused_imports)]
-
 use bevy::prelude::*;
-use bevy_novelgame_dialog::*;
 use bevy_novelgame_dialog::public::*;
+use bevy_novelgame_dialog::*;
 
 fn main() {
     App::new()
@@ -22,17 +21,19 @@ fn start_message(
     mut is_started: Local<bool>,
 ) {
     if !*is_started {
-         let event = OpenRPGStyleDialog { script_path: "scripts/starter.md".to_string() };
-         open_message_event.send(event);
+        let event = OpenRPGStyleDialog {
+            script_path: "scripts/starter.md".to_string(),
+        };
+        open_message_event.send(event);
         *is_started = true;
     }
 }
 //----------
 
 mod fox_background {
+    use crate::bds_event::*;
     use bevy::{pbr::CascadeShadowConfigBuilder, prelude::*, utils::Duration};
     use std::f32::consts::PI;
-    use crate::bds_event::*;
 
     pub struct FoxBackgroundPlugin;
 
@@ -43,10 +44,7 @@ mod fox_background {
                 brightness: 1.0,
             })
             .add_systems(Startup, setup)
-            .add_systems(
-                Update,
-                (setup_scene_once_loaded, signal_animation_control),
-            );
+            .add_systems(Update, (setup_scene_once_loaded, signal_animation_control));
         }
     }
 
@@ -121,29 +119,35 @@ mod fox_background {
             }
         }
     }
-    
+
     fn signal_animation_control(
         mut animation_player: Query<&mut AnimationPlayer>,
         animations: Res<Animations>,
         mut signal_events: EventReader<BdsSignal>,
     ) {
-        for BdsSignal{ signal: sig } in signal_events.read() {
+        for BdsSignal { signal: sig } in signal_events.read() {
             if let Ok(mut player) = animation_player.get_single_mut() {
                 if *sig == "Fox run".to_string() {
-                    player.play_with_transition(
-                        animations.0[0].clone_weak(),
-                        Duration::from_millis(250),
-                    ).repeat();
+                    player
+                        .play_with_transition(
+                            animations.0[0].clone_weak(),
+                            Duration::from_millis(250),
+                        )
+                        .repeat();
                 } else if *sig == "Fox walk".to_string() {
-                    player.play_with_transition(
-                        animations.0[1].clone_weak(),
-                        Duration::from_millis(250),
-                    ).repeat();
+                    player
+                        .play_with_transition(
+                            animations.0[1].clone_weak(),
+                            Duration::from_millis(250),
+                        )
+                        .repeat();
                 } else if *sig == "Fox stop".to_string() {
-                    player.play_with_transition(
-                        animations.0[2].clone_weak(),
-                        Duration::from_millis(250),
-                    ).repeat();
+                    player
+                        .play_with_transition(
+                            animations.0[2].clone_weak(),
+                            Duration::from_millis(250),
+                        )
+                        .repeat();
                 }
             }
         }

@@ -46,7 +46,9 @@ pub fn open_choice_box(
     for event_wrapper in events.read() {
         if let Some(SetupChoice { target_list: tl }) = event_wrapper.get_opt::<SetupChoice>() {
             if let Ok((cbc, mut dbs, children, db)) = db_query.get_single_mut() {
-                let bg_opt = bg_query.iter().find(|x|x.1.dialog_box_name == cbc.choice_box_name);
+                let bg_opt = bg_query
+                    .iter()
+                    .find(|x| x.1.dialog_box_name == cbc.choice_box_name);
                 let background_entity = if let Some((entity, _)) = bg_opt {
                     entity
                 } else {
@@ -240,9 +242,11 @@ pub fn close_choice_phase(
                 let close = BdsEvent {
                     value: Box::new(SinkDownWindow {
                         sink_type: cbs.sinkdown,
-                    })
+                    }),
                 };
-                commands.add(|w: &mut World| { w.send_event(close); });
+                commands.add(|w: &mut World| {
+                    w.send_event(close);
+                });
                 for (db_entity, db, mut dbp) in &mut db_query {
                     if db.name == cbs.main_dialog_box_name {
                         commands.entity(db_entity).insert(Pending);

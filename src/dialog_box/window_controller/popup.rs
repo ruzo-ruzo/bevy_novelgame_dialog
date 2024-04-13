@@ -49,7 +49,9 @@ pub fn open_window(
             transform: Transform::from_translation(window_config.position.extend(0.0)),
             ..default()
         };
-        let bg_opt = bg_query.iter().find(|x|x.1.dialog_box_name == window_config.dialog_box_name);
+        let bg_opt = bg_query
+            .iter()
+            .find(|x| x.1.dialog_box_name == window_config.dialog_box_name);
         let mw = match bg_opt {
             Some((entity, _)) => entity,
             None => commands.spawn((mw_spirte, Instant)).id(),

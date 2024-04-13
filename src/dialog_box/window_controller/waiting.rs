@@ -302,11 +302,15 @@ pub fn make_wig_for_skip<S: AsRef<str>>(
 pub fn hide_waiting_icon(
     mut icon_query: Query<(&WaitingIcon, &mut Visibility)>,
     dialog_box_query: Query<(&DialogBox, &DialogBoxPhase)>,
-){
-    if let Ok((icon, mut vis)) = icon_query.get_single_mut(){
-        let box_exists = dialog_box_query.iter().find(|x|x.0.name == icon.target_box_name);
+) {
+    if let Ok((icon, mut vis)) = icon_query.get_single_mut() {
+        let box_exists = dialog_box_query
+            .iter()
+            .find(|x| x.0.name == icon.target_box_name);
         if let Some((_, phase)) = box_exists {
-            if *phase != DialogBoxPhase::SinkingDown { return; }
+            if *phase != DialogBoxPhase::SinkingDown {
+                return;
+            }
         }
         *vis = Visibility::Hidden;
     }

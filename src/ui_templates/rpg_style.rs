@@ -1,5 +1,5 @@
-use crate::*;
 use crate::public::*;
+use crate::*;
 use bevy::prelude::*;
 use bevy::text::JustifyText;
 
@@ -25,8 +25,7 @@ impl Default for RPGStyleUIPlugin {
 
 impl Plugin for RPGStyleUIPlugin {
     fn build(&self, app: &mut App) {
-        app
-        .add_plugins(dialog_box::DialogBoxPlugin {
+        app.add_plugins(dialog_box::DialogBoxPlugin {
             layer_num: self.layer_num,
             render_order: self.render_order,
         })
@@ -163,7 +162,9 @@ fn setup_messageframe(mut commands: Commands, asset_server: Res<AssetServer>) {
             ..default()
         },
         dialog_box_slice,
-        DialogBoxBackground { dialog_box_name: "Main Box".to_string() },
+        DialogBoxBackground {
+            dialog_box_name: "Main Box".to_string(),
+        },
     ));
 }
 
@@ -281,21 +282,24 @@ fn setup_choice_images(
         .spawn((
             frame_sprite_bundle,
             dialog_box_slice,
-            DialogBoxBackground{ dialog_box_name: "Choice Box".to_string() }))
-        .with_children(|c|
-            { c.spawn((
+            DialogBoxBackground {
+                dialog_box_name: "Choice Box".to_string(),
+            },
+        ))
+        .with_children(|c| {
+            c.spawn((
                 cursor_sprite_bundle,
                 choicing_frame_slice,
                 ChoiceCursor,
                 RenderLayers::layer(config.render_layer),
             ));
-             c.spawn((
+            c.spawn((
                 pushed_sprite_bundle,
                 PushedButton,
                 button_slice,
                 RenderLayers::layer(config.render_layer),
-             )); }
-        );
+            ));
+        });
 }
 
 fn move_cursor(
@@ -303,13 +307,15 @@ fn move_cursor(
     button_query: Query<(Entity, &ChoiceButton)>,
     mut tf_query: Query<&mut Transform>,
     mut events: EventReader<ButtonIsSelected>,
-){
+) {
     for se in events.read() {
-        let cb_opt = button_query.iter().find(|x|x.1.sort_number == se.select_number);
+        let cb_opt = button_query
+            .iter()
+            .find(|x| x.1.sort_number == se.select_number);
         if let Some((button_entity, _)) = cb_opt {
             if let Ok((choice_entity, mut vis)) = cursor_query.get_single_mut() {
-                let cb_y_opt = tf_query.get(button_entity).map(|x|x.translation.y);
-                if let Ok(mut cc_tf) = tf_query.get_mut(choice_entity){
+                let cb_y_opt = tf_query.get(button_entity).map(|x| x.translation.y);
+                if let Ok(mut cc_tf) = tf_query.get_mut(choice_entity) {
                     cc_tf.translation.y = cb_y_opt.unwrap_or_default() + 5.0;
                 }
                 *vis = Visibility::Inherited;
@@ -322,7 +328,7 @@ fn reset_images(
     mut cursor_query: Query<&mut Visibility, With<ChoiceCursor>>,
     mut pushed_query: Query<&mut Visibility, (With<PushedButton>, Without<ChoiceCursor>)>,
     mut events: EventReader<FinisClosingBox>,
-){
+) {
     for fcb in events.read() {
         if fcb.dialog_box_name == *"Choice Box" {
             if let Ok(mut vis) = cursor_query.get_single_mut() {
@@ -339,7 +345,7 @@ fn button_clicked(
     mut pushed_query: Query<(&mut Transform, &mut Visibility), With<PushedButton>>,
     button_query: Query<(&Transform, &ChoiceButton), Without<PushedButton>>,
     mut events: EventReader<ButtonIsPushed>,
-){
+) {
     for gse in events.read() {
         if gse.dialog_box_name == *"Choice Box" {
             for (button_tf, cb) in &button_query {

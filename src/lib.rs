@@ -1,8 +1,8 @@
 #![allow(clippy::too_many_arguments)]
 pub mod debug;
 pub mod dialog_box;
-pub mod ui_templates;
 mod read_script;
+pub mod ui_templates;
 mod utility;
 
 pub use debug::*;

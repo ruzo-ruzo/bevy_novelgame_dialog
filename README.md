@@ -16,14 +16,16 @@ This plugin provides a novel-game-style dialog box for the Bevy engine. You can 
 
 ## Example Script
 ```markdown
-# 選択肢
+選択肢
+===========
 選択肢ボックスを開きます。[wait]
 * [きつね歩いて](choice_example.md#歩く)
 * [きつね止まって](choice_example.md#止まる)
 * [きつね走って](choice_example.md#走る)
 * [別の話](explain02.md#その他の話)
 
-<h1>歩く</h1>
+歩く
+===========
 きつねが歩きます[wait]
 [signal: Fox walk]
 
