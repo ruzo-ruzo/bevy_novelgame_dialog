@@ -292,7 +292,6 @@ fn make_new_text(
     }
 }
 
-//Todo: 高さ調整つける
 fn make_empty_line(
     config: &TypeTextConfig,
     last_x: &mut f32,
@@ -321,7 +320,7 @@ fn make_empty_line(
     }
 }
 
-// Todo: 高さのセンタリングも出来るようにする
+// Todo: 高さをJustifyItems対応する。Paddingも考える
 pub fn settle_lines(
     dialogbox_query: Query<(Entity, &DialogBoxPhase), With<DialogBox>>,
     mut text_lines: Query<(&MessageTextLine, &mut Transform)>,

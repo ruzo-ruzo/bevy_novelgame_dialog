@@ -22,11 +22,17 @@ pub struct ScrollFeed {
     pub count: usize,
 }
 
+// Todo: この辺のEntity持たせてる奴Currentかnameにする
+#[derive(Reflect, Default, Debug)]
+pub struct InputForFeeding {
+    pub target_text_box: Option<Entity>,
+}
+
 #[allow(clippy::type_complexity)]
 pub fn setup_feed_starter(
     mut commands: Commands,
     window_query: Query<(Entity, &WaitBrakerStyle, &DialogBox)>,
-    text_box_query: Query<(Entity, &Parent, &GlobalTransform, &Sprite), With<TextArea>>,
+    text_box_query: Query<(Entity, &TextArea, &Parent, &GlobalTransform, &Sprite)>,
     w_icon_query: Query<(Entity, &WaitingIcon)>,
     current_query: Query<&Current>,
     mut waitting_event: EventReader<FeedWaitingEvent>,
@@ -34,7 +40,7 @@ pub fn setup_feed_starter(
 ) {
     for event in waitting_event.read() {
         for (w_entity, wbs, DialogBox { name: db_name }) in &window_query {
-            for (tb_entity, parent, tb_tf, tb_sp) in &text_box_query {
+            for (tb_entity, ta, parent, tb_tf, tb_sp) in &text_box_query {
                 if event.target_window == w_entity && w_entity == parent.get() {
                     if current_query.get(tb_entity).is_err() {
                         commands.entity(tb_entity).remove::<Selected>();
@@ -67,8 +73,7 @@ pub fn setup_feed_starter(
                                 },
                             )
                             .unwrap_or_default();
-                            let wig =
-                                make_wig_for_skip(tb_entity, tb_tf, tb_sp, ron_iff, &type_registry);
+                            let wig = make_wig_for_skip(db_name, &ta.name, tb_tf, tb_sp, &ron_iff, &type_registry);
                             commands.entity(tb_entity).insert(wig);
                             commands.entity(tb_entity).insert(Selected);
                         }
@@ -131,8 +136,8 @@ pub fn trigger_feeding_by_time(
 
 pub fn start_feeding(
     mut commands: Commands,
-    mut window_query: Query<(Entity, &mut DialogBoxPhase, &WaitBrakerStyle)>,
-    text_box_query: Query<(Entity, &GlobalTransform, &Sprite, &Parent), With<TextArea>>,
+    mut window_query: Query<(Entity, &DialogBox, &mut DialogBoxPhase, &WaitBrakerStyle)>,
+    text_box_query: Query<(Entity, &TextArea, &GlobalTransform, &Sprite, &Parent)>,
     parent_query: Query<&Parent>,
     line_query: Query<(Entity, &FeedingStyle), With<MessageTextLine>>,
     start_feeding_event: EventReader<StartFeedingEvent>,
@@ -141,7 +146,7 @@ pub fn start_feeding(
     if start_feeding_event.is_empty() {
         return;
     };
-    for (w_entity, mut ws, wbs) in &mut window_query {
+    for (w_entity, db, mut ws, wbs) in &mut window_query {
         if *ws != DialogBoxPhase::WaitingAction {
             return;
         }
@@ -169,10 +174,10 @@ pub fn start_feeding(
             };
         }
         *ws = DialogBoxPhase::Feeding;
-        for (tb_entity, tb_tf, tb_sp, tb_parent) in &text_box_query {
+        for (tb_entity, ta, tb_tf, tb_sp, tb_parent) in &text_box_query {
             if tb_parent.get() == w_entity {
                 if let WaitBrakerStyle::Input { .. } = wbs {
-                    let wig = make_wig_for_skip(tb_entity, tb_tf, tb_sp, "", &type_registry);
+                    let wig = make_wig_for_skip(&db.name, &ta.name, tb_tf, tb_sp, &"".to_string(), &type_registry);
                     commands.entity(tb_entity).insert(wig);
                 }
             }

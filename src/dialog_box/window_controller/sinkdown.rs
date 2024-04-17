@@ -25,10 +25,10 @@ pub struct GoSinking {
 pub fn setup_window_sink(
     mut commands: Commands,
     text_query: Query<(Entity, &TypingTimer), (With<Current>, With<MessageTextChar>)>,
-    text_box_query: Query<(Entity, &GlobalTransform, &Sprite), (With<Current>, With<TextArea>)>,
+    text_box_query: Query<(Entity, &TextArea, &GlobalTransform, &Sprite), With<Current>>,
     mut db_query: Query<
-        (Entity, &mut DialogBoxPhase, &WaitBrakerStyle),
-        (With<Current>, With<DialogBox>),
+        (Entity, &DialogBox, &mut DialogBoxPhase, &WaitBrakerStyle),
+        With<Current>,
     >,
     parents: Query<&Parent>,
     mut events: EventReader<BdsEvent>,
@@ -36,7 +36,7 @@ pub fn setup_window_sink(
 ) {
     for event_wrapper in events.read() {
         if let Some(SinkDownWindow { sink_type: sdt }) = event_wrapper.get_opt::<SinkDownWindow>() {
-            for (mw_entity, mut ws, wbs) in &mut db_query {
+            for (mw_entity, db, mut ws, wbs) in &mut db_query {
                 match wbs {
                     WaitBrakerStyle::Auto { wait_sec: base_sec } => {
                         let count: f32 = text_query
@@ -52,7 +52,7 @@ pub fn setup_window_sink(
                         });
                     }
                     WaitBrakerStyle::Input { .. } => {
-                        if let Some((target_tb, tb_tf, tb_sp)) =
+                        if let Some((target_tb, ta, tb_tf, tb_sp)) =
                             text_box_query.iter().find(|(tb_e, ..)| {
                                 parents.iter_ancestors(*tb_e).any(|pa_e| pa_e == mw_entity)
                             })
@@ -65,10 +65,11 @@ pub fn setup_window_sink(
                                 },
                             );
                             let wig = make_wig_for_skip(
-                                target_tb,
+                                &db.name,
+                                &ta.name,
                                 tb_tf,
                                 tb_sp,
-                                gs_ron.unwrap_or_default(),
+                                &gs_ron.unwrap_or_default(),
                                 &type_registry,
                             );
                             commands.entity(target_tb).insert(wig);
