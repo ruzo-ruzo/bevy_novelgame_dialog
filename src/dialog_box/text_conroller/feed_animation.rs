@@ -1,7 +1,6 @@
 use super::super::window_controller::waiting::*;
 use super::super::*;
 
-// Todo: この辺のEntity持たせてる奴Currentかnameにする
 #[derive(Event, Debug)]
 pub struct FeedWaitingEvent {
     pub target_window: Entity,
@@ -25,13 +24,14 @@ pub struct ScrollFeed {
 
 #[derive(Reflect, Default, Debug)]
 pub struct InputForFeeding {
-    pub target_text_box: Option<Entity>,
+    pub dialog_box_name: String,
+    pub text_area_name: String,
 }
 
 #[allow(clippy::type_complexity)]
 pub fn setup_feed_starter(
     mut commands: Commands,
-    window_query: Query<(Entity, &WaitBrakerStyle, &DialogBox)>,
+    dialog_box_query: Query<(Entity, &WaitBrakerStyle, &DialogBox)>,
     text_box_query: Query<(Entity, &TextArea, &Parent, &GlobalTransform, &Sprite)>,
     w_icon_query: Query<(Entity, &WaitingIcon)>,
     current_query: Query<&Current>,
@@ -39,7 +39,7 @@ pub fn setup_feed_starter(
     type_registry: Res<AppTypeRegistry>,
 ) {
     for event in waitting_event.read() {
-        for (w_entity, wbs, DialogBox { name: db_name }) in &window_query {
+        for (w_entity, wbs, DialogBox { name: db_name }) in &dialog_box_query {
             for (tb_entity, ta, parent, tb_tf, tb_sp) in &text_box_query {
                 if event.target_window == w_entity && w_entity == parent.get() {
                     if current_query.get(tb_entity).is_err() {
@@ -69,7 +69,8 @@ pub fn setup_feed_starter(
                             let ron_iff = write_ron(
                                 &type_registry,
                                 InputForFeeding {
-                                    target_text_box: Some(tb_entity),
+                                    dialog_box_name: db_name.clone(),
+                                    text_area_name: ta.name.clone(),
                                 },
                             )
                             .unwrap_or_default();
@@ -95,27 +96,31 @@ pub fn setup_feed_starter(
 pub fn trigger_feeding_by_event(
     mut commands: Commands,
     mut line_query: Query<(Entity, &Parent), With<MessageTextLine>>,
-    text_box_query: Query<&FeedingStyle>,
+    dialog_box_query: Query<&DialogBox>,
+    text_area_query: Query<(Entity, &TextArea, &FeedingStyle)>,
     mut icon_query: Query<(Entity, &mut Visibility), (With<WaitingIcon>, Without<MessageTextChar>)>,
     mut start_feeding_event: EventWriter<StartFeedingEvent>,
     mut events: EventReader<BdsEvent>,
 ) {
     for event_wrapper in events.read() {
         if let Some(InputForFeeding {
-            target_text_box: Some(tb_entity),
+            dialog_box_name: target_db_name,
+            text_area_name: target_ta_name,
         }) = event_wrapper.get_opt::<InputForFeeding>()
         {
-            for (l_entity, l_parent) in &mut line_query {
-                if l_parent.get() == tb_entity {
-                    if let Ok(fs) = text_box_query.get(tb_entity) {
+            let db_opt = dialog_box_query.iter().find(|x| x.name == target_db_name);
+            let ta_opt = text_area_query.iter().find(|x| x.1.name == target_ta_name);
+            if let (Some(_), Some((ta_entity, _, fs))) = (db_opt, ta_opt) {
+                for (l_entity, l_parent) in &mut line_query {
+                    if l_parent.get() == ta_entity {
                         commands.entity(l_entity).insert(*fs);
                     }
+                    start_feeding_event.send(StartFeedingEvent);
                 }
-                start_feeding_event.send(StartFeedingEvent);
-            }
-            for (ic_entity, mut ic_vis) in &mut icon_query {
-                *ic_vis = Visibility::Hidden;
-                commands.entity(ic_entity).remove::<TypingTimer>();
+                for (ic_entity, mut ic_vis) in &mut icon_query {
+                    *ic_vis = Visibility::Hidden;
+                    commands.entity(ic_entity).remove::<TypingTimer>();
+                }
             }
         }
     }

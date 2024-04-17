@@ -17,7 +17,7 @@ pub struct WaitSinkingTrigger {
 
 #[derive(Reflect, Default, Event)]
 pub struct GoSinking {
-    pub target: Option<Entity>,
+    pub dialog_box_name: String,
     pub sink_type: SinkDownType,
 }
 
@@ -57,7 +57,7 @@ pub fn setup_window_sink(
                             let gs_ron = write_ron(
                                 &type_registry,
                                 GoSinking {
-                                    target: Some(mw_entity),
+                                    dialog_box_name: db.name.clone(),
                                     sink_type: sdt,
                                 },
                             );
@@ -92,14 +92,14 @@ pub fn trigger_window_sink_by_event(
 
 pub fn trigger_window_sink_by_time(
     mut commands: Commands,
-    mut db_query: Query<(Entity, &mut WaitSinkingTrigger), With<DialogBox>>,
+    mut db_query: Query<(Entity, &DialogBox, &mut WaitSinkingTrigger)>,
     time: Res<Time>,
     mut events: EventWriter<GoSinking>,
 ) {
-    for (entity, mut wst) in &mut db_query {
+    for (entity, db, mut wst) in &mut db_query {
         if wst.timer.tick(time.delta()).finished() {
             events.send(GoSinking {
-                target: Some(entity),
+                dialog_box_name: db.name.clone(),
                 sink_type: wst.sink_type,
             });
             commands.entity(entity).remove::<WaitSinkingTrigger>();
@@ -109,28 +109,26 @@ pub fn trigger_window_sink_by_time(
 
 pub fn start_window_sink(
     mut commands: Commands,
-    mut db_query: Query<(Entity, &mut DialogBoxPhase), With<DialogBox>>,
+    mut db_query: Query<(Entity, &DialogBox, &mut DialogBoxPhase)>,
     mut events: EventReader<GoSinking>,
 ) {
     for GoSinking {
-        target: entity_opt,
+        dialog_box_name: db_name,
         sink_type: st,
     } in &mut events.read()
     {
-        for (mw_entity, mut ws) in &mut db_query {
-            if let Some(entity) = *entity_opt {
-                if entity == mw_entity {
-                    match st {
-                        SinkDownType::Scale { sec: s } => {
-                            commands.entity(entity).insert(ScalingDown {
-                                sub_per_sec: 1.0 / s,
-                            });
-                            *ws = DialogBoxPhase::SinkingDown;
-                        }
-                        SinkDownType::Fix => {
-                            *ws = DialogBoxPhase::Fixed;
-                            commands.entity(entity).remove::<Current>();
-                        }
+        for (entity, db, mut ws) in &mut db_query {
+            if db.name == *db_name {
+                match st {
+                    SinkDownType::Scale { sec: s } => {
+                        commands.entity(entity).insert(ScalingDown {
+                            sub_per_sec: 1.0 / s,
+                        });
+                        *ws = DialogBoxPhase::SinkingDown;
+                    }
+                    SinkDownType::Fix => {
+                        *ws = DialogBoxPhase::Fixed;
+                        commands.entity(entity).remove::<Current>();
                     }
                 }
             }

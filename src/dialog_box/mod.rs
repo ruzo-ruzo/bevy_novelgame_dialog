@@ -62,7 +62,6 @@ impl Plugin for DialogBoxPlugin {
             .register_type::<SetupChoice>()
             .register_type::<ChoosenEvent>()
             .register_type::<SinkDownWindow>()
-            .register_type::<Option<Entity>>()
             .register_type::<InputForFeeding>()
             .register_type::<InputForSkipping>()
             .register_type::<GoSinking>()
