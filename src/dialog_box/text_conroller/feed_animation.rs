@@ -1,6 +1,7 @@
 use super::super::window_controller::waiting::*;
 use super::super::*;
 
+// Todo: この辺のEntity持たせてる奴Currentかnameにする
 #[derive(Event, Debug)]
 pub struct FeedWaitingEvent {
     pub target_window: Entity,
@@ -22,7 +23,6 @@ pub struct ScrollFeed {
     pub count: usize,
 }
 
-// Todo: この辺のEntity持たせてる奴Currentかnameにする
 #[derive(Reflect, Default, Debug)]
 pub struct InputForFeeding {
     pub target_text_box: Option<Entity>,
@@ -73,7 +73,14 @@ pub fn setup_feed_starter(
                                 },
                             )
                             .unwrap_or_default();
-                            let wig = make_wig_for_skip(db_name, &ta.name, tb_tf, tb_sp, &ron_iff, &type_registry);
+                            let wig = make_wig_for_skip(
+                                db_name,
+                                &ta.name,
+                                tb_tf,
+                                tb_sp,
+                                &ron_iff,
+                                &type_registry,
+                            );
                             commands.entity(tb_entity).insert(wig);
                             commands.entity(tb_entity).insert(Selected);
                         }
@@ -177,7 +184,14 @@ pub fn start_feeding(
         for (tb_entity, ta, tb_tf, tb_sp, tb_parent) in &text_box_query {
             if tb_parent.get() == w_entity {
                 if let WaitBrakerStyle::Input { .. } = wbs {
-                    let wig = make_wig_for_skip(&db.name, &ta.name, tb_tf, tb_sp, &"".to_string(), &type_registry);
+                    let wig = make_wig_for_skip(
+                        &db.name,
+                        &ta.name,
+                        tb_tf,
+                        tb_sp,
+                        &"".to_string(),
+                        &type_registry,
+                    );
                     commands.entity(tb_entity).insert(wig);
                 }
             }

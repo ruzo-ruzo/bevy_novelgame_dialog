@@ -26,6 +26,9 @@ pub struct ChoosenEvent {
     pub choice_box_name: String,
 }
 
+#[derive(Component)]
+pub struct Choosable;
+
 #[allow(clippy::type_complexity)]
 pub fn open_choice_box(
     mut commands: Commands,
@@ -124,6 +127,9 @@ pub fn open_choice_box(
                     raw_orders: make_choice_order(&tl, &cbc.choice_box_name, &ta_names),
                     popup: cbc.popup,
                     text_area_configs: slided_text_area_configs,
+                    wait_breaker: WaitBrakerStyle::Auto {
+                        wait_sec: cbc.wait_to_sink,
+                    },
                     ..default()
                 };
                 ow_event.send(opening_event);
@@ -180,11 +186,14 @@ fn make_choice_order(
 
 pub fn setup_choice(
     mut commands: Commands,
-    cb_query: Query<(&ChoiceBoxState, &Children), With<Current>>,
+    cb_query: Query<(Entity, &ChoiceBoxState, &Children, &DialogBoxPhase), With<Current>>,
     ta_query: Query<(Entity, &TextArea, &GlobalTransform, &Sprite), Without<Selective>>,
     app_type_registry: Res<AppTypeRegistry>,
 ) {
-    if let Ok((cbs, children)) = cb_query.get_single() {
+    if let Ok((cb_entity, cbs, children, dbp)) = cb_query.get_single() {
+        if *dbp != DialogBoxPhase::Typing {
+            return;
+        }
         for (i, ta_name) in cbs.text_area_names.iter().enumerate() {
             let target = cbs
                 .target_list
@@ -210,6 +219,7 @@ pub fn setup_choice(
                 }
             }
         }
+        commands.entity(cb_entity).insert(Choosable);
     }
 }
 
@@ -260,19 +270,13 @@ pub fn close_choice_phase(
 
 pub fn reinstatement_external_entities(
     mut commands: Commands,
-    cbs_query: Query<(Entity, &ChoiceBoxState), Without<DialogBox>>,
+    cbs_query: Query<(Entity, &ChoiceBoxState), With<Choosable>>,
     cb_query: Query<(Entity, &ChoiceButton)>,
     ta_query: Query<&TextArea>,
     children_query: Query<&Children>,
     mut sp_query: Query<&mut Sprite>,
     mut tf_query: Query<&mut Transform>,
-    mut events: EventReader<BdsEvent>,
 ) {
-    for event_wrapper in events.read() {
-        if let Some(SetupChoice { .. }) = event_wrapper.get_opt::<SetupChoice>() {
-            return;
-        }
-    }
     for (state_entity, cbs) in &cbs_query {
         if let Ok(cb_children) = children_query.get(state_entity) {
             if ta_query.iter_many(cb_children).next().is_none() {
@@ -295,6 +299,7 @@ pub fn reinstatement_external_entities(
                     }
                 }
                 commands.entity(state_entity).remove::<ChoiceBoxState>();
+                commands.entity(state_entity).remove::<Choosable>();
             }
         }
     }

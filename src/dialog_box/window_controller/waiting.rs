@@ -22,10 +22,7 @@ pub fn simple_wait(
     mut commands: Commands,
     mut window_query: Query<(Entity, &mut DialogBoxPhase, &DialogBox), With<Current>>,
     w_icon_query: Query<(Entity, &WaitingIcon)>,
-    text_area_query: Query<
-        (Entity, &TextArea, &GlobalTransform, &Sprite, &Parent),
-        With<Current>,
-    >,
+    text_area_query: Query<(Entity, &TextArea, &GlobalTransform, &Sprite, &Parent), With<Current>>,
     selected_query: Query<Entity, With<Selected>>,
     last_data: LastTextData,
     mut bds_reader: EventReader<BdsEvent>,
@@ -44,8 +41,14 @@ pub fn simple_wait(
                             },
                         )
                         .unwrap_or_default();
-                        let wig =
-                            make_wig_for_skip(db_name, &ta.name, tb_tf, tb_sp, &ron, &type_registry);
+                        let wig = make_wig_for_skip(
+                            db_name,
+                            &ta.name,
+                            tb_tf,
+                            tb_sp,
+                            &ron,
+                            &type_registry,
+                        );
                         commands.entity(ta_entity).insert(wig);
                     }
                     let (_, _, _, _, last_timer) = initialize_typing_data(&last_data, ta_entity);
@@ -85,17 +88,18 @@ pub fn restart_typing(
         }) = event_wrapper.get_opt::<BreakWait>()
         {
             for (DialogBox { name: db_name }, mut phase) in &mut dialog_box_query {
-               for TextArea{ name: ta_name } in &text_area_query {
+                for TextArea { name: ta_name } in &text_area_query {
                     if *db_name == target_db_name
-                    && *ta_name == target_ta_name
-                    && DialogBoxPhase::WaitingAction == *phase {
+                        && *ta_name == target_ta_name
+                        && DialogBoxPhase::WaitingAction == *phase
+                    {
                         *phase = DialogBoxPhase::Typing;
-                    let ic_opt = icon_query
-                        .iter_mut()
-                        .find(|x| x.2.target_box_name == *db_name);
-                    if let Some((ic_entity, mut ic_vis, _)) = ic_opt {
-                        commands.entity(ic_entity).remove::<Settled>();
-                        *ic_vis = Visibility::Hidden;
+                        let ic_opt = icon_query
+                            .iter_mut()
+                            .find(|x| x.2.target_box_name == *db_name);
+                        if let Some((ic_entity, mut ic_vis, _)) = ic_opt {
+                            commands.entity(ic_entity).remove::<Settled>();
+                            *ic_vis = Visibility::Hidden;
                         }
                     }
                 }
@@ -200,11 +204,11 @@ pub fn skip_typing_or_next(
             text_area_name: target_ta_name,
         }) = event_wrapper.get_opt::<InputForSkipping>()
         {
-            let db_opt =  dialog_box_query.iter().find(|x|x.0.name == target_db_name);
-            let ta_opt =  text_area_query.iter().find(|x|x.1.name == target_ta_name);
-            if let  (Some((db, phase)), Some((ta_entity, ta, tb_tf, tb_sp))) = (db_opt, ta_opt) {
+            let db_opt = dialog_box_query.iter().find(|x| x.0.name == target_db_name);
+            let ta_opt = text_area_query.iter().find(|x| x.1.name == target_ta_name);
+            if let (Some((db, phase)), Some((ta_entity, ta, tb_tf, tb_sp))) = (db_opt, ta_opt) {
                 if phase != &DialogBoxPhase::WaitingAction {
-                        return;
+                    return;
                 }
                 let mut typed_count = 0usize;
                 let mut text_count = 0usize;
@@ -232,7 +236,8 @@ pub fn skip_typing_or_next(
                         })
                     }
                 } else {
-                    let wig = make_wig_for_skip(&db.name, &ta.name, tb_tf, tb_sp, &ron, &type_registry);
+                    let wig =
+                        make_wig_for_skip(&db.name, &ta.name, tb_tf, tb_sp, &ron, &type_registry);
                     commands.entity(ta_entity).insert(wig);
                 }
                 for (text_entity, mut t_vis, mut tf, t_parent, mut tt) in &mut waiting_text_query {
@@ -263,8 +268,10 @@ pub fn skip_feeding(
             ..
         }) = event_wrapper.get_opt::<InputForSkipping>()
         {
-            let db_opt =  dialog_box_query.iter_mut().find(|x|x.0.name == target_db_name);
-            let ta_opt =  text_area_query.iter().find(|x|x.1.name == target_ta_name);
+            let db_opt = dialog_box_query
+                .iter_mut()
+                .find(|x| x.0.name == target_db_name);
+            let ta_opt = text_area_query.iter().find(|x| x.1.name == target_ta_name);
             if let (Some((_, mut phase)), Some((ta_entity, _))) = (db_opt, ta_opt) {
                 if *phase == DialogBoxPhase::Feeding {
                     for (l_entity, l_parent) in &line_query {

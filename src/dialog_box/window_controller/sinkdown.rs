@@ -26,10 +26,7 @@ pub fn setup_window_sink(
     mut commands: Commands,
     text_query: Query<(Entity, &TypingTimer), (With<Current>, With<MessageTextChar>)>,
     text_box_query: Query<(Entity, &TextArea, &GlobalTransform, &Sprite), With<Current>>,
-    mut db_query: Query<
-        (Entity, &DialogBox, &mut DialogBoxPhase, &WaitBrakerStyle),
-        With<Current>,
-    >,
+    mut db_query: Query<(Entity, &DialogBox, &mut DialogBoxPhase, &WaitBrakerStyle), With<Current>>,
     parents: Query<&Parent>,
     mut events: EventReader<BdsEvent>,
     type_registry: Res<AppTypeRegistry>,
