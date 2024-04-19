@@ -93,7 +93,7 @@ fn open_message(
             dialog_box_name: "Main Box".to_string(),
             script_path: path.clone(),
             template_path: vec![
-                "scripts/sample.csv".to_string(),
+                "scripts/rpg_style.csv".to_string(),
                 "scripts/basic.csv".to_string(),
             ],
             text_area_configs: vec![frame_tac],

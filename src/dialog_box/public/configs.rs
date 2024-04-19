@@ -56,7 +56,6 @@ impl Default for TextAreaConfig {
     }
 }
 
-// ComponentにEntityつっこむのヤバいので後で直す
 #[derive(Component, Clone)]
 pub struct ChoiceBoxConfig {
     pub choice_box_name: String,
