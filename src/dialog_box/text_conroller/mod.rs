@@ -21,6 +21,9 @@ pub struct MessageTextLine {
 #[derive(Component, Debug)]
 pub struct MessageTextChar;
 
+#[derive(Component, Debug)]
+pub struct KerningEfficient(f32);
+
 #[derive(Bundle, Debug)]
 struct CharBundle {
     text_char: MessageTextChar,
@@ -248,12 +251,13 @@ fn make_new_text(
     font_assets: &Assets<Font>,
     max_width: f32,
 ) -> Option<CharBundle> {
+    let font_conf = choice_font_with_index(&config.fonts, new_word, font_assets);
     let next_x = *last_x + config.text_style.font_size;
     if next_x > max_width {
         None
     } else {
         let text_style = TextStyle {
-            font: choice_font(&config.fonts, new_word, font_assets).unwrap_or_default(),
+            font: font_conf.map(|x| x.1).unwrap_or_default(),
             ..config.text_style
         };
         let text2d_bundle = Text2dBundle {

@@ -63,9 +63,10 @@ fn open_message(
         ]
         .iter()
         .map(|s| "fonts/".to_owned() + s)
+        .map(|s| FontConfig { path: s.clone(), .. default() } )
         .collect::<Vec<_>>();
         let frame_tac = TextAreaConfig {
-            font_paths: font_vec.clone(),
+            font_sets: font_vec.clone(),
             feeding: FeedingStyle::Scroll { size: 0, sec: 0.5 },
             font_color: Color::DARK_GRAY,
             area_origin: Vec2::new(-540.0, 70.0),
@@ -73,7 +74,7 @@ fn open_message(
             ..default()
         };
         let tac_base = TextAreaConfig {
-            font_paths: font_vec.clone(),
+            font_sets: font_vec.clone(),
             area_origin: Vec2::new(-220.0, 200.0),
             area_size: Vec2::new(400.0, 100.0),
             font_color: Color::NAVY,
