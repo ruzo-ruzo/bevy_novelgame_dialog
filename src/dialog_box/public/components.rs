@@ -1,5 +1,7 @@
 use bevy::prelude::*;
 
+// Todo: ページング用とアイコン分けたい
+// 移動するかどうかの設定をこっちに持たせる？
 #[derive(Component, Debug, Default)]
 pub struct WaitingIcon {
     pub target_box_name: String,
@@ -51,6 +53,7 @@ pub enum PopupType {
     Scale { sec: f32 },
 }
 
+// Todo: 全域タップ設定も欲しい
 #[derive(Component, Debug, Clone, PartialEq)]
 pub enum WaitBrakerStyle {
     Auto { wait_sec: f32 },

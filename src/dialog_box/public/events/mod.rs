@@ -5,7 +5,6 @@ use crate::dialog_box::public::configs::*;
 use crate::read_script::*;
 use bevy::prelude::*;
 
-// Todo: Entity直接送るのやめさせる
 #[derive(Event)]
 pub struct OpenDialog {
     pub dialog_box_name: String,

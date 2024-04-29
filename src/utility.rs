@@ -8,6 +8,7 @@ pub fn get_random<T, R: AsRef<[T]>>(list: &R) -> Option<&T> {
     list_ref.get(rand::thread_rng().gen_range(0..list_ref.len()))
 }
 
+#[allow(dead_code)]
 pub fn choice_font<R: AsRef<[Handle<Font>]>>(
     list: &R,
     target: char,
@@ -24,6 +25,26 @@ pub fn choice_font<R: AsRef<[Handle<Font>]>>(
         })
         .cloned();
     finded.or(list.as_ref().iter().last().cloned())
+}
+
+pub fn choice_font_with_index<R: AsRef<[Handle<Font>]>>(
+    list: &R,
+    target: char,
+    fonts: &Assets<Font>,
+) -> Option<(usize, Handle<Font>)> {
+    let finded = list
+        .as_ref()
+        .iter()
+        .enumerate()
+        .find(|(_, h)| {
+            fonts
+                .get(*h)
+                .map(|f| glyph_exists_in_font(f.clone(), target))
+                .unwrap_or(false)
+        });
+    finded
+        .map(|(i, f)| (i, f.clone()))
+        .or(list.as_ref().iter().map(|x|(list.as_ref().iter().len()-1, x.clone())).last())
 }
 
 fn glyph_exists_in_font(font: Font, target: char) -> bool {
