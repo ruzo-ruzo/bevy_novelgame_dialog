@@ -32,19 +32,17 @@ pub fn choice_font_with_index<R: AsRef<[Handle<Font>]>>(
     target: char,
     fonts: &Assets<Font>,
 ) -> Option<(usize, Handle<Font>)> {
-    let finded = list
+    let finded = list.as_ref().iter().enumerate().find(|(_, h)| {
+        fonts
+            .get(*h)
+            .map(|f| glyph_exists_in_font(f.clone(), target))
+            .unwrap_or(false)
+    });
+    finded.map(|(i, f)| (i, f.clone())).or(list
         .as_ref()
         .iter()
-        .enumerate()
-        .find(|(_, h)| {
-            fonts
-                .get(*h)
-                .map(|f| glyph_exists_in_font(f.clone(), target))
-                .unwrap_or(false)
-        });
-    finded
-        .map(|(i, f)| (i, f.clone()))
-        .or(list.as_ref().iter().map(|x|(list.as_ref().iter().len()-1, x.clone())).last())
+        .map(|x| (list.as_ref().iter().len() - 1, x.clone()))
+        .last())
 }
 
 fn glyph_exists_in_font(font: Font, target: char) -> bool {

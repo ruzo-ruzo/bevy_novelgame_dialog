@@ -56,16 +56,20 @@ fn open_message(
 ) {
     for OpenRPGStyleDialog { script_path: path } in open_message_event.read() {
         let font_path_vec = [
-                "UnifrakturMaguntia/UnifrakturMaguntia-Regular.ttf",
-                "赤薔薇/akabara-cinderella.ttf",
-                "网风雅宋/网风雅宋.ttf",
-                "noto/NotoEmoji-VariableFont_wght.ttf",
-            ]
-            .iter()
-            .map(|s| "fonts/".to_owned() + s);
+            "UnifrakturMaguntia/UnifrakturMaguntia-Regular.ttf",
+            "赤薔薇/akabara-cinderella.ttf",
+            "网风雅宋/网风雅宋.ttf",
+            "noto/NotoEmoji-VariableFont_wght.ttf",
+        ]
+        .iter()
+        .map(|s| "fonts/".to_owned() + s);
         let font_vec = font_path_vec
             .zip([(1.0, -0.3), (1.0, 0.0), (1.3, -0.1), (1.0, 0.0)].iter())
-            .map(|(p, (s, k))| FontConfig {path: p.clone(), kerning: *k, size: *s } )
+            .map(|(p, (s, k))| FontConfig {
+                path: p.clone(),
+                kerning: *k,
+                size: *s,
+            })
             .collect::<Vec<_>>();
         let frame_tac = TextAreaConfig {
             font_sets: font_vec.clone(),

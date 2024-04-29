@@ -79,7 +79,7 @@ pub fn open_window(
                         .map(|f| asset_server.load(f.path.clone()))
                         .collect(),
                     kerning_by_fonts: t_cfg.font_sets.iter().map(|f| f.kerning).collect(),
-                    size_by_fonts:  t_cfg.font_sets.iter().map(|f| f.size).collect(),
+                    size_by_fonts: t_cfg.font_sets.iter().map(|f| f.size).collect(),
                     text_style: TextStyle {
                         font_size: t_cfg.text_base_size,
                         color: t_cfg.font_color,

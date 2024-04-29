@@ -21,9 +21,6 @@ pub struct MessageTextLine {
 #[derive(Component, Debug)]
 pub struct MessageTextChar;
 
-// #[derive(Component, Debug)]
-// pub struct KerningEfficient(f32);
-
 #[derive(Bundle, Debug)]
 struct CharBundle {
     text_char: MessageTextChar,
@@ -241,7 +238,6 @@ fn get_next_order(
     }
 }
 
-//Todo: カーニングつける。
 fn make_new_text(
     new_word: char,
     config: &TypeTextConfig,
@@ -252,11 +248,11 @@ fn make_new_text(
     max_width: f32,
 ) -> Option<CharBundle> {
     let font_conf = choice_font_with_index(&config.fonts, new_word, font_assets);
-    let font_index = font_conf.clone().map(|x|x.0).unwrap_or_default();
+    let font_index = font_conf.clone().map(|x| x.0).unwrap_or_default();
     let size_coefficient = config.size_by_fonts.get(font_index).unwrap_or(&1.0);
     let kerning_coefficient = config.kerning_by_fonts.get(font_index).unwrap_or(&0.0);
-    let true_size = config.text_style.font_size*size_coefficient;
-    let kerning = true_size*kerning_coefficient;
+    let true_size = config.text_style.font_size * size_coefficient;
+    let kerning = true_size * kerning_coefficient;
     let next_x = *last_x + true_size;
     if next_x > max_width {
         None
@@ -282,17 +278,17 @@ fn make_new_text(
                     + if *last_x == 0. && !is_first_char {
                         s
                     } else {
-                        0.
+                        0.0
                     }
             }
-            _ => 0.,
+            _ => 0.0,
         };
         let typing_timer = TypingTimer {
             timer: Timer::from_seconds(type_sec, TimerMode::Once),
         };
         *last_x += true_size + kerning;
         *last_timer = typing_timer.clone();
-        Some( CharBundle {
+        Some(CharBundle {
             text_char: MessageTextChar,
             timer: typing_timer,
             text2d: text2d_bundle,
@@ -383,7 +379,7 @@ pub fn settle_lines(
                 l_tf.translation.x = match mtl.alignment {
                     JustifyText::Center => (area_width - line_width) / 2.,
                     JustifyText::Right => area_width - line_width,
-                    _ => 0.,
+                    _ => 0.0,
                 };
                 l_tf.translation.y = prev_height
             }
