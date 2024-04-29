@@ -55,17 +55,20 @@ fn open_message(
     mut ow_event: EventWriter<OpenDialog>,
 ) {
     for OpenRPGStyleDialog { script_path: path } in open_message_event.read() {
-        let font_vec = [
-            "UnifrakturMaguntia/UnifrakturMaguntia-Regular.ttf",
-            "赤薔薇/akabara-cinderella.ttf",
-            "网风雅宋/网风雅宋.ttf",
-            "noto/NotoEmoji-VariableFont_wght.ttf",
-        ]
-        .iter()
-        .map(|s| "fonts/".to_owned() + s)
-        .collect::<Vec<_>>();
+        let font_path_vec = [
+                "UnifrakturMaguntia/UnifrakturMaguntia-Regular.ttf",
+                "赤薔薇/akabara-cinderella.ttf",
+                "网风雅宋/网风雅宋.ttf",
+                "noto/NotoEmoji-VariableFont_wght.ttf",
+            ]
+            .iter()
+            .map(|s| "fonts/".to_owned() + s);
+        let font_vec = font_path_vec
+            .zip([(1.0, -0.3), (1.0, 0.0), (1.3, -0.1), (1.0, 0.0)].iter())
+            .map(|(p, (s, k))| FontConfig {path: p.clone(), kerning: *k, size: *s } )
+            .collect::<Vec<_>>();
         let frame_tac = TextAreaConfig {
-            font_paths: font_vec.clone(),
+            font_sets: font_vec.clone(),
             feeding: FeedingStyle::Scroll { size: 0, sec: 0.5 },
             font_color: Color::DARK_GRAY,
             area_origin: Vec2::new(-540.0, 70.0),
@@ -73,7 +76,7 @@ fn open_message(
             ..default()
         };
         let tac_base = TextAreaConfig {
-            font_paths: font_vec.clone(),
+            font_sets: font_vec.clone(),
             area_origin: Vec2::new(-220.0, 200.0),
             area_size: Vec2::new(400.0, 100.0),
             font_color: Color::NAVY,
