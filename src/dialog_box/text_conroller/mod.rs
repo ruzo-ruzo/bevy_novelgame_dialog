@@ -21,8 +21,8 @@ pub struct MessageTextLine {
 #[derive(Component, Debug)]
 pub struct MessageTextChar;
 
-#[derive(Component, Debug)]
-pub struct KerningEfficient(f32);
+// #[derive(Component, Debug)]
+// pub struct KerningEfficient(f32);
 
 #[derive(Bundle, Debug)]
 struct CharBundle {
@@ -252,12 +252,18 @@ fn make_new_text(
     max_width: f32,
 ) -> Option<CharBundle> {
     let font_conf = choice_font_with_index(&config.fonts, new_word, font_assets);
-    let next_x = *last_x + config.text_style.font_size;
+    let font_index = font_conf.clone().map(|x|x.0).unwrap_or_default();
+    let size_coefficient = config.size_by_fonts.get(font_index).unwrap_or(&1.0);
+    let kerning_coefficient = config.kerning_by_fonts.get(font_index).unwrap_or(&0.0);
+    let true_size = config.text_style.font_size*size_coefficient;
+    let kerning = true_size*kerning_coefficient;
+    let next_x = *last_x + true_size;
     if next_x > max_width {
         None
     } else {
         let text_style = TextStyle {
             font: font_conf.map(|x| x.1).unwrap_or_default(),
+            font_size: true_size,
             ..config.text_style
         };
         let text2d_bundle = Text2dBundle {
@@ -271,7 +277,7 @@ fn make_new_text(
         let type_sec = match config.typing_timing {
             TypingTiming::ByChar { sec: s } => last_secs + s,
             TypingTiming::ByLine { sec: s } => {
-                let is_first_char = last_y >= -config.text_style.font_size;
+                let is_first_char = last_y >= -true_size;
                 last_secs
                     + if *last_x == 0. && !is_first_char {
                         s
@@ -284,9 +290,9 @@ fn make_new_text(
         let typing_timer = TypingTimer {
             timer: Timer::from_seconds(type_sec, TimerMode::Once),
         };
-        *last_x += config.text_style.font_size;
+        *last_x += true_size + kerning;
         *last_timer = typing_timer.clone();
-        Some(CharBundle {
+        Some( CharBundle {
             text_char: MessageTextChar,
             timer: typing_timer,
             text2d: text2d_bundle,
