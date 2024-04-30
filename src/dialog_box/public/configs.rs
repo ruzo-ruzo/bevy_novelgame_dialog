@@ -3,7 +3,6 @@ use bevy::{
     prelude::*,
     render::{color::Color, view::RenderLayers},
     sprite::Anchor,
-    text::JustifyText,
 };
 
 #[derive(Debug, Clone, Copy, PartialEq)]
@@ -12,12 +11,27 @@ pub enum SelectVector {
     Horizon,
 }
 
+#[derive(Clone, Copy, PartialEq)]
+pub enum AlignVertical {
+    Top,
+    Center,
+    Bottom,
+}
+
+#[derive(Clone, Copy, PartialEq)]
+pub enum AlignHorizon {
+    Left,
+    Center,
+    Right,
+}
+
 #[derive(Clone)]
 pub struct FontConfig {
     pub path: String,
     pub kerning: f32,
     pub size: f32,
 }
+
 impl Default for FontConfig {
     fn default() -> Self {
         FontConfig {
@@ -28,7 +42,7 @@ impl Default for FontConfig {
     }
 }
 
-#[derive(Component, Debug)]
+#[derive(Component)]
 pub struct TypeTextConfig {
     pub fonts: Vec<Handle<Font>>,
     pub kerning_by_fonts: Vec<f32>,
@@ -37,7 +51,8 @@ pub struct TypeTextConfig {
     pub writing: WritingStyle,
     pub typing_timing: TypingTiming,
     pub layer: RenderLayers,
-    pub alignment: JustifyText,
+    pub horizon_alignment: AlignHorizon,
+    pub vertical_alignment: AlignVertical,
     pub pos_z: f32,
 }
 
@@ -46,7 +61,8 @@ pub struct TextAreaConfig {
     pub area_name: String,
     pub area_origin: Vec2,
     pub area_size: Vec2,
-    pub main_alignment: JustifyText,
+    pub horizon_alignment: AlignHorizon,
+    pub vertical_alignment: AlignVertical,
     pub feeding: FeedingStyle,
     pub typing_timing: TypingTiming,
     pub writing: WritingStyle,
@@ -62,7 +78,8 @@ impl Default for TextAreaConfig {
             area_name: "Main Area".to_string(),
             area_origin: Vec2::new(-600., 80.),
             area_size: Vec2::new(1060., 260.),
-            main_alignment: JustifyText::Left,
+            horizon_alignment: AlignHorizon::Left,
+            vertical_alignment: AlignVertical::Top,
             feeding: FeedingStyle::Scroll { size: 0, sec: 40. },
             typing_timing: TypingTiming::ByChar { sec: 0.07 },
             writing: WritingStyle::Wipe { sec: 0.07 },
@@ -91,7 +108,8 @@ impl Default for ChoiceBoxConfig {
         let basic_text_area = TextAreaConfig {
             writing: WritingStyle::Put,
             typing_timing: TypingTiming::ByPage,
-            main_alignment: JustifyText::Center,
+            horizon_alignment: AlignHorizon::Center,
+            vertical_alignment: AlignVertical::Center,
             ..default()
         };
         ChoiceBoxConfig {
