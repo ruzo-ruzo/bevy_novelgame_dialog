@@ -3,7 +3,6 @@ use bevy::{
     prelude::*,
     render::view::{RenderLayers, Visibility},
     sprite::Anchor,
-    text::JustifyText,
 };
 
 pub mod feed_animation;
@@ -13,9 +12,10 @@ use super::*;
 use crate::utility::*;
 use feed_animation::*;
 
-#[derive(Component, Debug)]
+#[derive(Component)]
 pub struct MessageTextLine {
-    alignment: JustifyText,
+    horizon_alignment: AlignHorizon,
+    vertical_alignment: AlignVertical,
 }
 
 #[derive(Component, Debug)]
@@ -320,7 +320,8 @@ fn make_empty_line(
         Some(LineBundle {
             sprites: sprite_bundle,
             line: MessageTextLine {
-                alignment: config.alignment,
+                horizon_alignment: config.horizon_alignment,
+                vertical_alignment: config.vertical_alignment,
             },
         })
     }
@@ -331,7 +332,8 @@ pub fn settle_lines(
     dialogbox_query: Query<(Entity, &DialogBoxPhase), With<DialogBox>>,
     mut text_lines: Query<(&MessageTextLine, &mut Transform)>,
     text_char: Query<&Text, With<MessageTextChar>>,
-    mut sprite_query: Query<&mut Sprite>,
+    area_sprite_query: Query<&mut Sprite, With<TextArea>>,
+    mut line_sprite_query: Query<&mut Sprite, Without<TextArea>>,
     children_query: Query<&Children>,
 ) {
     for (db_entity, phase) in &dialogbox_query {
@@ -343,11 +345,14 @@ pub fn settle_lines(
             let Ok(tl_entities) = children_query.get(*ta_entity) else {
                 continue;
             };
+            let Ok(ta_spr) = area_sprite_query.get(*ta_entity) else {
+                continue;
+            };
             for tl_entity in tl_entities {
                 let Ok((mtl, mut l_tf)) = text_lines.get_mut(*tl_entity) else {
                     continue;
                 };
-                let Ok(mut tl_spr) = sprite_query.get_mut(*tl_entity) else {
+                let Ok(mut tl_spr) = line_sprite_query.get_mut(*tl_entity) else {
                     continue;
                 };
                 let Ok(tx_entities) = children_query.get(*tl_entity) else {
@@ -367,21 +372,28 @@ pub fn settle_lines(
                     .iter()
                     .reduce(|x, y| if x > y { x } else { y })
                     .unwrap_or(&base_hight);
-                prev_height -= line_height;
                 tl_spr.custom_size = Some(Vec2::new(line_width, *line_height));
                 if *phase != DialogBoxPhase::Typing {
                     continue;
                 }
-                let Ok(ta_spr) = sprite_query.get(*ta_entity) else {
-                    continue;
-                };
                 let area_width = ta_spr.custom_size.map(|s| s.x).unwrap_or_default();
-                l_tf.translation.x = match mtl.alignment {
-                    JustifyText::Center => (area_width - line_width) / 2.,
-                    JustifyText::Right => area_width - line_width,
+                l_tf.translation.x = match mtl.horizon_alignment {
+                    AlignHorizon::Center => (area_width - line_width) / 2.0,
+                    AlignHorizon::Right => area_width - line_width,
                     _ => 0.0,
                 };
-                l_tf.translation.y = prev_height
+                l_tf.translation.y = prev_height - line_height;
+                prev_height -= line_height;
+            }
+            let area_height = ta_spr.custom_size.map(|s| s.y).unwrap_or_default();
+            for tl_entity in tl_entities {
+                if let Ok((mtl, mut l_tf)) = text_lines.get_mut(*tl_entity) {
+                    l_tf.translation.y -= match mtl.vertical_alignment {
+                        AlignVertical::Center => (area_height + prev_height) / 2.0,
+                        AlignVertical::Bottom => area_height + prev_height,
+                        _ => 0.0,
+                    }
+                }
             }
         }
     }

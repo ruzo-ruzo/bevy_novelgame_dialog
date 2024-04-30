@@ -88,7 +88,8 @@ pub fn open_window(
                     writing: t_cfg.writing,
                     typing_timing: t_cfg.typing_timing,
                     layer: RenderLayers::layer(setup_config.render_layer),
-                    alignment: t_cfg.main_alignment,
+                    horizon_alignment: t_cfg.horizon_alignment,
+                    vertical_alignment: t_cfg.vertical_alignment,
                     pos_z: t_cfg.text_pos_z,
                 },
             };

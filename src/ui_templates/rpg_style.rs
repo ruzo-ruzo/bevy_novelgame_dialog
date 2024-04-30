@@ -1,7 +1,6 @@
 use crate::public::*;
 use crate::*;
 use bevy::prelude::*;
-use bevy::text::JustifyText;
 
 #[derive(Resource, Default)]
 pub struct TemplateSetupConfig {
@@ -81,17 +80,18 @@ fn open_message(
         };
         let tac_base = TextAreaConfig {
             font_sets: font_vec.clone(),
-            area_origin: Vec2::new(-220.0, 200.0),
+            area_origin: Vec2::new(-220.0, 180.0),
             area_size: Vec2::new(400.0, 100.0),
             font_color: Color::NAVY,
             writing: WritingStyle::Put,
             typing_timing: TypingTiming::ByPage,
-            main_alignment: JustifyText::Center,
+            horizon_alignment: AlignHorizon::Center,
+            vertical_alignment: AlignVertical::Center,
             ..default()
         };
         let tac_list = (0..4)
             .map(|i| TextAreaConfig {
-                area_origin: Vec2::new(-220.0, -30.0 - 140.0 * (i as f32)),
+                area_origin: Vec2::new(-220.0, -20.0 - 140.0 * (i as f32)),
                 area_name: format!("Button Area {i:02}"),
                 ..tac_base.clone()
             })
