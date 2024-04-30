@@ -1,10 +1,10 @@
+use ab_glyph::Font as AbFont;
 use bevy::{
     ecs::system::SystemParam,
     prelude::*,
     render::view::{RenderLayers, Visibility},
     sprite::Anchor,
 };
-use ab_glyph::Font as AbFont;
 
 pub mod feed_animation;
 pub mod typing_animations;
@@ -288,10 +288,10 @@ fn make_new_text(
             timer: Timer::from_seconds(type_sec, TimerMode::Once),
         };
         let font = &font_assets.get(font_conf.unwrap().1).unwrap().font;
-        let pt_per_height = true_size/font.height_unscaled();
-        let advance = pt_per_height*font.h_advance_unscaled(font.glyph_id(new_word));
+        let pt_per_height = true_size / font.height_unscaled();
+        let advance = pt_per_height * font.h_advance_unscaled(font.glyph_id(new_word));
         let next_x = *last_x + advance + kerning;
-        *last_x = if config.monospace { target_x } else { next_x } ;
+        *last_x = if config.monospace { target_x } else { next_x };
         *last_timer = typing_timer.clone();
         Some(CharBundle {
             text_char: MessageTextChar,
