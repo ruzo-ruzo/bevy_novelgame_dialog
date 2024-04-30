@@ -90,6 +90,7 @@ pub fn open_window(
                     layer: RenderLayers::layer(setup_config.render_layer),
                     horizon_alignment: t_cfg.horizon_alignment,
                     vertical_alignment: t_cfg.vertical_alignment,
+                    monospace: t_cfg.monospace,
                     pos_z: t_cfg.text_pos_z,
                 },
             };

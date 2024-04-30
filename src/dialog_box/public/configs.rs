@@ -53,6 +53,7 @@ pub struct TypeTextConfig {
     pub layer: RenderLayers,
     pub horizon_alignment: AlignHorizon,
     pub vertical_alignment: AlignVertical,
+    pub monospace: bool,
     pub pos_z: f32,
 }
 
@@ -63,6 +64,7 @@ pub struct TextAreaConfig {
     pub area_size: Vec2,
     pub horizon_alignment: AlignHorizon,
     pub vertical_alignment: AlignVertical,
+    pub monospace: bool,
     pub feeding: FeedingStyle,
     pub typing_timing: TypingTiming,
     pub writing: WritingStyle,
@@ -80,6 +82,7 @@ impl Default for TextAreaConfig {
             area_size: Vec2::new(1060., 260.),
             horizon_alignment: AlignHorizon::Left,
             vertical_alignment: AlignVertical::Top,
+            monospace: false,
             feeding: FeedingStyle::Scroll { size: 0, sec: 40. },
             typing_timing: TypingTiming::ByChar { sec: 0.07 },
             writing: WritingStyle::Wipe { sec: 0.07 },

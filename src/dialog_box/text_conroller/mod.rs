@@ -1,3 +1,4 @@
+use ab_glyph::Font as AbFont;
 use bevy::{
     ecs::system::SystemParam,
     prelude::*,
@@ -253,18 +254,18 @@ fn make_new_text(
     let kerning_coefficient = config.kerning_by_fonts.get(font_index).unwrap_or(&0.0);
     let true_size = config.text_style.font_size * size_coefficient;
     let kerning = true_size * kerning_coefficient;
-    let next_x = *last_x + true_size;
-    if next_x > max_width {
+    let target_x = *last_x + true_size + kerning;
+    if target_x > max_width {
         None
     } else {
         let text_style = TextStyle {
-            font: font_conf.map(|x| x.1).unwrap_or_default(),
+            font: font_conf.clone().map(|x| x.1).unwrap_or_default(),
             font_size: true_size,
             ..config.text_style
         };
         let text2d_bundle = Text2dBundle {
             text: Text::from_section(new_word.to_string(), text_style),
-            transform: Transform::from_translation(Vec3::new(next_x, 0., 0.)),
+            transform: Transform::from_translation(Vec3::new(target_x, 0., 0.)),
             visibility: Visibility::Hidden,
             text_anchor: Anchor::BottomLeft,
             ..default()
@@ -286,7 +287,11 @@ fn make_new_text(
         let typing_timer = TypingTimer {
             timer: Timer::from_seconds(type_sec, TimerMode::Once),
         };
-        *last_x += true_size + kerning;
+        let font = &font_assets.get(font_conf.unwrap().1).unwrap().font;
+        let pt_per_height = true_size / font.height_unscaled();
+        let advance = pt_per_height * font.h_advance_unscaled(font.glyph_id(new_word));
+        let next_x = *last_x + advance + kerning;
+        *last_x = if config.monospace { target_x } else { next_x };
         *last_timer = typing_timer.clone();
         Some(CharBundle {
             text_char: MessageTextChar,
