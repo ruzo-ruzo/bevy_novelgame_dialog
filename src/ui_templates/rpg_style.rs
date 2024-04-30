@@ -74,14 +74,14 @@ fn open_message(
             font_sets: font_vec.clone(),
             feeding: FeedingStyle::Scroll { size: 0, sec: 0.5 },
             font_color: Color::DARK_GRAY,
-            area_origin: Vec2::new(-540.0, 70.0),
+            area_origin: Vec2::new(-520.0, 70.0),
             area_size: Vec2::new(1010.0, 140.0),
+            monospace: true,
             ..default()
         };
         let tac_base = TextAreaConfig {
             font_sets: font_vec.clone(),
-            area_origin: Vec2::new(-220.0, 180.0),
-            area_size: Vec2::new(400.0, 100.0),
+            area_size: Vec2::new(360.0, 100.0),
             font_color: Color::NAVY,
             writing: WritingStyle::Put,
             typing_timing: TypingTiming::ByPage,
@@ -91,7 +91,7 @@ fn open_message(
         };
         let tac_list = (0..4)
             .map(|i| TextAreaConfig {
-                area_origin: Vec2::new(-220.0, -20.0 - 140.0 * (i as f32)),
+                area_origin: Vec2::new(-180.0, -20.0 - 140.0 * (i as f32)),
                 area_name: format!("Button Area {i:02}"),
                 ..tac_base.clone()
             })
