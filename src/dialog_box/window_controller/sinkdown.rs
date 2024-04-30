@@ -136,6 +136,7 @@ pub fn start_window_sink(
     }
 }
 
+// Todo: テキストが素っ頓狂な方向へ飛んでくの直したい
 pub fn scaling_down(
     mut commands: Commands,
     mut db_query: Query<(Entity, &mut Transform, &ScalingDown)>,
