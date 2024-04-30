@@ -202,7 +202,11 @@ pub fn initialize_typing_data(
         ),
     };
     let last_x = last_text_data_opt
-        .and_then(|t| t.2.sections.first().map(|s|s.style.font_size + t.1.translation.x))
+        .and_then(|t| {
+            t.2.sections
+                .first()
+                .map(|s| s.style.font_size + t.1.translation.x)
+        })
         .unwrap_or_default();
     let last_y = last_line_data_opt
         .map(|l| l.1.translation.y)
