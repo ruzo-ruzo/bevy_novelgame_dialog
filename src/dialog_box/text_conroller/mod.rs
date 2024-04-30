@@ -265,7 +265,7 @@ fn make_new_text(
         };
         let text2d_bundle = Text2dBundle {
             text: Text::from_section(new_word.to_string(), text_style),
-            transform: Transform::from_translation(Vec3::new(target_x, 0., 0.)),
+            transform: Transform::from_translation(Vec3::new(*last_x, 0., 0.)),
             visibility: Visibility::Hidden,
             text_anchor: Anchor::BottomLeft,
             ..default()
@@ -335,8 +335,8 @@ fn make_empty_line(
 // Todo: 高さをJustifyItems対応する。Paddingも考える
 pub fn settle_lines(
     dialogbox_query: Query<(Entity, &DialogBoxPhase), With<DialogBox>>,
-    mut text_lines: Query<(&MessageTextLine, &mut Transform)>,
-    text_char: Query<&Text, With<MessageTextChar>>,
+    mut text_lines: Query<(&MessageTextLine, &mut Transform), Without<MessageTextChar>>,
+    text_char: Query<(&Text, &Transform), With<MessageTextChar>>,
     area_sprite_query: Query<&mut Sprite, With<TextArea>>,
     mut line_sprite_query: Query<&mut Sprite, Without<TextArea>>,
     children_query: Query<&Children>,
@@ -364,15 +364,19 @@ pub fn settle_lines(
                     continue;
                 };
                 let mut text_size_list: Vec<f32> = Vec::new();
+                let mut last_pos_x = 0.0;
                 for tx_entity in tx_entities {
-                    let Ok(text) = text_char.get(*tx_entity) else {
+                    let Ok((text, t_tf)) = text_char.get(*tx_entity) else {
                         continue;
                     };
                     let text_size = text.sections.first().map(|x| x.style.font_size);
                     text_size_list.push(text_size.unwrap_or_default());
+                    if t_tf.translation.x >= last_pos_x {
+                        last_pos_x = t_tf.translation.x + text_size.unwrap_or_default();
+                    }
                 }
                 let base_hight = tl_spr.custom_size.map(|x| x.y).unwrap_or_default();
-                let line_width: f32 = text_size_list.iter().sum();
+                let line_width = last_pos_x;
                 let line_height = text_size_list
                     .iter()
                     .reduce(|x, y| if x > y { x } else { y })
