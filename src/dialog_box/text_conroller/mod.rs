@@ -336,7 +336,6 @@ fn make_empty_line(
     }
 }
 
-// Todo: 高さをJustifyItems対応する。Paddingも考える
 pub fn settle_lines(
     dialogbox_query: Query<(Entity, &DialogBoxPhase), With<DialogBox>>,
     mut text_lines: Query<(&MessageTextLine, &mut Transform), Without<MessageTextChar>>,
@@ -400,6 +399,9 @@ pub fn settle_lines(
             }
             let area_height = ta_spr.custom_size.map(|s| s.y).unwrap_or_default();
             for tl_entity in tl_entities {
+                if *phase != DialogBoxPhase::Typing {
+                    continue;
+                }
                 if let Ok((mtl, mut l_tf)) = text_lines.get_mut(*tl_entity) {
                     l_tf.translation.y -= match mtl.vertical_alignment {
                         AlignVertical::Center => (area_height + prev_height) / 2.0,
