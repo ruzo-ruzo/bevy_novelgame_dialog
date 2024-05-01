@@ -63,7 +63,7 @@ fn open_message(
         .iter()
         .map(|s| "fonts/".to_owned() + s);
         let font_vec = font_path_vec
-            .zip([(1.0, 0.1), (1.0, 0.0), (1.3, 0.0), (1.0, 0.0)].iter())
+            .zip([(1.0, 0.0), (1.0, 0.0), (1.3, 0.0), (1.0, 0.0)].iter())
             .map(|(p, (s, k))| FontConfig {
                 path: p.clone(),
                 kerning: *k,
