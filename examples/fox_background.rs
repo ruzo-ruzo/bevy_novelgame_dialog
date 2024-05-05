@@ -1,5 +1,4 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
-#[allow(unused_imports)]
 use bevy::prelude::*;
 use bevy_novelgame_dialog::public::*;
 use bevy_novelgame_dialog::*;
