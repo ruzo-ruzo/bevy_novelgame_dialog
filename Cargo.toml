@@ -15,4 +15,4 @@ regex = "1.8.4"
 blake3 = { version = "1.5", features=["pure"] }
 
 #bevy
-bevy = "0.13.0"
+bevy = "0.13.1"
