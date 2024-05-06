@@ -34,48 +34,14 @@ mod models_controller {
     pub struct ModelsControllerPlugin;
     impl Plugin for ModelsControllerPlugin {
         fn build(&self, app: &mut App) {
-            app.add_plugins((girl::GirlPlugin, rabit::RabitPlugin, room::RoomPlugin))
-                .add_systems(Update, start_animation);
+            app.add_plugins((girl::GirlPlugin, rabit::RabitPlugin, room::RoomPlugin));
+            // .add_systems(Update, start_animation);
         }
     }
 
     #[derive(Component)]
     struct Animations {
-        gltf: Handle<Gltf>,
         list: HashMap<String, Handle<AnimationClip>>,
-    }
-
-    #[derive(Component)]
-    struct Owned(Handle<Gltf>);
-
-    #[derive(Resource)]
-    pub struct Girl(Handle<Gltf>);
-
-    #[derive(Resource)]
-    pub struct Rabit(Handle<Gltf>);
-
-    fn start_animation(
-        mut commands: Commands,
-        animations: Query<&Animations>,
-        mut players: Query<(Entity, &mut AnimationPlayer), Without<Owned>>,
-        girl: Res<Girl>,
-        rabit: Res<Rabit>,
-    ) {
-        let res_vec = vec![
-            (rabit.0.clone(), "stay.lookdown"),
-            (girl.0.clone(), "stay.bored"),
-        ];
-        if players.iter().len() == res_vec.len() && res_vec.len() == animations.iter().len() {
-            for ((entity, mut player), owner) in players.iter_mut().zip(res_vec.iter()) {
-                for anim in &animations {
-                    if anim.gltf == owner.0 {
-                        player.play(anim.list[owner.1].clone_weak()).repeat();
-                        commands.entity(entity).insert(Owned(anim.gltf.clone()));
-                        info!("{entity:?}");
-                    }
-                }
-            }
-        }
     }
 
     mod room {
@@ -153,76 +119,89 @@ mod models_controller {
                     Update,
                     (
                         load_scenes,
+                        start_animation,
                         // signal_animation_control
                     ),
                 );
             }
         }
 
+        #[derive(Resource)]
+        pub struct RabitGltf(Handle<Gltf>);
+
+        #[derive(Component)]
+        pub struct Rabit;
+
         fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
             let gltf = asset_server.load("models/rabit.glb");
-            commands.insert_resource(Rabit(gltf));
+            commands.insert_resource(RabitGltf(gltf));
         }
 
         fn load_scenes(
             mut commands: Commands,
-            rabit: Res<Rabit>,
+            rabit_gltf: Res<RabitGltf>,
             assets_gltf: Res<Assets<Gltf>>,
             mut done: Local<bool>,
         ) {
             if !*done {
-                if let Some(gltf) = assets_gltf.get(&rabit.0) {
-                    commands.spawn(SceneBundle {
-                        scene: gltf.named_scenes["Scene"].clone(),
-                        transform: Transform::from_xyz(0.5, 0.0, 0.0)
-                            .with_rotation(Quat::from_rotation_y(TAU * -0.05)),
-                        ..default()
-                    });
-                    commands.spawn(Animations {
-                        gltf: rabit.0.clone(),
-                        list: HashMap::from([
-                            ("bow".to_string(), gltf.named_animations["bow"].clone()),
-                            ("clap".to_string(), gltf.named_animations["clap"].clone()),
-                            (
-                                "greeting".to_string(),
-                                gltf.named_animations["greeting"].clone(),
-                            ),
-                            (
-                                "stay.bored".to_string(),
-                                gltf.named_animations["stay.bored"].clone(),
-                            ),
-                            (
-                                "stay.lookdown".to_string(),
-                                gltf.named_animations["stay.lookdown"].clone(),
-                            ),
-                        ]),
-                    });
+                if let Some(gltf) = assets_gltf.get(&rabit_gltf.0) {
+                    commands.spawn((
+                        SceneBundle {
+                            scene: gltf.named_scenes["Scene"].clone(),
+                            transform: Transform::from_xyz(0.5, 0.0, 0.0)
+                                .with_rotation(Quat::from_rotation_y(TAU * -0.05)),
+                            ..default()
+                        },
+                        Rabit,
+                    ));
+                    commands.spawn((
+                        Animations {
+                            list: HashMap::from([
+                                ("bow".to_string(), gltf.named_animations["bow"].clone()),
+                                ("clap".to_string(), gltf.named_animations["clap"].clone()),
+                                (
+                                    "greeting".to_string(),
+                                    gltf.named_animations["greeting"].clone(),
+                                ),
+                                (
+                                    "stay.bored".to_string(),
+                                    gltf.named_animations["stay.bored"].clone(),
+                                ),
+                                (
+                                    "stay.lookdown".to_string(),
+                                    gltf.named_animations["stay.lookdown"].clone(),
+                                ),
+                            ]),
+                        },
+                        Rabit,
+                    ));
                     *done = true;
                 }
             }
         }
 
-        // fn start_animation(
-        // mut commands: Commands,
-        // animations: Query<&Animations>,
-        // mut players: Query<(Entity, &mut AnimationPlayer), Without<Owned>>,
-        // owners: Query<&Owned>,
-        // rabit: Res<Rabit>,
-        // ) {
-        // if owners.iter().find(|x| x.0 == rabit.0).is_none() {
-        // for anim in &animations {
-        // if anim.gltf == rabit.0 {
-        // for (entity, mut player) in &mut players {
-        // player
-        // .play(anim.list["stay.lookdown"].clone_weak())
-        // .repeat();
-        // commands.entity(entity).insert(Owned(anim.gltf.clone()));
-        // return;
-        // }
-        // }
-        // }
-        // }
-        // }
+        fn start_animation(
+            mut commands: Commands,
+            animations: Query<&Animations, With<Rabit>>,
+            mut players: Query<(Entity, &mut AnimationPlayer), Without<Rabit>>,
+            scenes: Query<Entity, With<Rabit>>,
+            parents: Query<&Parent>,
+        ) {
+            for anim in &animations {
+                for (p_entity, mut player) in &mut players {
+                    for s_entity in &scenes {
+                        for parent in parents.iter_ancestors(p_entity) {
+                            if parent == s_entity {
+                                player
+                                    .play(anim.list["stay.lookdown"].clone_weak())
+                                    .repeat();
+                                commands.entity(p_entity).insert(Rabit);
+                            }
+                        }
+                    }
+                }
+            }
+        }
     }
 
     mod girl {
@@ -235,73 +214,86 @@ mod models_controller {
                     Update,
                     (
                         load_scenes,
+                        start_animation,
                         // signal_animation_control
                     ),
                 );
             }
         }
 
+        #[derive(Resource)]
+        pub struct GirlGltf(Handle<Gltf>);
+
+        #[derive(Component)]
+        pub struct Girl;
+
         fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
             let gltf = asset_server.load("models/girl.glb");
-            commands.insert_resource(Girl(gltf));
+            commands.insert_resource(GirlGltf(gltf));
         }
 
         fn load_scenes(
             mut commands: Commands,
-            girl: Res<Girl>,
+            girl_gltf: Res<GirlGltf>,
             assets_gltf: Res<Assets<Gltf>>,
             mut done: Local<bool>,
         ) {
             if !*done {
-                if let Some(gltf) = assets_gltf.get(&girl.0) {
-                    commands.spawn(SceneBundle {
-                        scene: gltf.named_scenes["Scene"].clone(),
-                        transform: Transform::from_xyz(-0.5, 0.0, 0.0)
-                            .with_rotation(Quat::from_rotation_y(TAU * 0.1)),
-                        ..default()
-                    });
-                    commands.spawn(Animations {
-                        gltf: girl.0.clone(),
-                        list: HashMap::from([
-                            ("bow".to_string(), gltf.named_animations["bow"].clone()),
-                            ("clap".to_string(), gltf.named_animations["clap"].clone()),
-                            (
-                                "greeting".to_string(),
-                                gltf.named_animations["greeting"].clone(),
-                            ),
-                            (
-                                "stay.bored".to_string(),
-                                gltf.named_animations["stay.bored"].clone(),
-                            ),
-                            (
-                                "stay.lookdown".to_string(),
-                                gltf.named_animations["stay.lookdown"].clone(),
-                            ),
-                        ]),
-                    });
+                if let Some(gltf) = assets_gltf.get(&girl_gltf.0) {
+                    commands.spawn((
+                        SceneBundle {
+                            scene: gltf.named_scenes["Scene"].clone(),
+                            transform: Transform::from_xyz(-0.5, 0.0, 0.0)
+                                .with_rotation(Quat::from_rotation_y(TAU * 0.1)),
+                            ..default()
+                        },
+                        Girl,
+                    ));
+                    commands.spawn((
+                        Animations {
+                            list: HashMap::from([
+                                ("bow".to_string(), gltf.named_animations["bow"].clone()),
+                                ("clap".to_string(), gltf.named_animations["clap"].clone()),
+                                (
+                                    "greeting".to_string(),
+                                    gltf.named_animations["greeting"].clone(),
+                                ),
+                                (
+                                    "stay.bored".to_string(),
+                                    gltf.named_animations["stay.bored"].clone(),
+                                ),
+                                (
+                                    "stay.lookdown".to_string(),
+                                    gltf.named_animations["stay.lookdown"].clone(),
+                                ),
+                            ]),
+                        },
+                        Girl,
+                    ));
                     *done = true;
                 }
             }
         }
 
-        // fn start_animation(
-        // mut commands: Commands,
-        // animations: Query<&Animations>,
-        // mut players: Query<(Entity, &mut AnimationPlayer), Without<Owned>>,
-        // owners: Query<&Owned>,
-        // girl: Res<Girl>,
-        // ) {
-        // if owners.iter().find(|x| x.0 == girl.0).is_none() {
-        // for anim in &animations {
-        // if anim.gltf == girl.0 {
-        // for (entity, mut player) in &mut players {
-        // player.play(anim.list["stay.bored"].clone_weak()).repeat();
-        // commands.entity(entity).insert(Owned(anim.gltf.clone()));
-        // return;
-        // }
-        // }
-        // }
-        // }
-        // }
+        fn start_animation(
+            mut commands: Commands,
+            animations: Query<&Animations, With<Girl>>,
+            mut players: Query<(Entity, &mut AnimationPlayer), Without<Girl>>,
+            scenes: Query<Entity, With<Girl>>,
+            parents: Query<&Parent>,
+        ) {
+            for anim in &animations {
+                for (p_entity, mut player) in &mut players {
+                    for s_entity in &scenes {
+                        for parent in parents.iter_ancestors(p_entity) {
+                            if parent == s_entity {
+                                player.play(anim.list["stay.bored"].clone_weak()).repeat();
+                                commands.entity(p_entity).insert(Girl);
+                            }
+                        }
+                    }
+                }
+            }
+        }
     }
 }
