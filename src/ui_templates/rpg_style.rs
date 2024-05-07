@@ -107,6 +107,7 @@ fn open_message(
             position: Vec2::new(0., -200.),
             wait_breaker: WaitBrakerStyle::Input {
                 is_icon_moving_to_last: true,
+                is_all_range_area: true,
             },
             template_open_choice: ChoiceBoxConfig {
                 choice_box_name: "Choice Box".to_string(),

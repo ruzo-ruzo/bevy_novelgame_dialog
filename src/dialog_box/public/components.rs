@@ -53,9 +53,13 @@ pub enum PopupType {
     Scale { sec: f32 },
 }
 
-// Todo: 全域タップ設定も欲しい
 #[derive(Component, Debug, Clone, PartialEq)]
 pub enum WaitBrakerStyle {
-    Auto { wait_sec: f32 },
-    Input { is_icon_moving_to_last: bool },
+    Auto {
+        wait_sec: f32,
+    },
+    Input {
+        is_icon_moving_to_last: bool,
+        is_all_range_area: bool,
+    },
 }

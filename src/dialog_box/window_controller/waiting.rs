@@ -20,7 +20,10 @@ pub struct InputForSkipping {
 #[allow(clippy::type_complexity)]
 pub fn simple_wait(
     mut commands: Commands,
-    mut window_query: Query<(Entity, &mut DialogBoxPhase, &DialogBox), With<Current>>,
+    mut dialog_query: Query<
+        (Entity, &mut DialogBoxPhase, &DialogBox, &WaitBrakerStyle),
+        With<Current>,
+    >,
     w_icon_query: Query<(Entity, &WaitingIcon)>,
     text_area_query: Query<(Entity, &TextArea, &GlobalTransform, &Sprite, &Parent), With<Current>>,
     selected_query: Query<Entity, With<Selected>>,
@@ -29,47 +32,49 @@ pub fn simple_wait(
     type_registry: Res<AppTypeRegistry>,
 ) {
     for event_wrapper in bds_reader.read() {
-        if event_wrapper.get_opt::<SimpleWait>() == Some(SimpleWait) {
-            for (mw_entity, mut ws, DialogBox { name: db_name }) in &mut window_query {
-                for (ta_entity, ta, tb_tf, tb_sp, parent) in &text_area_query {
-                    if parent.get() == mw_entity {
-                        let ron = write_ron(
-                            &type_registry,
-                            BreakWait {
-                                dialog_box_name: db_name.clone(),
-                                text_area_name: ta.name.clone(),
-                            },
-                        )
-                        .unwrap_or_default();
-                        let wig = make_wig_for_skip(
-                            db_name,
-                            &ta.name,
-                            tb_tf,
-                            tb_sp,
-                            &ron,
-                            &type_registry,
-                        );
-                        commands.entity(ta_entity).insert(wig);
-                    }
-                    let (_, _, _, _, last_timer) = initialize_typing_data(&last_data, ta_entity);
-                    let ic_opt = w_icon_query
-                        .iter()
-                        .find(|x| x.1.target_box_name == *db_name);
-                    if let Some((ic_entity, _)) = ic_opt {
-                        let time = last_timer.timer.remaining_secs();
-                        let tt = TypingTimer {
-                            timer: Timer::from_seconds(time, TimerMode::Once),
-                        };
-                        commands.entity(ic_entity).insert(tt);
-                        commands.entity(ic_entity).set_parent(ta_entity);
-                    }
-                    for s_entity in &selected_query {
-                        commands.entity(s_entity).remove::<Selected>();
-                    }
-                    commands.entity(ta_entity).insert(Selected);
+        if event_wrapper.get_opt::<SimpleWait>() != Some(SimpleWait) {
+            continue;
+        }
+        for (mw_entity, mut ws, DialogBox { name: db_name }, wbs) in &mut dialog_query {
+            for (ta_entity, ta, tb_tf, tb_sp, parent) in &text_area_query {
+                if parent.get() == mw_entity {
+                    let ron = write_ron(
+                        &type_registry,
+                        BreakWait {
+                            dialog_box_name: db_name.clone(),
+                            text_area_name: ta.name.clone(),
+                        },
+                    )
+                    .unwrap_or_default();
+                    let wig = if let WaitBrakerStyle::Input {
+                        is_all_range_area: true,
+                        ..
+                    } = wbs
+                    {
+                        make_wig_for_skip_all_range(db_name, &ta.name, &ron, &type_registry)
+                    } else {
+                        make_wig_for_skip(db_name, &ta.name, tb_tf, tb_sp, &ron, &type_registry)
+                    };
+                    commands.entity(ta_entity).insert(wig);
                 }
-                *ws = DialogBoxPhase::WaitingAction;
+                let (_, _, _, _, last_timer) = initialize_typing_data(&last_data, ta_entity);
+                let ic_opt = w_icon_query
+                    .iter()
+                    .find(|x| x.1.target_box_name == *db_name);
+                if let Some((ic_entity, _)) = ic_opt {
+                    let time = last_timer.timer.remaining_secs();
+                    let tt = TypingTimer {
+                        timer: Timer::from_seconds(time, TimerMode::Once),
+                    };
+                    commands.entity(ic_entity).insert(tt);
+                    commands.entity(ic_entity).set_parent(ta_entity);
+                }
+                for s_entity in &selected_query {
+                    commands.entity(s_entity).remove::<Selected>();
+                }
+                commands.entity(ta_entity).insert(Selected);
             }
+            *ws = DialogBoxPhase::WaitingAction;
         }
     }
 }
@@ -190,7 +195,7 @@ pub fn skip_typing_or_next(
         With<MessageTextChar>,
     >,
     mut typing_texts_query: Query<(Entity, &mut TypingStyle, &Parent), With<MessageTextChar>>,
-    dialog_box_query: Query<(&DialogBox, &DialogBoxPhase)>,
+    dialog_box_query: Query<(&DialogBox, &DialogBoxPhase, &WaitBrakerStyle)>,
     text_area_query: Query<(Entity, &TextArea, &GlobalTransform, &Sprite)>,
     line_query: Query<(Entity, &Parent), With<MessageTextLine>>,
     mut icon_query: Query<(Entity, &mut Visibility), (With<WaitingIcon>, Without<MessageTextChar>)>,
@@ -206,7 +211,8 @@ pub fn skip_typing_or_next(
         {
             let db_opt = dialog_box_query.iter().find(|x| x.0.name == target_db_name);
             let ta_opt = text_area_query.iter().find(|x| x.1.name == target_ta_name);
-            if let (Some((db, phase)), Some((ta_entity, ta, tb_tf, tb_sp))) = (db_opt, ta_opt) {
+            if let (Some((db, phase, wbs)), Some((ta_entity, ta, tb_tf, tb_sp))) = (db_opt, ta_opt)
+            {
                 if phase != &DialogBoxPhase::WaitingAction {
                     return;
                 }
@@ -236,8 +242,15 @@ pub fn skip_typing_or_next(
                         })
                     }
                 } else {
-                    let wig =
-                        make_wig_for_skip(&db.name, &ta.name, tb_tf, tb_sp, &ron, &type_registry);
+                    let wig = if let WaitBrakerStyle::Input {
+                        is_all_range_area: true,
+                        ..
+                    } = wbs
+                    {
+                        make_wig_for_skip_all_range(&db.name, &ta.name, &ron, &type_registry)
+                    } else {
+                        make_wig_for_skip(&db.name, &ta.name, tb_tf, tb_sp, &ron, &type_registry)
+                    };
                     commands.entity(ta_entity).insert(wig);
                 }
                 for (text_entity, mut t_vis, mut tf, t_parent, mut tt) in &mut waiting_text_query {
@@ -297,6 +310,28 @@ pub fn make_wig_for_skip<S: AsRef<str>>(
     let base_size = tb_sp.custom_size.unwrap_or_default();
     let bottom_left = Vec2::new(tb_tf.translation().x, tb_tf.translation().y - base_size.y);
     let top_right = Vec2::new(bottom_left.x + base_size.x, tb_tf.translation().y);
+    let ron_ifs_opt = write_ron(
+        type_registry,
+        InputForSkipping {
+            next_event_ron: ron.as_ref().to_string(),
+            dialog_box_name: db_name.as_ref().to_string(),
+            text_area_name: ta_name.as_ref().to_string(),
+        },
+    );
+    WaitInputGo {
+        ron: ron_ifs_opt.unwrap_or_default(),
+        area: Rect::from_corners(bottom_left, top_right),
+    }
+}
+
+pub fn make_wig_for_skip_all_range<S: AsRef<str>>(
+    db_name: S,
+    ta_name: S,
+    ron: S,
+    type_registry: &AppTypeRegistry,
+) -> WaitInputGo {
+    let bottom_left = Vec2::new(f32::MIN, f32::MIN);
+    let top_right = Vec2::new(f32::MAX, f32::MAX);
     let ron_ifs_opt = write_ron(
         type_registry,
         InputForSkipping {

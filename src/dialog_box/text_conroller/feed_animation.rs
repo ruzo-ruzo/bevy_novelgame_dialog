@@ -55,7 +55,10 @@ pub fn setup_feed_starter(
                                 ),
                             });
                         }
-                        WaitBrakerStyle::Input { .. } => {
+                        WaitBrakerStyle::Input {
+                            is_all_range_area: is_all_range,
+                            ..
+                        } => {
                             let icon_opt = w_icon_query
                                 .iter()
                                 .find(|x| *db_name == x.1.target_box_name);
@@ -74,14 +77,23 @@ pub fn setup_feed_starter(
                                 },
                             )
                             .unwrap_or_default();
-                            let wig = make_wig_for_skip(
-                                db_name,
-                                &ta.name,
-                                tb_tf,
-                                tb_sp,
-                                &ron_iff,
-                                &type_registry,
-                            );
+                            let wig = if *is_all_range {
+                                make_wig_for_skip_all_range(
+                                    db_name,
+                                    &ta.name,
+                                    &ron_iff,
+                                    &type_registry,
+                                )
+                            } else {
+                                make_wig_for_skip(
+                                    db_name,
+                                    &ta.name,
+                                    tb_tf,
+                                    tb_sp,
+                                    &ron_iff,
+                                    &type_registry,
+                                )
+                            };
                             commands.entity(tb_entity).insert(wig);
                             commands.entity(tb_entity).insert(Selected);
                         }
@@ -188,15 +200,17 @@ pub fn start_feeding(
         *ws = DialogBoxPhase::Feeding;
         for (tb_entity, ta, tb_tf, tb_sp, tb_parent) in &text_box_query {
             if tb_parent.get() == w_entity {
-                if let WaitBrakerStyle::Input { .. } = wbs {
-                    let wig = make_wig_for_skip(
-                        &db.name,
-                        &ta.name,
-                        tb_tf,
-                        tb_sp,
-                        &"".to_string(),
-                        &type_registry,
-                    );
+                if let WaitBrakerStyle::Input {
+                    is_all_range_area: is_all_range,
+                    ..
+                } = wbs
+                {
+                    let empty = "".to_string();
+                    let wig = if *is_all_range {
+                        make_wig_for_skip_all_range(&db.name, &ta.name, &empty, &type_registry)
+                    } else {
+                        make_wig_for_skip(&db.name, &ta.name, tb_tf, tb_sp, &empty, &type_registry)
+                    };
                     commands.entity(tb_entity).insert(wig);
                 }
             }
