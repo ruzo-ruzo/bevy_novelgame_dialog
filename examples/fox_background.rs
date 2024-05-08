@@ -29,8 +29,8 @@ fn start_message(
 //----------
 
 mod fox_background {
-    use bevy_novelgame_dialog::bds::*;
     use bevy::{pbr::CascadeShadowConfigBuilder, prelude::*, utils::Duration};
+    use bevy_novelgame_dialog::bds::*;
     use std::f32::consts::PI;
 
     pub struct FoxBackgroundPlugin;
