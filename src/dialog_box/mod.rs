@@ -7,7 +7,6 @@ mod setup;
 mod text_conroller;
 pub mod window_controller;
 
-use bds_event::*;
 use input::*;
 pub use public::components::*;
 pub use public::configs::*;

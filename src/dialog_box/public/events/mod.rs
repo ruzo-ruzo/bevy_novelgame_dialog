@@ -1,4 +1,5 @@
-pub mod bds_event;
+pub mod bds;
+pub use bds::*;
 
 use crate::dialog_box::public::components::*;
 use crate::dialog_box::public::configs::*;

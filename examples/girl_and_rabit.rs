@@ -28,7 +28,7 @@ fn start_message(
 
 mod models_controller {
     use bevy::{gltf::Gltf, pbr::CascadeShadowConfigBuilder, prelude::*, utils::Duration};
-    use bevy_novelgame_dialog::public::bds_event::*;
+    use bevy_novelgame_dialog::public::bds::*;
     use std::collections::HashMap;
     use std::f32::consts::TAU;
 
