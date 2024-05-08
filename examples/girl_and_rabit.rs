@@ -207,16 +207,22 @@ mod models_controller {
         fn resume_stay(
             mut animation_player: Query<&mut AnimationPlayer, With<Rabit>>,
             animations: Query<&Animations, With<Rabit>>,
+            assets_clip: Res<Assets<AnimationClip>>,
         ) {
+            use bevy::animation::RepeatAnimation::Never;
             if let Ok(mut player) = animation_player.get_single_mut() {
-                if let Ok(anim) = animations.get_single() {
-                    if player.is_finished() {
-                        player
-                            .play_with_transition(
-                                anim.list["stay.lookdown"].clone_weak(),
-                                Duration::from_millis(250),
-                            )
-                            .repeat();
+                if let Some(clip) = assets_clip.get(player.animation_clip()) {
+                    if let Ok(anim) = animations.get_single() {
+                        let trasition_time = 0.25;
+                        let remain = clip.duration() - player.seek_time();
+                        if player.repeat_mode() == Never && remain <= trasition_time {
+                            player
+                                .play_with_transition(
+                                    anim.list["stay.lookdown"].clone_weak(),
+                                    Duration::from_secs_f32(trasition_time),
+                                )
+                                .repeat();
+                        }
                     }
                 }
             }
@@ -352,16 +358,22 @@ mod models_controller {
         fn resume_stay(
             mut animation_player: Query<&mut AnimationPlayer, With<Girl>>,
             animations: Query<&Animations, With<Girl>>,
+            assets_clip: Res<Assets<AnimationClip>>,
         ) {
+            use bevy::animation::RepeatAnimation::Never;
             if let Ok(mut player) = animation_player.get_single_mut() {
-                if let Ok(anim) = animations.get_single() {
-                    if player.is_finished() {
-                        player
-                            .play_with_transition(
-                                anim.list["stay.bored"].clone_weak(),
-                                Duration::from_millis(250),
-                            )
-                            .repeat();
+                if let Some(clip) = assets_clip.get(player.animation_clip()) {
+                    if let Ok(anim) = animations.get_single() {
+                        let trasition_time = 0.25;
+                        let remain = clip.duration() - player.seek_time();
+                        if player.repeat_mode() == Never && remain <= trasition_time {
+                            player
+                                .play_with_transition(
+                                    anim.list["stay.bored"].clone_weak(),
+                                    Duration::from_secs_f32(trasition_time),
+                                )
+                                .repeat();
+                        }
                     }
                 }
             }
