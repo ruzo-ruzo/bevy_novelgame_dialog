@@ -203,13 +203,13 @@ mod models_controller {
                 }
             }
         }
-        
+
         fn resume_stay(
             mut animation_player: Query<&mut AnimationPlayer, With<Rabit>>,
             animations: Query<&Animations, With<Rabit>>,
         ) {
             if let Ok(mut player) = animation_player.get_single_mut() {
-                if let Ok(anim) = animations.get_single(){ 
+                if let Ok(anim) = animations.get_single() {
                     if player.is_finished() {
                         player
                             .play_with_transition(
@@ -229,13 +229,12 @@ mod models_controller {
         ) {
             for BdsSignal { signal: sig } in signal_events.read() {
                 if let Ok(mut player) = animation_player.get_single_mut() {
-                    if let Ok(anim) = animations.get_single(){
+                    if let Ok(anim) = animations.get_single() {
                         if *sig == "Rabit greeting".to_string() {
-                            player
-                                .play_with_transition(
-                                    anim.list["greeting"].clone_weak(),
-                                    Duration::from_millis(250),
-                                );
+                            player.play_with_transition(
+                                anim.list["greeting"].clone_weak(),
+                                Duration::from_millis(250),
+                            );
                         } else if *sig == "Rabit clap".to_string() {
                             player
                                 .play_with_transition(
@@ -340,7 +339,7 @@ mod models_controller {
                 for (p_entity, mut player) in &mut players {
                     for s_entity in &scenes {
                         for parent in parents.iter_ancestors(p_entity) {
-                            if parent == s_entity  {
+                            if parent == s_entity {
                                 player.play(anim.list["stay.bored"].clone_weak()).repeat();
                                 commands.entity(p_entity).insert(Girl);
                             }
@@ -349,13 +348,13 @@ mod models_controller {
                 }
             }
         }
-        
+
         fn resume_stay(
             mut animation_player: Query<&mut AnimationPlayer, With<Girl>>,
             animations: Query<&Animations, With<Girl>>,
         ) {
             if let Ok(mut player) = animation_player.get_single_mut() {
-                if let Ok(anim) = animations.get_single(){ 
+                if let Ok(anim) = animations.get_single() {
                     if player.is_finished() {
                         player
                             .play_with_transition(
@@ -375,13 +374,12 @@ mod models_controller {
         ) {
             for BdsSignal { signal: sig } in signal_events.read() {
                 if let Ok(mut player) = animation_player.get_single_mut() {
-                    if let Ok(anim) = animations.get_single(){
+                    if let Ok(anim) = animations.get_single() {
                         if *sig == "Girl bow".to_string() {
-                            player
-                                .play_with_transition(
-                                    anim.list["bow"].clone_weak(),
-                                    Duration::from_millis(250),
-                                );
+                            player.play_with_transition(
+                                anim.list["bow"].clone_weak(),
+                                Duration::from_millis(250),
+                            );
                         } else if *sig == "Girl clap".to_string() {
                             player
                                 .play_with_transition(

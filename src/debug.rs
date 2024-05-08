@@ -1,6 +1,6 @@
+use crate::dialog_box::bds_event::*;
 use crate::dialog_box::input::*;
 use crate::dialog_box::window_controller::*;
-use crate::dialog_box::bds_event::*;
 use bevy::prelude::*;
 
 pub struct DebugTextAreaPlugin;
