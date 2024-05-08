@@ -170,7 +170,7 @@ fn make_choice_order(
     text_area_names: &[String],
 ) -> Option<Vec<Order>> {
     let header = r#"<script>{
-        "bevy_novelgame_dialog::dialog_box::public::events::bds::features::ChangeCurrentTextArea": 
+        "bevy_novelgame_dialog::dialog_box::public::events::bds::ChangeCurrentTextArea": 
         (target_dialog_box_name: ""#;
     let midpoint = r#"",  next_current_text_area_name: ""#;
     let footer = r#"",),}</script>"#;
