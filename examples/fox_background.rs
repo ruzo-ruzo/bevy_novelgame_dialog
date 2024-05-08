@@ -1,6 +1,5 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 use bevy::prelude::*;
-use bevy_novelgame_dialog::public::*;
 use bevy_novelgame_dialog::*;
 
 fn main() {
@@ -30,8 +29,8 @@ fn start_message(
 //----------
 
 mod fox_background {
-    use crate::bds_event::*;
     use bevy::{pbr::CascadeShadowConfigBuilder, prelude::*, utils::Duration};
+    use bevy_novelgame_dialog::bds::*;
     use std::f32::consts::PI;
 
     pub struct FoxBackgroundPlugin;

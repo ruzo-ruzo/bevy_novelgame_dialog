@@ -1,12 +1,13 @@
-use bevy::prelude::*;
+pub mod writing;
+pub use writing::*;
 
 use crate::dialog_box::public::components::*;
 use crate::dialog_box::public::configs::*;
 use crate::dialog_box::window_controller::*;
 use crate::read_script::*;
+use bevy::prelude::*;
 
 // Reflect登録必須。逆にEventは基本要らない
-
 #[derive(Event)]
 pub struct BdsEvent {
     pub value: Box<dyn Reflect>,
@@ -57,25 +58,36 @@ pub fn load_bds(
     }
 }
 
-//---------------------
 #[derive(Reflect, Default, Debug, PartialEq)]
 pub struct SimpleWait;
 
-// 倍数版欲しいかも
 #[derive(Reflect, Default, Debug)]
-pub struct ChangeFontSize {
-    pub size: f32,
+pub struct SinkDownWindow {
+    pub sink_type: SinkDownType,
 }
 
-pub fn change_font_size(
-    mut events: EventReader<BdsEvent>,
-    mut ta_query: Query<&mut TypeTextConfig, (With<Current>, With<TextArea>)>,
+#[derive(Reflect, Default, Debug)]
+pub struct SimpleStringSignal {
+    pub signal: String,
+}
+
+#[derive(Event, Default, Debug)]
+pub struct BdsSignal {
+    pub signal: String,
+}
+
+pub fn send_bds_signal(
+    mut bds_events: EventReader<BdsEvent>,
+    mut signal_events: EventWriter<BdsSignal>,
 ) {
-    for event_wrapper in events.read() {
-        if let Some(ChangeFontSize { size: s }) = event_wrapper.get_opt::<ChangeFontSize>() {
-            if let Ok(mut config) = ta_query.get_single_mut() {
-                config.text_style.font_size = s;
-            }
+    for event_wrapper in bds_events.read() {
+        if let Some(SimpleStringSignal {
+            signal: base_signal,
+        }) = event_wrapper.get_opt::<SimpleStringSignal>()
+        {
+            signal_events.send(BdsSignal {
+                signal: base_signal.clone(),
+            });
         }
     }
 }
@@ -135,37 +147,6 @@ pub fn change_current_dialog_box(
                     commands.entity(entity).remove::<Current>();
                 }
             }
-        }
-    }
-}
-
-#[derive(Reflect, Default, Debug)]
-pub struct SinkDownWindow {
-    pub sink_type: SinkDownType,
-}
-
-#[derive(Reflect, Default, Debug)]
-pub struct SimpleStringSignal {
-    pub signal: String,
-}
-
-#[derive(Event, Default, Debug)]
-pub struct BdsSignal {
-    pub signal: String,
-}
-
-pub fn send_bds_signal(
-    mut bds_events: EventReader<BdsEvent>,
-    mut signal_events: EventWriter<BdsSignal>,
-) {
-    for event_wrapper in bds_events.read() {
-        if let Some(SimpleStringSignal {
-            signal: base_signal,
-        }) = event_wrapper.get_opt::<SimpleStringSignal>()
-        {
-            signal_events.send(BdsSignal {
-                signal: base_signal.clone(),
-            });
         }
     }
 }

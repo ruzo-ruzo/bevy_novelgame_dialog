@@ -1,4 +1,4 @@
-use crate::dialog_box::bds_event::*;
+use crate::dialog_box::bds::*;
 use crate::dialog_box::input::*;
 use crate::dialog_box::window_controller::*;
 use bevy::prelude::*;
