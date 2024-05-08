@@ -378,7 +378,7 @@ mod models_controller {
                 }
             }
         }
-        
+
         fn signal_animation_control(
             mut animation_player: Query<&mut AnimationPlayer, With<Girl>>,
             animations: Query<&Animations, With<Girl>>,
