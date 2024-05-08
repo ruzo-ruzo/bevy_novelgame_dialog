@@ -9,9 +9,9 @@ pub mod window_controller;
 
 use bds_event::*;
 use input::*;
-use public::components::*;
-use public::configs::*;
-use public::events::*;
+pub use public::components::*;
+pub use public::configs::*;
+pub use public::events::*;
 use setup::*;
 use text_conroller::feed_animation::*;
 use text_conroller::typing_animations::*;

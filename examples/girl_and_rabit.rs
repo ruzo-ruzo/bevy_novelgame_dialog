@@ -27,7 +27,8 @@ fn start_message(
 }
 
 mod models_controller {
-    pub use bevy::{gltf::Gltf, pbr::CascadeShadowConfigBuilder, prelude::*, utils::Duration};
+    use bevy::{gltf::Gltf, pbr::CascadeShadowConfigBuilder, prelude::*, utils::Duration};
+    use bevy_novelgame_dialog::public::bds_event::*;
     use std::collections::HashMap;
     use std::f32::consts::TAU;
 
@@ -35,7 +36,6 @@ mod models_controller {
     impl Plugin for ModelsControllerPlugin {
         fn build(&self, app: &mut App) {
             app.add_plugins((girl::GirlPlugin, rabit::RabitPlugin, room::RoomPlugin));
-            // .add_systems(Update, start_animation);
         }
     }
 
@@ -119,8 +119,9 @@ mod models_controller {
                     Update,
                     (
                         load_scenes,
-                        start_animation,
-                        // signal_animation_control
+                        start_stay,
+                        signal_animation_control,
+                        resume_stay,
                     ),
                 );
             }
@@ -180,7 +181,7 @@ mod models_controller {
             }
         }
 
-        fn start_animation(
+        fn start_stay(
             mut commands: Commands,
             animations: Query<&Animations, With<Rabit>>,
             mut players: Query<(Entity, &mut AnimationPlayer), Without<Rabit>>,
@@ -202,6 +203,57 @@ mod models_controller {
                 }
             }
         }
+
+        fn resume_stay(
+            mut animation_player: Query<&mut AnimationPlayer, With<Rabit>>,
+            animations: Query<&Animations, With<Rabit>>,
+        ) {
+            if let Ok(mut player) = animation_player.get_single_mut() {
+                if let Ok(anim) = animations.get_single() {
+                    if player.is_finished() {
+                        player
+                            .play_with_transition(
+                                anim.list["stay.lookdown"].clone_weak(),
+                                Duration::from_millis(250),
+                            )
+                            .repeat();
+                    }
+                }
+            }
+        }
+
+        fn signal_animation_control(
+            mut animation_player: Query<&mut AnimationPlayer, With<Rabit>>,
+            animations: Query<&Animations, With<Rabit>>,
+            mut signal_events: EventReader<BdsSignal>,
+        ) {
+            for BdsSignal { signal: sig } in signal_events.read() {
+                if let Ok(mut player) = animation_player.get_single_mut() {
+                    if let Ok(anim) = animations.get_single() {
+                        if *sig == "Rabit greeting".to_string() {
+                            player.play_with_transition(
+                                anim.list["greeting"].clone_weak(),
+                                Duration::from_millis(250),
+                            );
+                        } else if *sig == "Rabit clap".to_string() {
+                            player
+                                .play_with_transition(
+                                    anim.list["clap"].clone_weak(),
+                                    Duration::from_millis(250),
+                                )
+                                .repeat();
+                        } else if *sig == "Rabit stay".to_string() {
+                            player
+                                .play_with_transition(
+                                    anim.list["stay.lookdown"].clone_weak(),
+                                    Duration::from_millis(250),
+                                )
+                                .repeat();
+                        }
+                    }
+                }
+            }
+        }
     }
 
     mod girl {
@@ -214,8 +266,9 @@ mod models_controller {
                     Update,
                     (
                         load_scenes,
-                        start_animation,
-                        // signal_animation_control
+                        start_stay,
+                        signal_animation_control,
+                        resume_stay,
                     ),
                 );
             }
@@ -275,7 +328,7 @@ mod models_controller {
             }
         }
 
-        fn start_animation(
+        fn start_stay(
             mut commands: Commands,
             animations: Query<&Animations, With<Girl>>,
             mut players: Query<(Entity, &mut AnimationPlayer), Without<Girl>>,
@@ -290,6 +343,57 @@ mod models_controller {
                                 player.play(anim.list["stay.bored"].clone_weak()).repeat();
                                 commands.entity(p_entity).insert(Girl);
                             }
+                        }
+                    }
+                }
+            }
+        }
+
+        fn resume_stay(
+            mut animation_player: Query<&mut AnimationPlayer, With<Girl>>,
+            animations: Query<&Animations, With<Girl>>,
+        ) {
+            if let Ok(mut player) = animation_player.get_single_mut() {
+                if let Ok(anim) = animations.get_single() {
+                    if player.is_finished() {
+                        player
+                            .play_with_transition(
+                                anim.list["stay.bored"].clone_weak(),
+                                Duration::from_millis(250),
+                            )
+                            .repeat();
+                    }
+                }
+            }
+        }
+
+        fn signal_animation_control(
+            mut animation_player: Query<&mut AnimationPlayer, With<Girl>>,
+            animations: Query<&Animations, With<Girl>>,
+            mut signal_events: EventReader<BdsSignal>,
+        ) {
+            for BdsSignal { signal: sig } in signal_events.read() {
+                if let Ok(mut player) = animation_player.get_single_mut() {
+                    if let Ok(anim) = animations.get_single() {
+                        if *sig == "Girl bow".to_string() {
+                            player.play_with_transition(
+                                anim.list["bow"].clone_weak(),
+                                Duration::from_millis(250),
+                            );
+                        } else if *sig == "Girl clap".to_string() {
+                            player
+                                .play_with_transition(
+                                    anim.list["clap"].clone_weak(),
+                                    Duration::from_millis(250),
+                                )
+                                .repeat();
+                        } else if *sig == "Girl stay".to_string() {
+                            player
+                                .play_with_transition(
+                                    anim.list["stay.bored"].clone_weak(),
+                                    Duration::from_millis(250),
+                                )
+                                .repeat();
                         }
                     }
                 }

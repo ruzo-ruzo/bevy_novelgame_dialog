@@ -14,27 +14,6 @@ use parse_bds::*;
 use serde::{de::DeserializeSeed, Deserialize};
 use thiserror::Error;
 
-#[derive(Event)]
-pub struct BdsEvent {
-    pub value: Box<dyn Reflect>,
-}
-
-impl BdsEvent {
-    pub fn get<T: Default + Reflect>(&self) -> T {
-        let mut my_data = <T>::default();
-        my_data.apply(&*self.value);
-        my_data
-    }
-
-    pub fn get_opt<T: Default + Reflect + TypePath>(&self) -> Option<T> {
-        if self.value.represents::<T>() {
-            Some(self.get::<T>())
-        } else {
-            None
-        }
-    }
-}
-
 #[derive(Debug, Clone, PartialEq)]
 pub enum Order {
     Type { character: char },
@@ -193,6 +172,5 @@ pub fn parse_script<S1: AsRef<str>, S2: AsRef<str>, S3: AsRef<str>>(
     section: S3,
 ) -> Vec<Order> {
     let orders = read_script(base, templates);
-    // info!("{orders:?}");
     orders[section.as_ref()].clone().into_iter().rev().collect()
 }

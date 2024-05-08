@@ -1,1 +1,1 @@
-[link](explain01.md)
+[link](explain02.md#最初の文言)

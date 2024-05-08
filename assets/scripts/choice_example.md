@@ -3,7 +3,7 @@
 * [きつね歩いて](choice_example.md#歩く)
 * [きつね止まって](choice_example.md#止まる)
 * [きつね走って](choice_example.md#走る)
-* [別の話](explain02.md#その他の話)
+* [別の話](explain01.md)
 
 <h1>歩く</h1>
 きつねが歩きます[wait]

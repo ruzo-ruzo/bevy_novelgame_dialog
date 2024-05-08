@@ -7,6 +7,27 @@ use crate::read_script::*;
 
 // Reflect登録必須。逆にEventは基本要らない
 
+#[derive(Event)]
+pub struct BdsEvent {
+    pub value: Box<dyn Reflect>,
+}
+
+impl BdsEvent {
+    pub fn get<T: Default + Reflect>(&self) -> T {
+        let mut my_data = <T>::default();
+        my_data.apply(&*self.value);
+        my_data
+    }
+
+    pub fn get_opt<T: Default + Reflect + TypePath>(&self) -> Option<T> {
+        if self.value.represents::<T>() {
+            Some(self.get::<T>())
+        } else {
+            None
+        }
+    }
+}
+
 #[derive(Reflect, Default, Debug)]
 pub struct LoadBds {
     pub path: String,
@@ -36,6 +57,7 @@ pub fn load_bds(
     }
 }
 
+//---------------------
 #[derive(Reflect, Default, Debug, PartialEq)]
 pub struct SimpleWait;
 
