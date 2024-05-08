@@ -14,4 +14,4 @@ $t
     ""bevy_novelgame_dialog::dialog_box::public::events::bds_event::ChangeFontSize"": (
         size: 27.0,
 )}</script>"
-"\((?<link>.*?)\)","(scripts/${link} ""Main Box"")"
+"\((?<link>.*?)\)","(scripts/${link}?dialog_box=Main Box)"

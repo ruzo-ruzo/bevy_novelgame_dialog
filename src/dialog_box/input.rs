@@ -2,8 +2,7 @@ use crate::dialog_box::public::configs::*;
 use crate::dialog_box::public::events::*;
 use crate::dialog_box::window_controller::*;
 use crate::dialog_box::DialogBoxCamera;
-use crate::read_script::*;
-use bevy::prelude::*;
+use crate::dialog_box::*;
 use bevy::window::PrimaryWindow;
 
 // ゲームパッド持ってないので全体的に挙動が未確認

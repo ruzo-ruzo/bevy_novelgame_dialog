@@ -76,7 +76,7 @@ fn open_message(
             font_color: Color::DARK_GRAY,
             area_origin: Vec2::new(-520.0, 70.0),
             area_size: Vec2::new(1010.0, 140.0),
-            monospace: true,
+            // monospace: true,
             ..default()
         };
         let tac_base = TextAreaConfig {
