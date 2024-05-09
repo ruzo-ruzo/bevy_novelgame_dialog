@@ -68,6 +68,7 @@ impl Plugin for DialogBoxPlugin {
             .register_type::<SimpleWait>()
             .register_type::<BreakWait>()
             .register_type::<SimpleStringSignal>()
+            .register_type::<ForceFeedingCurrentBox>()
             .add_event::<OpenDialog>()
             .add_event::<FeedWaitingEvent>()
             .add_event::<StartFeedingEvent>()
@@ -119,6 +120,7 @@ impl Plugin for DialogBoxPlugin {
             .add_systems(Update, trigger_feeding_by_event.in_set(PhaseSet::Fire))
             .add_systems(Update, go_selected.in_set(PhaseSet::Fire))
             .add_systems(Update, shift_selected.in_set(PhaseSet::Fire))
+            .add_systems(Update, force_feeding_current_box.in_set(PhaseSet::Fire))
             .add_systems(Update, send_bds_signal.in_set(PhaseSet::Fire))
             .add_systems(
                 Update,
