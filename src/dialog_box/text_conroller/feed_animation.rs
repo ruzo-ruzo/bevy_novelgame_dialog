@@ -22,12 +22,6 @@ pub struct ScrollFeed {
     pub count: usize,
 }
 
-#[derive(Reflect, Default, Debug)]
-pub struct InputForFeeding {
-    pub dialog_box_name: String,
-    pub text_area_name: String,
-}
-
 #[allow(clippy::type_complexity)]
 pub fn setup_feed_starter(
     mut commands: Commands,

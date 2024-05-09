@@ -29,6 +29,8 @@ impl BdsEvent {
     }
 }
 
+//-----
+
 #[derive(Reflect, Default, Debug)]
 pub struct LoadBds {
     pub path: String,
@@ -58,13 +60,17 @@ pub fn load_bds(
     }
 }
 
-#[derive(Reflect, Default, Debug, PartialEq)]
-pub struct SimpleWait;
+//-----
 
 #[derive(Reflect, Default, Debug)]
 pub struct SinkDownWindow {
     pub sink_type: SinkDownType,
 }
+
+//-----
+
+#[derive(Reflect, Default, Debug, PartialEq)]
+pub struct SimpleWait;
 
 #[derive(Reflect, Default, Debug)]
 pub struct SimpleStringSignal {
@@ -91,6 +97,8 @@ pub fn send_bds_signal(
         }
     }
 }
+
+//-----
 
 #[derive(Reflect, Default, Debug)]
 pub struct ChangeCurrentTextArea {
@@ -124,6 +132,8 @@ pub fn change_current_text_area(
         }
     }
 }
+
+//-----
 
 #[derive(Reflect, Default, Debug)]
 pub struct ChangeCurrentDialogBox {

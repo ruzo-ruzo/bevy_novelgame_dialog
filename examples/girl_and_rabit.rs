@@ -8,6 +8,7 @@ fn main() {
             DefaultPlugins,
             ui_templates::RPGStyleUIPlugin::default(),
             models_controller::ModelsControllerPlugin,
+            DebugTextAreaPlugin,
         ))
         .add_systems(Update, start_message)
         .run();
