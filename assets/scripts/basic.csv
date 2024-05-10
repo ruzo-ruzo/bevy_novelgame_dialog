@@ -1,3 +1,4 @@
+"<h2 main_area=(?<main_area>.*?) name_area=(?<name_area>(?s:.)*?)>","<h2 name_area=${name_area} main_area=${main_area}>"
 "<h2 name_area=(?<name_area>.*?) main_area=(?<main_area>.*?)>(?<name>(?s:.)*?)</h2>","[^feed]
 <script>{
     ""bevy_novelgame_dialog::dialog_box::public::events::bds::ChangeCurrentTextAreaInCurrentBox"": (
