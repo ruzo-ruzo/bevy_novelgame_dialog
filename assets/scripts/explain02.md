@@ -77,3 +77,4 @@
 [^close]
 
 [^wait]: 入力待ち
+[^signal: Rabit clap]: うさぎが拍手します
