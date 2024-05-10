@@ -9,4 +9,4 @@ $t
         size: 27.0,
 )}</script>"
 "\((?<link>.*?)\)","(scripts/${link}?dialog_box=Main Box)"
-"(?m)^(?<name>.*?)^-{2,}","<h2 name_area=""Name Area"" main_area=""Main Area"">${name}</h2>"
+"(?m)^(?<name>.*?)\n-{2,}","<h2 name_area=""Name Area"" main_area=""Main Area"">${name}</h2>"

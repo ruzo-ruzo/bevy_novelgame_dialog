@@ -75,7 +75,7 @@ fn open_message(
             area_name: "Main Area".to_string(),
             font_sets: font_vec.clone(),
             feeding: FeedingStyle::Scroll { size: 0, sec: 0.5 },
-            font_color: Color::DARK_GRAY,
+            font_color: Color::rgb(0.9, 0.7, 0.5),
             area_origin: Vec2::new(-520.0, 70.0),
             area_size: Vec2::new(1010.0, 140.0),
             // monospace: true,
@@ -83,10 +83,11 @@ fn open_message(
         };
         let name_plate_tac = TextAreaConfig {
             area_name: "Name Area".to_string(),
-            area_origin: Vec2::new(-500.0, 150.0),
+            area_origin: Vec2::new(-480.0, 170.0),
             area_size: Vec2::new(400.0, 80.0),
             font_sets: font_vec.clone(),
-            font_color: Color::DARK_GRAY,
+            font_color: Color::ANTIQUE_WHITE,
+            feeding: FeedingStyle::Rid,
             writing: WritingStyle::Put,
             typing_timing: TypingTiming::ByPage,
             vertical_alignment: AlignVertical::Center,

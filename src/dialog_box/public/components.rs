@@ -45,6 +45,7 @@ pub enum WritingStyle {
 #[derive(Component, Debug, Clone, Copy, PartialEq)]
 pub enum FeedingStyle {
     Scroll { size: usize, sec: f32 },
+    Rid,
     // Fade,
 }
 

@@ -187,8 +187,11 @@ pub fn start_feeding(
                     commands.entity(*l_entity).insert(ScrollFeed {
                         line_per_sec: target_lines.len() as f32 / *fs_sec,
                         count: line_count,
-                    })
-                }
+                    });
+                },
+                FeedingStyle::Rid => {
+                    commands.entity(*l_entity).despawn_recursive();
+                },
             };
         }
         *ws = DialogBoxPhase::Feeding;
