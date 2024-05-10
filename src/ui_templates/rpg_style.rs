@@ -36,6 +36,7 @@ impl Plugin for RPGStyleUIPlugin {
         .add_systems(Startup, waiting_sprite_setup)
         .add_systems(Startup, setup_messageframe)
         .add_systems(Startup, setup_choice_images)
+        .add_systems(Update, setup_name_plate)
         .add_systems(Update, open_message)
         .add_systems(Update, animate_sprite)
         .add_systems(Update, move_cursor)
@@ -174,6 +175,34 @@ fn setup_messageframe(mut commands: Commands, asset_server: Res<AssetServer>) {
             dialog_box_name: "Main Box".to_string(),
         },
     ));
+}
+
+fn setup_name_plate(
+    mut commands: Commands,
+    dbb_query: Query<(Entity, &DialogBoxBackground)>,
+    config: Res<TemplateSetupConfig>,
+    asset_server: Res<AssetServer>,
+    mut is_setup: Local<bool>,
+){
+    if !*is_setup {
+        let name_plate_image_handle = asset_server.load("textures/ui/name_plate.png");
+        for (dbb_entity, DialogBoxBackground {dialog_box_name: name}) in &dbb_query {
+            if name == "Main Box" {
+                commands.entity(dbb_entity).with_children(|child_builder| {
+                    child_builder.spawn((
+                        SpriteBundle {
+                            transform: Transform::from_xyz(-350.0, 130.0, 0.1),
+                            texture: name_plate_image_handle.clone(),
+                            visibility: Visibility::Inherited,
+                            ..default()
+                        },
+                    RenderLayers::layer(config.render_layer),
+                    ));
+                });
+                *is_setup = true;
+            }
+        }
+    }
 }
 
 fn waiting_sprite_setup(
