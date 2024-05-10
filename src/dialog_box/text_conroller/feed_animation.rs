@@ -112,7 +112,7 @@ pub fn trigger_feeding_by_event(
         if let Some(InputForFeeding {
             dialog_box_name: target_db_name,
             text_area_name: target_ta_name,
-        }) = event_wrapper.get_opt::<InputForFeeding>()
+        }) = event_wrapper.get::<InputForFeeding>()
         {
             let db_opt = dialog_box_query.iter().find(|x| x.name == target_db_name);
             let ta_opt = text_area_query.iter().find(|x| x.1.name == target_ta_name);

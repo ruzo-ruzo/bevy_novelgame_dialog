@@ -32,7 +32,7 @@ pub fn simple_wait(
     type_registry: Res<AppTypeRegistry>,
 ) {
     for event_wrapper in bds_reader.read() {
-        if event_wrapper.get_opt::<SimpleWait>() != Some(SimpleWait) {
+        if event_wrapper.get::<SimpleWait>() != Some(SimpleWait) {
             continue;
         }
         for (mw_entity, mut ws, DialogBox { name: db_name }, wbs) in &mut dialog_query {
@@ -90,7 +90,7 @@ pub fn restart_typing(
         if let Some(BreakWait {
             dialog_box_name: target_db_name,
             text_area_name: target_ta_name,
-        }) = event_wrapper.get_opt::<BreakWait>()
+        }) = event_wrapper.get::<BreakWait>()
         {
             for (DialogBox { name: db_name }, mut phase) in &mut dialog_box_query {
                 for TextArea { name: ta_name } in &text_area_query {
@@ -136,7 +136,7 @@ pub fn waiting_icon_setting(
 pub fn settle_wating_icon(
     mut commands: Commands,
     window_query: Query<(Entity, &DialogBoxPhase, &WaitBrakerStyle, &DialogBox)>,
-    text_box_query: Query<(Entity, &Parent, &TypeTextConfig), With<TextArea>>,
+    text_box_query: Query<(Entity, &Parent, &TypeTextConfig), (With<TextArea>, With<Current>)>,
     mut float_icon_query: Query<
         (Entity, &mut Transform, &mut WaitingIcon),
         (
@@ -207,7 +207,7 @@ pub fn skip_typing_or_next(
             next_event_ron: ron,
             dialog_box_name: target_db_name,
             text_area_name: target_ta_name,
-        }) = event_wrapper.get_opt::<InputForSkipping>()
+        }) = event_wrapper.get::<InputForSkipping>()
         {
             let db_opt = dialog_box_query.iter().find(|x| x.0.name == target_db_name);
             let ta_opt = text_area_query.iter().find(|x| x.1.name == target_ta_name);
@@ -279,7 +279,7 @@ pub fn skip_feeding(
             dialog_box_name: target_db_name,
             text_area_name: target_ta_name,
             ..
-        }) = event_wrapper.get_opt::<InputForSkipping>()
+        }) = event_wrapper.get::<InputForSkipping>()
         {
             let db_opt = dialog_box_query
                 .iter_mut()

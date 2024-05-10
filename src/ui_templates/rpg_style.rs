@@ -72,12 +72,24 @@ fn open_message(
             })
             .collect::<Vec<_>>();
         let frame_tac = TextAreaConfig {
+            area_name: "Main Area".to_string(),
             font_sets: font_vec.clone(),
             feeding: FeedingStyle::Scroll { size: 0, sec: 0.5 },
             font_color: Color::DARK_GRAY,
             area_origin: Vec2::new(-520.0, 70.0),
             area_size: Vec2::new(1010.0, 140.0),
             // monospace: true,
+            ..default()
+        };
+        let name_plate_tac = TextAreaConfig {
+            area_name: "Name Area".to_string(),
+            area_origin: Vec2::new(-500.0, 150.0),
+            area_size: Vec2::new(400.0, 80.0),
+            font_sets: font_vec.clone(),
+            font_color: Color::DARK_GRAY,
+            writing: WritingStyle::Put,
+            typing_timing: TypingTiming::ByPage,
+            vertical_alignment: AlignVertical::Center,
             ..default()
         };
         let tac_base = TextAreaConfig {
@@ -104,7 +116,7 @@ fn open_message(
                 "scripts/rpg_style.csv".to_string(),
                 "scripts/basic.csv".to_string(),
             ],
-            text_area_configs: vec![frame_tac],
+            text_area_configs: vec![frame_tac, name_plate_tac],
             position: Vec2::new(0., -200.),
             wait_breaker: WaitBrakerStyle::Input {
                 is_icon_moving_to_last: true,
@@ -183,10 +195,16 @@ fn setup_name_plate(
     config: Res<TemplateSetupConfig>,
     asset_server: Res<AssetServer>,
     mut is_setup: Local<bool>,
-){
+) {
     if !*is_setup {
         let name_plate_image_handle = asset_server.load("textures/ui/name_plate.png");
-        for (dbb_entity, DialogBoxBackground {dialog_box_name: name}) in &dbb_query {
+        for (
+            dbb_entity,
+            DialogBoxBackground {
+                dialog_box_name: name,
+            },
+        ) in &dbb_query
+        {
             if name == "Main Box" {
                 commands.entity(dbb_entity).with_children(|child_builder| {
                     child_builder.spawn((
@@ -196,7 +214,7 @@ fn setup_name_plate(
                             visibility: Visibility::Inherited,
                             ..default()
                         },
-                    RenderLayers::layer(config.render_layer),
+                        RenderLayers::layer(config.render_layer),
                     ));
                 });
                 *is_setup = true;
