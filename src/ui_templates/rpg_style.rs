@@ -75,7 +75,7 @@ fn open_message(
             area_name: "Main Area".to_string(),
             font_sets: font_vec.clone(),
             feeding: FeedingStyle::Scroll { size: 0, sec: 0.5 },
-            font_color: Color::rgb(0.9, 0.7, 0.5),
+            font_color: Color::rgb(0.8, 0.6, 0.4),
             area_origin: Vec2::new(-520.0, 70.0),
             area_size: Vec2::new(1010.0, 140.0),
             // monospace: true,

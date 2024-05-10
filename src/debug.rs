@@ -16,10 +16,11 @@ impl Plugin for DebugTextAreaPlugin {
     }
 }
 
-pub fn loaded_orders(
-    ls_query: Query<&LoadedScript, Added<LoadedScript>>
-){
-    for LoadedScript { order_list: orders, ..} in &ls_query {
+pub fn loaded_orders(ls_query: Query<&LoadedScript, Added<LoadedScript>>) {
+    for LoadedScript {
+        order_list: orders, ..
+    } in &ls_query
+    {
         info!("Loaded Scripts: {orders:?}");
     }
 }

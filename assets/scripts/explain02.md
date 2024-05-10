@@ -25,21 +25,21 @@
 ===========
 ウサギが挨拶します[^wait]
 [^signal: Rabit greeting]
-
+[^wait]
 [link](explain02.md#ウサギ選択肢)
 
 ウサギ拍手
 ===========
 ウサギが拍手します[^wait]
 [^signal: Rabit clap]
-
+[^wait]
 [link](explain02.md#ウサギ選択肢)
 
 ウサギ止まる
 ===========
 ウサギが止まります[^wait]
 [^signal: Rabit stay]
-
+[^wait]
 [link](explain02.md#ウサギ選択肢)
 
 子供選択肢
@@ -56,21 +56,21 @@
 ===========
 子供が挨拶します[^wait]
 [^signal: Girl bow]
-
+[^wait]
 [link](explain02.md#子供選択肢)
 
 子供拍手
 ===========
 子供が拍手します[^wait]
 [^signal: Girl clap]
-
+[^wait]
 [link](explain02.md#子供選択肢)
 
 子供止まる
 ===========
 子供が止まります[^wait]
 [^signal: Girl stay]
-
+[^wait]
 [link](explain02.md#子供選択肢)
 
 閉じる

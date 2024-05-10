@@ -93,7 +93,10 @@ impl Plugin for DialogBoxPlugin {
             .add_systems(Update, start_feeding.in_set(PhaseSet::Setting))
             .add_systems(Update, restart_typing.in_set(PhaseSet::Setting))
             .add_systems(Update, change_current_text_area.in_set(PhaseSet::Setting))
-            .add_systems(Update, change_current_text_area_in_current_box.in_set(PhaseSet::Setting))
+            .add_systems(
+                Update,
+                change_current_text_area_in_current_box.in_set(PhaseSet::Setting),
+            )
             .add_systems(Update, change_current_dialog_box.in_set(PhaseSet::Setting))
             .add_systems(Update, change_font_size.in_set(PhaseSet::Setting))
             .add_systems(Update, setup_choice.in_set(PhaseSet::Setting))

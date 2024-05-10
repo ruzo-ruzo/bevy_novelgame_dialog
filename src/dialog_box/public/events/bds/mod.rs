@@ -143,7 +143,7 @@ pub fn change_current_text_area_in_current_box(
     db_query: Query<Entity, (With<DialogBox>, With<Current>)>,
     ta_query: Query<(Entity, &TextArea, &Parent)>,
     mut events: EventReader<BdsEvent>,
-){
+) {
     for event_wrapper in events.read() {
         if let Some(ChangeCurrentTextAreaInCurrentBox {
             next_current_text_area_name: ta_name,

@@ -188,10 +188,10 @@ pub fn start_feeding(
                         line_per_sec: target_lines.len() as f32 / *fs_sec,
                         count: line_count,
                     });
-                },
+                }
                 FeedingStyle::Rid => {
                     commands.entity(*l_entity).despawn_recursive();
-                },
+                }
             };
         }
         *ws = DialogBoxPhase::Feeding;
