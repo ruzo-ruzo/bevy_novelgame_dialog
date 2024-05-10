@@ -1,6 +1,7 @@
 use crate::dialog_box::bds::*;
 use crate::dialog_box::input::*;
 use crate::dialog_box::window_controller::*;
+use crate::read_script::*;
 use bevy::prelude::*;
 
 pub struct DebugTextAreaPlugin;
@@ -10,7 +11,17 @@ impl Plugin for DebugTextAreaPlugin {
         app.add_systems(Update, monitor_db_state);
         app.add_systems(Update, monitor_bds_event);
         app.add_systems(Update, too_many_selected);
+        // app.add_systems(Update, loaded_orders);
         app.add_systems(Update, too_many_current_dialog_box);
+    }
+}
+
+pub fn loaded_orders(ls_query: Query<&LoadedScript, Added<LoadedScript>>) {
+    for LoadedScript {
+        order_list: orders, ..
+    } in &ls_query
+    {
+        info!("Loaded Scripts: {orders:?}");
     }
 }
 

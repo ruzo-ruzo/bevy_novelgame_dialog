@@ -11,7 +11,7 @@ pub fn change_font_size(
     mut ta_query: Query<&mut TypeTextConfig, (With<Current>, With<TextArea>)>,
 ) {
     for event_wrapper in events.read() {
-        if let Some(ChangeFontSize { size: s }) = event_wrapper.get_opt::<ChangeFontSize>() {
+        if let Some(ChangeFontSize { size: s }) = event_wrapper.get::<ChangeFontSize>() {
             if let Ok(mut config) = ta_query.get_single_mut() {
                 config.text_style.font_size = s;
             }
@@ -39,7 +39,7 @@ pub fn force_feeding_current_box(
     mut events: EventReader<BdsEvent>,
 ) {
     for event_wrapper in events.read() {
-        if event_wrapper.get_opt::<ForceFeedingCurrentBox>().is_some() {
+        if event_wrapper.get::<ForceFeedingCurrentBox>().is_some() {
             for (db_entity, db, mut phase) in &mut dialog_box_query {
                 for (ta, ta_parent) in &text_area_query {
                     if ta_parent.get() == db_entity {

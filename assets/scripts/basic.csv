@@ -1,14 +1,35 @@
-"\[wait\]","<script>{
-    ""bevy_novelgame_dialog::dialog_box::public::events::bds::SimpleWait"":(),
+"<h2 main_area=(?<main_area>.*?) name_area=(?<name_area>(?s:.)*?)>","<h2 name_area=${name_area} main_area=${main_area}>"
+"<h2 name_area=(?<name_area>.*?) main_area=(?<main_area>.*?)>(?<name>(?s:.)*?)</h2>","[^feed]
+<script>{
+    ""bevy_novelgame_dialog::dialog_box::public::events::bds::ChangeCurrentTextAreaInCurrentBox"": (
+        next_current_text_area_name: ${name_area},
+    ),
+}</script>
+${name}
+<script>{
+    ""bevy_novelgame_dialog::dialog_box::public::events::bds::ChangeCurrentTextAreaInCurrentBox"": (
+        next_current_text_area_name: ${main_area},
+    ),
+}</script>"
+"\[close scale: (?<num>.*?)\]","<script>{
+    ""bevy_novelgame_dialog::dialog_box::public::events::bds::SinkDownWindow"": (
+    sink_type: Scale(
+            sec: ${num},
+        ),
+    ),
 }</script>"
 "\[link\]",""
-"\[signal: (?<signal>.*?)\]","<script>{
+"\[\^wait\]","<script>{
+    ""bevy_novelgame_dialog::dialog_box::public::events::bds::SimpleWait"":(),
+}</script>"
+"\[\^signal: (?<signal>.*?)\]","<script>{
     ""bevy_novelgame_dialog::dialog_box::public::events::bds::SimpleStringSignal"": (
         signal: ""${signal}"",
     ),
 }</script>"
-"\[feed\]","<script>{
+"\[\^feed\]","<script>{
     ""bevy_novelgame_dialog::dialog_box::public::events::bds::writing::ForceFeedingCurrentBox"": (),
 }</script>"
+"\[.*?\]:.*?",""
 "\[(?<text>.*?)\]\((?<link>.*?)\)","${text}(${link})"
 "\((?<link>.*?)\?dialog_box=(?<target>.*?)\)","(${link} ""${target}"")"

@@ -36,6 +36,7 @@ impl Plugin for RPGStyleUIPlugin {
         .add_systems(Startup, waiting_sprite_setup)
         .add_systems(Startup, setup_messageframe)
         .add_systems(Startup, setup_choice_images)
+        .add_systems(Update, setup_name_plate)
         .add_systems(Update, open_message)
         .add_systems(Update, animate_sprite)
         .add_systems(Update, move_cursor)
@@ -71,12 +72,25 @@ fn open_message(
             })
             .collect::<Vec<_>>();
         let frame_tac = TextAreaConfig {
+            area_name: "Main Area".to_string(),
             font_sets: font_vec.clone(),
             feeding: FeedingStyle::Scroll { size: 0, sec: 0.5 },
-            font_color: Color::DARK_GRAY,
+            font_color: Color::rgb(0.8, 0.6, 0.4),
             area_origin: Vec2::new(-520.0, 70.0),
             area_size: Vec2::new(1010.0, 140.0),
             // monospace: true,
+            ..default()
+        };
+        let name_plate_tac = TextAreaConfig {
+            area_name: "Name Area".to_string(),
+            area_origin: Vec2::new(-480.0, 170.0),
+            area_size: Vec2::new(400.0, 80.0),
+            font_sets: font_vec.clone(),
+            font_color: Color::ANTIQUE_WHITE,
+            feeding: FeedingStyle::Rid,
+            writing: WritingStyle::Put,
+            typing_timing: TypingTiming::ByPage,
+            vertical_alignment: AlignVertical::Center,
             ..default()
         };
         let tac_base = TextAreaConfig {
@@ -103,7 +117,7 @@ fn open_message(
                 "scripts/rpg_style.csv".to_string(),
                 "scripts/basic.csv".to_string(),
             ],
-            text_area_configs: vec![frame_tac],
+            text_area_configs: vec![frame_tac, name_plate_tac],
             position: Vec2::new(0., -200.),
             wait_breaker: WaitBrakerStyle::Input {
                 is_icon_moving_to_last: true,
@@ -174,6 +188,40 @@ fn setup_messageframe(mut commands: Commands, asset_server: Res<AssetServer>) {
             dialog_box_name: "Main Box".to_string(),
         },
     ));
+}
+
+fn setup_name_plate(
+    mut commands: Commands,
+    dbb_query: Query<(Entity, &DialogBoxBackground)>,
+    config: Res<TemplateSetupConfig>,
+    asset_server: Res<AssetServer>,
+    mut is_setup: Local<bool>,
+) {
+    if !*is_setup {
+        let name_plate_image_handle = asset_server.load("textures/ui/name_plate.png");
+        for (
+            dbb_entity,
+            DialogBoxBackground {
+                dialog_box_name: name,
+            },
+        ) in &dbb_query
+        {
+            if name == "Main Box" {
+                commands.entity(dbb_entity).with_children(|child_builder| {
+                    child_builder.spawn((
+                        SpriteBundle {
+                            transform: Transform::from_xyz(-350.0, 130.0, 0.1),
+                            texture: name_plate_image_handle.clone(),
+                            visibility: Visibility::Inherited,
+                            ..default()
+                        },
+                        RenderLayers::layer(config.render_layer),
+                    ));
+                });
+                *is_setup = true;
+            }
+        }
+    }
 }
 
 fn waiting_sprite_setup(

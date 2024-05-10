@@ -47,7 +47,7 @@ pub fn open_choice_box(
     mut ow_event: EventWriter<OpenDialog>,
 ) {
     for event_wrapper in events.read() {
-        if let Some(SetupChoice { target_list: tl }) = event_wrapper.get_opt::<SetupChoice>() {
+        if let Some(SetupChoice { target_list: tl }) = event_wrapper.get::<SetupChoice>() {
             if let Ok((cbc, mut dbs, children, db)) = db_query.get_single_mut() {
                 let bg_opt = bg_query
                     .iter()
@@ -241,7 +241,7 @@ pub fn close_choice_phase(
         if let Some(ChoosenEvent {
             choosen_event: ce,
             choice_box_name: cb_name,
-        }) = event_wrapper.get_opt::<ChoosenEvent>()
+        }) = event_wrapper.get::<ChoosenEvent>()
         {
             if let Ok(next) = read_ron(&app_type_registry, ce) {
                 commands.add(|w: &mut World| {

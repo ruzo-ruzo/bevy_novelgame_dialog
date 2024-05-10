@@ -32,7 +32,7 @@ pub fn setup_window_sink(
     type_registry: Res<AppTypeRegistry>,
 ) {
     for event_wrapper in events.read() {
-        if let Some(SinkDownWindow { sink_type: sdt }) = event_wrapper.get_opt::<SinkDownWindow>() {
+        if let Some(SinkDownWindow { sink_type: sdt }) = event_wrapper.get::<SinkDownWindow>() {
             for (mw_entity, db, mut ws, wbs) in &mut db_query {
                 match wbs {
                     WaitBrakerStyle::Auto { wait_sec: base_sec } => {
@@ -84,7 +84,7 @@ pub fn trigger_window_sink_by_event(
     mut gs_writer: EventWriter<GoSinking>,
 ) {
     for event_wrapper in bds_reader.read() {
-        if let Some(gs @ GoSinking { .. }) = event_wrapper.get_opt::<GoSinking>() {
+        if let Some(gs @ GoSinking { .. }) = event_wrapper.get::<GoSinking>() {
             gs_writer.send(gs);
         }
     }
