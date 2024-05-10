@@ -15,7 +15,6 @@
 ウサギ選択肢
 ===========
 <h2 name_area="Name Area" main_area="Main Area">うさぎ</h2>
-
 選択肢ボックスを開きます。[^wait]
 * [ウサギ挨拶して](explain02.md#ウサギ挨拶)
 * [ウサギ拍手して](explain02.md#ウサギ拍手)

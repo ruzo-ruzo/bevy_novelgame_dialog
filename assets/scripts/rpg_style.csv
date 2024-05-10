@@ -9,3 +9,4 @@ $t
         size: 27.0,
 )}</script>"
 "\((?<link>.*?)\)","(scripts/${link}?dialog_box=Main Box)"
+"^(?<name>.*?)\n-{}",""
