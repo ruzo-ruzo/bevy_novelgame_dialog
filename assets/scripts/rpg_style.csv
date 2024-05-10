@@ -1,4 +1,4 @@
-"\[\^close\]","[^close scale: 0.8]"
+"\[\^close\]","[close scale: 0.8]"
 "\*(?<t>.*?)\*","<script>{
     ""bevy_novelgame_dialog::dialog_box::public::events::bds::writing::ChangeFontSize"": (
         size: 35.0,
