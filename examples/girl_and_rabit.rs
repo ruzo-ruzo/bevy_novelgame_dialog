@@ -8,7 +8,7 @@ fn main() {
             DefaultPlugins,
             ui_templates::RPGStyleUIPlugin::default(),
             models_controller::ModelsControllerPlugin,
-            // DebugTextAreaPlugin,
+            DebugTextAreaPlugin,
         ))
         .add_systems(Update, start_message)
         .run();
@@ -237,19 +237,19 @@ mod models_controller {
             for BdsSignal { signal: sig } in signal_events.read() {
                 if let Ok(mut player) = animation_player.get_single_mut() {
                     if let Ok(anim) = animations.get_single() {
-                        if *sig == "Rabit greeting".to_string() {
+                        if *sig == "Rabit_greeting".to_string() {
                             player.play_with_transition(
                                 anim.list["greeting"].clone_weak(),
                                 Duration::from_millis(250),
                             );
-                        } else if *sig == "Rabit clap".to_string() {
+                        } else if *sig == "Rabit_clap".to_string() {
                             player
                                 .play_with_transition(
                                     anim.list["clap"].clone_weak(),
                                     Duration::from_millis(250),
                                 )
                                 .repeat();
-                        } else if *sig == "Rabit stay".to_string() {
+                        } else if *sig == "Rabit_stay".to_string() {
                             player
                                 .play_with_transition(
                                     anim.list["stay.lookdown"].clone_weak(),
@@ -388,19 +388,19 @@ mod models_controller {
             for BdsSignal { signal: sig } in signal_events.read() {
                 if let Ok(mut player) = animation_player.get_single_mut() {
                     if let Ok(anim) = animations.get_single() {
-                        if *sig == "Girl bow".to_string() {
+                        if *sig == "Girl_bow".to_string() {
                             player.play_with_transition(
                                 anim.list["bow"].clone_weak(),
                                 Duration::from_millis(250),
                             );
-                        } else if *sig == "Girl clap".to_string() {
+                        } else if *sig == "Girl_clap".to_string() {
                             player
                                 .play_with_transition(
                                     anim.list["clap"].clone_weak(),
                                     Duration::from_millis(250),
                                 )
                                 .repeat();
-                        } else if *sig == "Girl stay".to_string() {
+                        } else if *sig == "Girl_stay".to_string() {
                             player
                                 .play_with_transition(
                                     anim.list["stay.bored"].clone_weak(),
