@@ -114,21 +114,23 @@ pub fn trigger_feeding_by_event(
             text_area_name: target_ta_name,
         }) = event_wrapper.get::<InputForFeeding>()
         {
-            let db_opt = dialog_box_query.iter_mut().find(|x| x.0.name == target_db_name);
+            let db_opt = dialog_box_query
+                .iter_mut()
+                .find(|x| x.0.name == target_db_name);
             let ta_opt = text_area_query.iter().find(|x| x.1.name == target_ta_name);
             if let (Some((_, mut dbp)), Some((ta_entity, _, fs))) = (db_opt, ta_opt) {
-				*dbp = DialogBoxPhase::Typing;
-				for (l_entity, l_parent) in &mut line_query {
-					if l_parent.get() == ta_entity {
-						commands.entity(l_entity).insert(*fs);
-						*dbp = DialogBoxPhase::WaitingAction;
-					}
-					start_feeding_event.send(StartFeedingEvent);
-				}
-				for (ic_entity, mut ic_vis) in &mut icon_query {
-					*ic_vis = Visibility::Hidden;
-					commands.entity(ic_entity).remove::<TypingTimer>();
-				}
+                *dbp = DialogBoxPhase::Typing;
+                for (l_entity, l_parent) in &mut line_query {
+                    if l_parent.get() == ta_entity {
+                        commands.entity(l_entity).insert(*fs);
+                        *dbp = DialogBoxPhase::WaitingAction;
+                    }
+                    start_feeding_event.send(StartFeedingEvent);
+                }
+                for (ic_entity, mut ic_vis) in &mut icon_query {
+                    *ic_vis = Visibility::Hidden;
+                    commands.entity(ic_entity).remove::<TypingTimer>();
+                }
             }
         }
     }
@@ -136,30 +138,30 @@ pub fn trigger_feeding_by_event(
 
 pub fn trigger_feeding_by_time(
     mut commands: Commands,
-	mut dialog_box_query: Query<&mut DialogBoxPhase>,
+    mut dialog_box_query: Query<&mut DialogBoxPhase>,
     mut text_area_query: Query<(Entity, &FeedingStyle, &mut WaitFeedingTrigger), With<Current>>,
     mut line_query: Query<Entity, With<MessageTextLine>>,
-	parent_query: Query<&Parent>,
+    parent_query: Query<&Parent>,
     mut start_feeding_event: EventWriter<StartFeedingEvent>,
     time: Res<Time>,
 ) {
-	for mut dbp in &mut dialog_box_query {
-		if text_area_query.iter().len() > 0 {
-			*dbp = DialogBoxPhase::Typing;
-		}
-		for (tb_entity, fs, mut wft) in &mut text_area_query {
-			if wft.timer.tick(time.delta()).finished() {
-				for l_entity in &mut line_query {
-					if parent_query.get(l_entity).ok().map(|x|x.get()) == Some(tb_entity) {
-						commands.entity(l_entity).insert(*fs);
-						*dbp = DialogBoxPhase::WaitingAction;
-					}
-				}
-				commands.entity(tb_entity).remove::<WaitFeedingTrigger>();
-				start_feeding_event.send(StartFeedingEvent);
-			}
-		}
-	}
+    for mut dbp in &mut dialog_box_query {
+        if text_area_query.iter().len() > 0 {
+            *dbp = DialogBoxPhase::Typing;
+        }
+        for (tb_entity, fs, mut wft) in &mut text_area_query {
+            if wft.timer.tick(time.delta()).finished() {
+                for l_entity in &mut line_query {
+                    if parent_query.get(l_entity).ok().map(|x| x.get()) == Some(tb_entity) {
+                        commands.entity(l_entity).insert(*fs);
+                        *dbp = DialogBoxPhase::WaitingAction;
+                    }
+                }
+                commands.entity(tb_entity).remove::<WaitFeedingTrigger>();
+                start_feeding_event.send(StartFeedingEvent);
+            }
+        }
+    }
 }
 
 pub fn start_feeding(
@@ -182,9 +184,9 @@ pub fn start_feeding(
             .iter()
             .filter(|q| parent_query.iter_ancestors(q.0).any(|e| e == w_entity))
             .collect::<Vec<(Entity, &FeedingStyle)>>();
-		if target_lines.iter().len() > 0 {
-			*ws = DialogBoxPhase::Typing;
-		}
+        if target_lines.iter().len() > 0 {
+            *ws = DialogBoxPhase::Typing;
+        }
         for (l_entity, fs) in target_lines.iter() {
             match fs {
                 FeedingStyle::Scroll {
@@ -201,7 +203,7 @@ pub fn start_feeding(
                         line_per_sec: target_lines.len() as f32 / *fs_sec,
                         count: line_count,
                     });
-					*ws = DialogBoxPhase::Feeding;
+                    *ws = DialogBoxPhase::Feeding;
                 }
                 FeedingStyle::Rid => {
                     commands.entity(*l_entity).despawn_recursive();
