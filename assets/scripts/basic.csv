@@ -23,7 +23,7 @@
 "\[\^wait\]","<script>{
     ""bevy_novelgame_dialog::dialog_box::public::events::bds::SimpleWait"":(),
 }</script>"
-"\[\^signal:(?<signal>.*?)\]","<script>{
+"\[\^signal\((?<signal>.*?)\)\]","<script>{
     ""bevy_novelgame_dialog::dialog_box::public::events::bds::SimpleStringSignal"": (
         signal: ""${signal}"",
     ),
