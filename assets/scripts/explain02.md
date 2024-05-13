@@ -4,11 +4,12 @@
 -----------
 これ背景表示するために滅茶苦茶苦労してしまった……。  
 本体は手前のこの文章のはずなのに。
-
 [link](explain02.md#キャラ選択肢)
 
 キャラ選択肢
 ===========
+解説
+-----------
 どっちと話す？[^wait]
 * [子供](explain02.md#子供選択肢)
 * [ウサギ](explain02.md#ウサギ選択肢)
@@ -66,5 +67,7 @@
 [^close]
 
 [^wait]: 入力待ち  
+[^signal(Rabit_greeting)]: うさぎ挨拶モーション  
 [^signal(Rabit_clap)]: うさぎ拍手モーション  
-[^signal(Rabit_bow)]: うさぎ挨拶モーション  
+[^signal(Girl_clap)]: こども挨拶モーション  
+[^signal(Girl_bow)]: こども拍手モーション
