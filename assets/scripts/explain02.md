@@ -2,13 +2,14 @@
 ==========
 解説
 -----------
-これ背景表示するために滅茶苦茶苦労してしまった……。  
+この背景表示するために滅茶苦茶苦労してしまった……。  
 本体は手前のこの文章のはずなのに。
-
-[link](explain02.md#キャラ選択肢)
+[jump](explain02.md#キャラ選択肢)
 
 キャラ選択肢
 ===========
+解説
+-----------
 どっちと話す？[^wait]
 * [子供](explain02.md#子供選択肢)
 * [ウサギ](explain02.md#ウサギ選択肢)
@@ -21,29 +22,21 @@
 選択肢ボックスを開きます。[^wait]
 * [ウサギ挨拶して](explain02.md#ウサギ挨拶)
 * [ウサギ拍手して](explain02.md#ウサギ拍手)
-* [ウサギ止まって](explain02.md#ウサギ止まる)
 * [戻る](explain02.md#キャラ選択肢)
 
 ウサギ挨拶
 ===========
 ウサギが挨拶します[^wait]
-[^signal:Rabit_greeting]
+[^signal(Rabit_greeting)]
 [^wait]
-[link](explain02.md#ウサギ選択肢)
+[jump](explain02.md#ウサギ選択肢)
 
 ウサギ拍手
 ===========
 ウサギが拍手します[^wait]
-[^signal: Rabit clap]
+[^signal(Rabit_clap)]
 [^wait]
-[link](explain02.md#ウサギ選択肢)
-
-ウサギ止まる
-===========
-ウサギが止まります[^wait]
-[^signal:Rabit_stay]
-[^wait]
-[link](explain02.md#ウサギ選択肢)
+[jump](explain02.md#ウサギ選択肢)
 
 子供選択肢
 ===========
@@ -52,29 +45,21 @@
 選択肢ボックスを開きます。[^wait]
 * [子供挨拶して](explain02.md#子供挨拶)
 * [子供拍手して](explain02.md#子供拍手)
-* [子供止まって](explain02.md#子供止まる)
 * [戻る](explain02.md#キャラ選択肢)
 
 子供挨拶
 ===========
 子供が挨拶します[^wait]
-[^signal:Girl_bow]
+[^signal(Girl_bow)]
 [^wait]
-[link](explain02.md#子供選択肢)
+[jump](explain02.md#子供選択肢)
 
 子供拍手
 ===========
 子供が拍手します[^wait]
-[^signal:Girl_clap]
+[^signal(Girl_clap)]
 [^wait]
-[link](explain02.md#子供選択肢)
-
-子供止まる
-===========
-子供が止まります[^wait]
-[^signal:Girl_stay]
-[^wait]
-[link](explain02.md#子供選択肢)
+[jump](explain02.md#子供選択肢)
 
 閉じる
 ===========
@@ -82,5 +67,8 @@
 [^close]
 
 [^wait]: 入力待ち  
-[^signal:Rabit_clap]: うさぎ拍手モーション  
-[^signal:Rabit_bow]: うさぎ挨拶モーション  
+[^signal(Rabit_greeting)]: うさぎ挨拶モーション再生  
+[^signal(Rabit_clap)]: うさぎ拍手モーション再生  
+[^signal(Girl_clap)]: こども挨拶モーション再生  
+[^signal(Girl_bow)]: こども拍手モーション再生
+[^close]: ダイアログボックスを閉じる  

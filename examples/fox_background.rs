@@ -125,21 +125,21 @@ mod fox_background {
     ) {
         for BdsSignal { signal: sig } in signal_events.read() {
             if let Ok(mut player) = animation_player.get_single_mut() {
-                if *sig == "Fox run".to_string() {
+                if *sig == "Fox_run".to_string() {
                     player
                         .play_with_transition(
                             animations.0[0].clone_weak(),
                             Duration::from_millis(250),
                         )
                         .repeat();
-                } else if *sig == "Fox walk".to_string() {
+                } else if *sig == "Fox_walk".to_string() {
                     player
                         .play_with_transition(
                             animations.0[1].clone_weak(),
                             Duration::from_millis(250),
                         )
                         .repeat();
-                } else if *sig == "Fox stop".to_string() {
+                } else if *sig == "Fox_stop".to_string() {
                     player
                         .play_with_transition(
                             animations.0[2].clone_weak(),
