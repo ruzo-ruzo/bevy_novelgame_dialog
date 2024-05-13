@@ -8,6 +8,6 @@ $t
     ""bevy_novelgame_dialog::dialog_box::public::events::bds::writing::ChangeFontSize"": (
         size: 27.0,
 )}</script>"
-"\((?<link>.*?)\)","(scripts/${link}?dialog_box=Main Box)"
+"\((?<jump>.*?)\)","(scripts/${jump}?dialog_box=Main Box)"
 "(?m)^(?<name>.*?)\n-{2,}","## ${name}"
 "(?m)## (?<name>.*?)$","<h2 name_area=""Name Area"" main_area=""Main Area"">${name}</h2>"

@@ -2,9 +2,9 @@
 ==========
 解説
 -----------
-これ背景表示するために滅茶苦茶苦労してしまった……。  
+この背景表示するために滅茶苦茶苦労してしまった……。  
 本体は手前のこの文章のはずなのに。
-[link](explain02.md#キャラ選択肢)
+[jump](explain02.md#キャラ選択肢)
 
 キャラ選択肢
 ===========
@@ -29,14 +29,14 @@
 ウサギが挨拶します[^wait]
 [^signal(Rabit_greeting)]
 [^wait]
-[link](explain02.md#ウサギ選択肢)
+[jump](explain02.md#ウサギ選択肢)
 
 ウサギ拍手
 ===========
 ウサギが拍手します[^wait]
 [^signal(Rabit_clap)]
 [^wait]
-[link](explain02.md#ウサギ選択肢)
+[jump](explain02.md#ウサギ選択肢)
 
 子供選択肢
 ===========
@@ -52,14 +52,14 @@
 子供が挨拶します[^wait]
 [^signal(Girl_bow)]
 [^wait]
-[link](explain02.md#子供選択肢)
+[jump](explain02.md#子供選択肢)
 
 子供拍手
 ===========
 子供が拍手します[^wait]
 [^signal(Girl_clap)]
 [^wait]
-[link](explain02.md#子供選択肢)
+[jump](explain02.md#子供選択肢)
 
 閉じる
 ===========
