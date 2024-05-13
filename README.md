@@ -28,23 +28,23 @@ This plugin provides a novel-game-style dialog box for the Bevy engine. You can 
 歩く
 ===========
 きつねが歩きます[wait]
-[signal: Fox walk]
+[signal(Fox_walk)]
 
-[link](choice_example.md#選択肢)
+[jump](choice_example.md#選択肢)
 
 止まる
 ===========
 きつねが止まります[wait]
-[signal: Fox stop]
+[signal(Fox_stop)]
 
-[link](choice_example.md#選択肢)
+[jump](choice_example.md#選択肢)
 
 走る
 ===========
 きつねが走ります[wait]
-[signal: Fox run]
+[signal(Fox_run)]
 
-[link](choice_example.md#選択肢)
+[jump](choice_example.md#選択肢)
 
 ```
 
