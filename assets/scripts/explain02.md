@@ -67,7 +67,8 @@
 [^close]
 
 [^wait]: 入力待ち  
-[^signal(Rabit_greeting)]: うさぎ挨拶モーション  
-[^signal(Rabit_clap)]: うさぎ拍手モーション  
-[^signal(Girl_clap)]: こども挨拶モーション  
-[^signal(Girl_bow)]: こども拍手モーション
+[^signal(Rabit_greeting)]: うさぎ挨拶モーション再生  
+[^signal(Rabit_clap)]: うさぎ拍手モーション再生  
+[^signal(Girl_clap)]: こども挨拶モーション再生  
+[^signal(Girl_bow)]: こども拍手モーション再生
+[^close]: ダイアログボックスを閉じる  
