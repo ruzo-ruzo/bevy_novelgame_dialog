@@ -213,7 +213,7 @@ pub fn skip_typing_or_next(
             let ta_opt = text_area_query.iter().find(|x| x.1.name == target_ta_name);
             if let (Some((db, phase, wbs)), Some((ta_entity, ta, tb_tf, tb_sp))) = (db_opt, ta_opt)
             {
-                if phase != &DialogBoxPhase::WaitingAction {
+                if *phase != DialogBoxPhase::WaitingAction {
                     return;
                 }
                 let mut typed_count = 0usize;
