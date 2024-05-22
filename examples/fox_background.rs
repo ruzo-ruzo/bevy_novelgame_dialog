@@ -1,6 +1,6 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 use bevy::prelude::*;
-use bevy_novelgame_dialog::*;
+use bevy_novelgame_dialog::prelude::*;
 
 fn main() {
     App::new()

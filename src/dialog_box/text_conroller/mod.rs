@@ -42,120 +42,85 @@ pub struct TypingTimer {
     pub timer: Timer,
 }
 
-#[derive(SystemParam, Debug)]
-#[allow(clippy::type_complexity)]
-pub struct LastTextData<'w, 's> {
-    text: Query<'w, 's, LastText, (With<Current>, With<MessageTextChar>)>,
-    line: Query<
-        'w,
-        's,
-        (Entity, &'static Transform, &'static Sprite, &'static Parent),
-        (With<Current>, With<MessageTextLine>),
-    >,
+pub struct CharPos {
+    pub x: f32,
+    pub y: f32,
 }
 
-type LastText = (
-    Entity,
-    &'static Transform,
-    &'static Text,
-    &'static TypingTimer,
-    &'static Parent,
-);
+pub struct LastChar {
+    pub entity: Option<Entity>,
+    pub pos: CharPos,
+    pub timer: TypingTimer,
+}
 
-type TextAreaData<'w, 's> = Query<
-    'w,
-    's,
-    (
-        Entity,
-        &'static Sprite,
-        &'static TypeTextConfig,
-        &'static Parent,
-    ),
-    (With<Current>, With<TextArea>),
->;
+#[derive(SystemParam, Debug)]
+#[allow(clippy::type_complexity)]
+pub struct TextQuery<'w, 's> {
+    text: Query<'w, 's, CharData, (With<Current>, With<MessageTextChar>)>,
+    line: Query<'w, 's, LineData,  (With<Current>, With<MessageTextLine>)>,
+}
+
+type CharData = (Entity, &'static Transform, &'static Text, &'static TypingTimer, &'static Parent);
+type LineData = (Entity, &'static Transform, &'static Sprite, &'static Parent);
+
+#[derive(SystemParam, Debug)]
+pub struct  CurrentTextAreaQuery<'w, 's> {
+    area: Query<'w, 's, AreaData, (With<Current>, With<TextArea>)>,
+}
+
+type AreaData = (Entity, &'static Sprite, &'static TypeTextConfig, &'static Parent,);
 
 pub fn add_new_text(
     mut commands: Commands,
     mut dialog_box_query: Query<(Entity, &mut LoadedScript, &mut DialogBoxPhase)>,
-    text_area_query: TextAreaData,
-    last_data: LastTextData,
+    text_area_query: CurrentTextAreaQuery,
+    last_data: TextQuery,
     app_type_registry: Res<AppTypeRegistry>,
     mut wrapper: EventWriter<BdsEvent>,
     mut ps_event: EventWriter<FeedWaitingEvent>,
-    fonts: Res<Assets<Font>>,
+    fonts_res: Res<Assets<Font>>,
     mut pending: Local<Option<Order>>,
     mut in_cr: Local<bool>,
 ) {
-    for (w_ent, mut script, mut ws) in &mut dialog_box_query {
-        if *ws != DialogBoxPhase::Typing {
+    for (w_ent, mut script, mut dbp) in &mut dialog_box_query {
+        if *dbp != DialogBoxPhase::Typing {
             continue;
         }
-        for (tb_ent, tb_spr, config, parent) in &text_area_query {
+        for (tb_ent, tb_spr, config, parent) in &text_area_query.area {
             if w_ent != parent.get() {
                 continue;
             }
-            let (mut last_line_opt, mut last_text_opt, mut last_x, mut last_y, mut last_timer) =
-                initialize_typing_data(&last_data, tb_ent);
-            let Vec2 {
-                x: max_width,
-                y: max_height,
-            } = tb_spr.custom_size.unwrap_or_default();
+            let (mut last_line_opt, mut last_char) = initialize_typing_data(&last_data, tb_ent);
+            let Vec2 {x: width, y: height} = tb_spr.custom_size.unwrap_or_default();
             loop {
                 let next_order = get_next_order(&pending, &mut script.order_list, *in_cr);
                 match next_order {
                     Some(Order::Type {
                         character: new_word,
                     }) => {
-                        let new_text_opt = make_new_text(
-                            new_word,
-                            config,
-                            &mut last_x,
-                            last_y,
-                            &mut last_timer,
-                            fonts.as_ref(),
-                            max_width,
-                        );
-                        let (Some(new_text), Some(last_line)) = (new_text_opt, last_line_opt)
-                        else {
+                        let fonts = fonts_res.as_ref();
+                        let char_config = (config, &mut last_char, fonts, width, last_line_opt);
+                        if add_char(&mut commands, new_word, char_config) {
+                            *pending = None;
+                            *in_cr = false;
+                        } else {
                             *pending = next_order;
                             *in_cr = true;
-                            continue;
                         };
-                        let new_text_entity = commands.spawn((new_text, Current)).id();
-                        if let Some(last_text) = last_text_opt {
-                            commands.entity(last_text).remove::<Current>();
-                        }
-                        last_text_opt = Some(new_text_entity);
-                        commands.entity(last_line).add_child(new_text_entity);
-                        *pending = None;
-                        *in_cr = false;
                     }
                     Some(Order::CarriageReturn) => {
-                        let new_line_opt =
-                            make_empty_line(config, &mut last_x, &mut last_y, max_height);
-                        let Some(new_line) = new_line_opt else {
-                            send_feed_event(
-                                &mut ps_event,
-                                w_ent,
-                                &last_timer,
-                                &mut ws,
-                                last_x,
-                                last_y,
-                            );
+                        let line_config = (config, &mut last_char, height,  &mut last_line_opt);
+                        if add_empty_line(&mut commands, line_config, tb_ent) {
+                            *in_cr = false;
+                        } else {
+                            send_feed_event(&mut ps_event, w_ent, &last_char, &mut dbp);
                             *in_cr = true;
                             break;
                         };
-                        let new_line_entity = commands.spawn((new_line, Current)).id();
-                        if let Some(last_line) = last_line_opt {
-                            commands.entity(last_line).remove::<Current>();
-                        }
-                        last_line_opt = Some(new_line_entity);
-                        commands.entity(tb_ent).add_child(new_line_entity);
-                        *in_cr = false;
-                        continue;
+
                     }
                     Some(Order::PageFeed) => {
-                        send_feed_event(&mut ps_event, w_ent, &last_timer, &mut ws, last_x, last_y);
+                        send_feed_event(&mut ps_event, w_ent, &last_char, &mut dbp);
                         *in_cr = true;
                         break;
                     }
@@ -176,9 +141,9 @@ pub fn add_new_text(
 }
 
 pub fn initialize_typing_data(
-    last_data: &LastTextData,
+    last_data: &TextQuery,
     text_box_entity: Entity,
-) -> (Option<Entity>, Option<Entity>, f32, f32, TypingTimer) {
+) -> (Option<Entity>, LastChar) {
     let last_line_data_opt = last_data.line.iter().find(|x| x.3.get() == text_box_entity);
     let last_line_opt = last_line_data_opt.map(|x| x.0);
     let last_text_data_opt = last_data
@@ -211,23 +176,22 @@ pub fn initialize_typing_data(
     let last_y = last_line_data_opt
         .map(|l| l.1.translation.y)
         .unwrap_or_default();
-    (last_line_opt, last_text_opt, last_x, last_y, last_timer)
+    let char_pos = CharPos { x: last_x, y: last_y };
+    (last_line_opt, LastChar { entity: last_text_opt, pos: char_pos, timer: last_timer} )
 }
 
 fn send_feed_event(
     fw_event: &mut EventWriter<FeedWaitingEvent>,
     entity: Entity,
-    last_timer: &TypingTimer,
-    ws: &mut DialogBoxPhase,
-    last_x: f32,
-    last_y: f32,
+    last_char: &LastChar,
+    dbp: &mut DialogBoxPhase,
 ) {
     fw_event.send(FeedWaitingEvent {
         target_window: entity,
-        wait_sec: last_timer.timer.remaining_secs(),
-        last_pos: Vec2::new(last_x, last_y),
+        wait_sec: last_char.timer.timer.remaining_secs(),
+        last_pos: Vec2::new(last_char.pos.x, last_char.pos.y),
     });
-    *ws = DialogBoxPhase::WaitingAction;
+    *dbp = DialogBoxPhase::WaitingAction;
 }
 
 fn get_next_order(
@@ -243,24 +207,21 @@ fn get_next_order(
     }
 }
 
-fn make_new_text(
+fn add_char(
+    commands: &mut Commands,
     new_word: char,
-    config: &TypeTextConfig,
-    last_x: &mut f32,
-    last_y: f32,
-    last_timer: &mut TypingTimer,
-    font_assets: &Assets<Font>,
-    max_width: f32,
-) -> Option<CharBundle> {
+    (config, last_char, font_assets, width, last_line_opt): 
+        (&TypeTextConfig, &mut LastChar, &Assets<Font>, f32, Option<Entity>),
+) -> bool {
     let font_conf = choice_font_with_index(&config.fonts, new_word, font_assets);
     let font_index = font_conf.clone().map(|x| x.0).unwrap_or_default();
     let size_coefficient = config.size_by_fonts.get(font_index).unwrap_or(&1.0);
     let kerning_coefficient = config.kerning_by_fonts.get(font_index).unwrap_or(&0.0);
     let true_size = config.text_style.font_size * size_coefficient;
     let kerning = true_size * kerning_coefficient;
-    let target_x = *last_x + true_size + kerning;
-    if target_x > max_width {
-        None
+    let target_x = last_char.pos.x + true_size + kerning;
+    if target_x > width {
+        false
     } else {
         let text_style = TextStyle {
             font: font_conf.clone().map(|x| x.1).unwrap_or_default(),
@@ -269,22 +230,17 @@ fn make_new_text(
         };
         let text2d_bundle = Text2dBundle {
             text: Text::from_section(new_word.to_string(), text_style),
-            transform: Transform::from_translation(Vec3::new(*last_x, 0., 0.)),
+            transform: Transform::from_translation(Vec3::new(last_char.pos.x, 0., 0.)),
             visibility: Visibility::Hidden,
             text_anchor: Anchor::BottomLeft,
             ..default()
         };
-        let last_secs = last_timer.timer.remaining_secs();
+        let last_secs = last_char.timer.timer.remaining_secs();
         let type_sec = match config.typing_timing {
             TypingTiming::ByChar { sec: s } => last_secs + s,
             TypingTiming::ByLine { sec: s } => {
-                let is_first_char = last_y >= -true_size;
-                last_secs
-                    + if *last_x == 0. && !is_first_char {
-                        s
-                    } else {
-                        0.0
-                    }
+                let is_first_char = last_char.pos.y >= -true_size;
+                last_secs + if last_char.pos.x == 0. && !is_first_char { s } else { 0.0 }
             }
             _ => 0.0,
         };
@@ -294,45 +250,63 @@ fn make_new_text(
         let font = &font_assets.get(font_conf.unwrap().1).unwrap().font;
         let pt_per_height = true_size / font.height_unscaled();
         let advance = pt_per_height * font.h_advance_unscaled(font.glyph_id(new_word));
-        let next_x = *last_x + advance + kerning;
-        *last_x = if config.monospace { target_x } else { next_x };
-        *last_timer = typing_timer.clone();
-        Some(CharBundle {
+        let next_x = last_char.pos.x + advance + kerning;
+        last_char.pos.x = if config.monospace { target_x } else { next_x };
+        last_char.timer = typing_timer.clone();
+        let new_char = CharBundle {
             text_char: MessageTextChar,
             timer: typing_timer,
             text2d: text2d_bundle,
             layer: config.layer,
             writing: config.writing,
-        })
+        };
+        if let Some(last_line) =  last_line_opt {
+            let new_char_entity = commands.spawn((new_char, Current)).id();
+            if let Some(last_text) = last_char.entity {
+                commands.entity(last_text).remove::<Current>();
+            }
+            last_char.entity = Some(new_char_entity);
+            commands.entity(last_line).add_child(new_char_entity);
+            true
+        } else {
+            false
+        }
     }
 }
 
-fn make_empty_line(
-    config: &TypeTextConfig,
-    last_x: &mut f32,
-    last_y: &mut f32,
-    min_height: f32,
-) -> Option<LineBundle> {
-    *last_x = 0.;
-    *last_y -= config.text_style.font_size;
-    if *last_y < -min_height {
-        None
+fn add_empty_line(
+    commands: &mut Commands,
+    (config, last_char, min_height, last_line_opt): 
+        (&TypeTextConfig, &mut LastChar, f32, &mut Option<Entity>),
+    tb_ent: Entity,
+) -> bool {
+    last_char.pos.x = 0.;
+    last_char.pos.y -= config.text_style.font_size;
+    if last_char.pos.y < -min_height {
+        false
     } else {
         let sprite_bundle = SpriteBundle {
             sprite: Sprite {
                 anchor: Anchor::BottomLeft,
                 ..default()
             },
-            transform: Transform::from_translation(Vec3::new(0., *last_y, config.pos_z)),
+            transform: Transform::from_translation(Vec3::new(0., last_char.pos.y, config.pos_z)),
             ..default()
         };
-        Some(LineBundle {
+        let new_line = LineBundle {
             sprites: sprite_bundle,
             line: MessageTextLine {
                 horizon_alignment: config.horizon_alignment,
                 vertical_alignment: config.vertical_alignment,
             },
-        })
+        };
+        let new_line_entity = commands.spawn((new_line, Current)).id();
+        if let Some(last_line) = last_line_opt {
+            commands.entity(*last_line).remove::<Current>();
+        }
+        *last_line_opt = Some(new_line_entity);
+        commands.entity(tb_ent).add_child(new_line_entity);
+        true
     }
 }
 

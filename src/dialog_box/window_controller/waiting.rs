@@ -27,7 +27,7 @@ pub fn simple_wait(
     w_icon_query: Query<(Entity, &WaitingIcon)>,
     text_area_query: Query<(Entity, &TextArea, &GlobalTransform, &Sprite, &Parent), With<Current>>,
     selected_query: Query<Entity, With<Selected>>,
-    last_data: LastTextData,
+    last_data: TextQuery,
     mut bds_reader: EventReader<BdsEvent>,
     type_registry: Res<AppTypeRegistry>,
 ) {
@@ -57,12 +57,12 @@ pub fn simple_wait(
                     };
                     commands.entity(ta_entity).insert(wig);
                 }
-                let (_, _, _, _, last_timer) = initialize_typing_data(&last_data, ta_entity);
+                let (_, last_char) = initialize_typing_data(&last_data, ta_entity);
                 let ic_opt = w_icon_query
                     .iter()
                     .find(|x| x.1.target_box_name == *db_name);
                 if let Some((ic_entity, _)) = ic_opt {
-                    let time = last_timer.timer.remaining_secs();
+                    let time = last_char.timer.timer.remaining_secs();
                     let tt = TypingTimer {
                         timer: Timer::from_seconds(time, TimerMode::Once),
                     };
@@ -146,7 +146,7 @@ pub fn settle_wating_icon(
         ),
     >,
     settle_icon_query: Query<(Entity, &WaitingIcon), With<Settled>>,
-    last_data: LastTextData,
+    last_data: TextQuery,
 ) {
     for (mw_entity, ws, wbs, DialogBox { name: db_name }) in &window_query {
         if let WaitBrakerStyle::Input {
@@ -160,8 +160,17 @@ pub fn settle_wating_icon(
                         if let Some((tb_entity, _, config)) =
                             text_box_query.iter().find(|(_, p, _)| p.get() == mw_entity)
                         {
-                            let (_, _, last_x, last_y, _) =
-                                initialize_typing_data(&last_data, tb_entity);
+                            let (
+                                _,
+                                LastChar {
+                                    pos:
+                                        CharPos {
+                                            x: last_x,
+                                            y: last_y,
+                                        },
+                                    ..
+                                },
+                            ) = initialize_typing_data(&last_data, tb_entity);
                             if *move_flag {
                                 ic_tf.translation =
                                     Vec3::new(last_x + config.text_style.font_size, last_y, 1.);

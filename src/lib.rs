@@ -5,6 +5,6 @@ mod read_script;
 pub mod ui_templates;
 mod utility;
 
-pub use debug::*;
-pub use dialog_box::*;
-pub use ui_templates::*;
+pub mod prelude {
+    pub use crate::{debug::*, dialog_box::*, ui_templates::*};
+}
