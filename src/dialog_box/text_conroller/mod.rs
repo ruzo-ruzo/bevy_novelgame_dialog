@@ -258,7 +258,7 @@ fn add_char(
         };
         let text2d_bundle = Text2dBundle {
             text: Text::from_section(new_word.to_string(), text_style),
-            transform: Transform::from_translation(Vec3::new(last_char.pos.x, 0., 0.)),
+            transform: Transform::from_translation(Vec3::new(last_char.pos.x, 0.0, 0.0)),
             visibility: Visibility::Hidden,
             text_anchor: Anchor::BottomLeft,
             ..default()
@@ -268,12 +268,11 @@ fn add_char(
             TypingTiming::ByChar { sec: s } => last_secs + s,
             TypingTiming::ByLine { sec: s } => {
                 let is_first_char = last_char.pos.y >= -true_size;
-                last_secs
-                    + if last_char.pos.x == 0. && !is_first_char {
-                        s
-                    } else {
-                        0.0
-                    }
+                if last_char.pos.x == 0. && !is_first_char {
+                    last_secs + s
+                } else {
+                    last_secs + 0.0
+                }
             }
             _ => 0.0,
         };
