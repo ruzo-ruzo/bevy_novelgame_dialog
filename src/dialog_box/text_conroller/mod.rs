@@ -57,18 +57,29 @@ pub struct LastChar {
 #[allow(clippy::type_complexity)]
 pub struct TextQuery<'w, 's> {
     text: Query<'w, 's, CharData, (With<Current>, With<MessageTextChar>)>,
-    line: Query<'w, 's, LineData,  (With<Current>, With<MessageTextLine>)>,
+    line: Query<'w, 's, LineData, (With<Current>, With<MessageTextLine>)>,
 }
 
-type CharData = (Entity, &'static Transform, &'static Text, &'static TypingTimer, &'static Parent);
+type CharData = (
+    Entity,
+    &'static Transform,
+    &'static Text,
+    &'static TypingTimer,
+    &'static Parent,
+);
 type LineData = (Entity, &'static Transform, &'static Sprite, &'static Parent);
 
 #[derive(SystemParam, Debug)]
-pub struct  CurrentTextAreaQuery<'w, 's> {
+pub struct CurrentTextAreaQuery<'w, 's> {
     area: Query<'w, 's, AreaData, (With<Current>, With<TextArea>)>,
 }
 
-type AreaData = (Entity, &'static Sprite, &'static TypeTextConfig, &'static Parent,);
+type AreaData = (
+    Entity,
+    &'static Sprite,
+    &'static TypeTextConfig,
+    &'static Parent,
+);
 
 pub fn add_new_text(
     mut commands: Commands,
@@ -91,7 +102,10 @@ pub fn add_new_text(
                 continue;
             }
             let (mut last_line_opt, mut last_char) = initialize_typing_data(&last_data, tb_ent);
-            let Vec2 {x: width, y: height} = tb_spr.custom_size.unwrap_or_default();
+            let Vec2 {
+                x: width,
+                y: height,
+            } = tb_spr.custom_size.unwrap_or_default();
             loop {
                 let next_order = get_next_order(&pending, &mut script.order_list, *in_cr);
                 match next_order {
@@ -109,7 +123,7 @@ pub fn add_new_text(
                         };
                     }
                     Some(Order::CarriageReturn) => {
-                        let line_config = (config, &mut last_char, height,  &mut last_line_opt);
+                        let line_config = (config, &mut last_char, height, &mut last_line_opt);
                         if add_empty_line(&mut commands, line_config, tb_ent) {
                             *in_cr = false;
                         } else {
@@ -117,7 +131,6 @@ pub fn add_new_text(
                             *in_cr = true;
                             break;
                         };
-
                     }
                     Some(Order::PageFeed) => {
                         send_feed_event(&mut ps_event, w_ent, &last_char, &mut dbp);
@@ -176,8 +189,18 @@ pub fn initialize_typing_data(
     let last_y = last_line_data_opt
         .map(|l| l.1.translation.y)
         .unwrap_or_default();
-    let char_pos = CharPos { x: last_x, y: last_y };
-    (last_line_opt, LastChar { entity: last_text_opt, pos: char_pos, timer: last_timer} )
+    let char_pos = CharPos {
+        x: last_x,
+        y: last_y,
+    };
+    (
+        last_line_opt,
+        LastChar {
+            entity: last_text_opt,
+            pos: char_pos,
+            timer: last_timer,
+        },
+    )
 }
 
 fn send_feed_event(
@@ -210,8 +233,13 @@ fn get_next_order(
 fn add_char(
     commands: &mut Commands,
     new_word: char,
-    (config, last_char, font_assets, width, last_line_opt): 
-        (&TypeTextConfig, &mut LastChar, &Assets<Font>, f32, Option<Entity>),
+    (config, last_char, font_assets, width, last_line_opt): (
+        &TypeTextConfig,
+        &mut LastChar,
+        &Assets<Font>,
+        f32,
+        Option<Entity>,
+    ),
 ) -> bool {
     let font_conf = choice_font_with_index(&config.fonts, new_word, font_assets);
     let font_index = font_conf.clone().map(|x| x.0).unwrap_or_default();
@@ -240,7 +268,12 @@ fn add_char(
             TypingTiming::ByChar { sec: s } => last_secs + s,
             TypingTiming::ByLine { sec: s } => {
                 let is_first_char = last_char.pos.y >= -true_size;
-                last_secs + if last_char.pos.x == 0. && !is_first_char { s } else { 0.0 }
+                last_secs
+                    + if last_char.pos.x == 0. && !is_first_char {
+                        s
+                    } else {
+                        0.0
+                    }
             }
             _ => 0.0,
         };
@@ -260,7 +293,7 @@ fn add_char(
             layer: config.layer,
             writing: config.writing,
         };
-        if let Some(last_line) =  last_line_opt {
+        if let Some(last_line) = last_line_opt {
             let new_char_entity = commands.spawn((new_char, Current)).id();
             if let Some(last_text) = last_char.entity {
                 commands.entity(last_text).remove::<Current>();
@@ -276,8 +309,12 @@ fn add_char(
 
 fn add_empty_line(
     commands: &mut Commands,
-    (config, last_char, min_height, last_line_opt): 
-        (&TypeTextConfig, &mut LastChar, f32, &mut Option<Entity>),
+    (config, last_char, min_height, last_line_opt): (
+        &TypeTextConfig,
+        &mut LastChar,
+        f32,
+        &mut Option<Entity>,
+    ),
     tb_ent: Entity,
 ) -> bool {
     last_char.pos.x = 0.;
