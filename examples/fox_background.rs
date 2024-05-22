@@ -6,7 +6,7 @@ fn main() {
     App::new()
         .add_plugins((
             DefaultPlugins,
-            ui_templates::RPGStyleUIPlugin::default(),
+            RPGStyleUIPlugin::default(),
             fox_background::FoxBackgroundPlugin,
             DebugTextAreaPlugin,
         ))
@@ -30,7 +30,7 @@ fn start_message(
 
 mod fox_background {
     use bevy::{pbr::CascadeShadowConfigBuilder, prelude::*, utils::Duration};
-    use bevy_novelgame_dialog::bds::*;
+    use bevy_novelgame_dialog::prelude::bds::*;
     use std::f32::consts::PI;
 
     pub struct FoxBackgroundPlugin;
