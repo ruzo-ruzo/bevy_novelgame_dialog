@@ -25,7 +25,7 @@ pub fn read_script<S1: AsRef<str>, S2: AsRef<str>>(
     for t in templates {
         replaced = replace_by_template(replaced, t);
     }
-    print!("{replaced}");
+    // print!("{replaced}");
     read_bds(replaced)
 }
 

@@ -5,12 +5,13 @@
         next_current_text_area_name: ${name_area},
     ),
 }</script>
-[^feed]${name}
+[^feed]${name}[empty]
 <script>{
     ""bevy_novelgame_dialog::dialog_box::public::events::bds::ChangeCurrentTextAreaInCurrentBox"": (
         next_current_text_area_name: ${main_area},
     ),
 }</script>
+[empty]
 [^feed]"
 "\[close scale: (?<num>.*?)\]","<script>{
     ""bevy_novelgame_dialog::dialog_box::public::events::bds::SinkDownWindow"": (
@@ -31,6 +32,7 @@
 "\[\^feed\]","<script>{
     ""bevy_novelgame_dialog::dialog_box::public::events::bds::writing::ForceFeedingCurrentBox"": (),
 }</script>"
+"\[empty\]","<script>{}</script>"
 "\[.*?\]:.*?",""
 "\[(?<text>.*?)\]\((?<jump>.*?)\)","${text}(${jump})"
 "\((?<jump>.*?)\?dialog_box=(?<target>.*?)\)","(${jump} ""${target}"")"

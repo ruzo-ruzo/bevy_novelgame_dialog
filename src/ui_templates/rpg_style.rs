@@ -1,5 +1,5 @@
-use crate::public::*;
-use crate::*;
+use crate::prelude::public::*;
+use crate::prelude::*;
 use bevy::prelude::*;
 
 #[derive(Resource, Default)]
@@ -24,7 +24,7 @@ impl Default for RPGStyleUIPlugin {
 
 impl Plugin for RPGStyleUIPlugin {
     fn build(&self, app: &mut App) {
-        app.add_plugins(dialog_box::DialogBoxPlugin {
+        app.add_plugins(DialogBoxPlugin {
             layer_num: self.layer_num,
             render_order: self.render_order,
         })

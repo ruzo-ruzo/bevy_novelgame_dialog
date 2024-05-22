@@ -1,12 +1,12 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 use bevy::prelude::*;
-use bevy_novelgame_dialog::*;
+use bevy_novelgame_dialog::prelude::*;
 
 fn main() {
     App::new()
         .add_plugins((
             DefaultPlugins,
-            ui_templates::RPGStyleUIPlugin::default(),
+            RPGStyleUIPlugin::default(),
             models_controller::ModelsControllerPlugin,
             DebugTextAreaPlugin,
         ))
@@ -29,7 +29,7 @@ fn start_message(
 
 mod models_controller {
     use bevy::{gltf::Gltf, pbr::CascadeShadowConfigBuilder, prelude::*, utils::Duration};
-    use bevy_novelgame_dialog::public::bds::*;
+    use bevy_novelgame_dialog::prelude::public::bds::*;
     use std::collections::HashMap;
     use std::f32::consts::TAU;
 
