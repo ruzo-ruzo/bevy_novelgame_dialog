@@ -1,0 +1,38 @@
+"<h2 main_area=(?<main_area>.*?) name_area=(?<name_area>(?s:.)*?)>","<h2 name_area=${name_area} main_area=${main_area}>"
+"<h2 name_area=(?<name_area>.*?) main_area=(?<main_area>.*?)>(?<name>(?s:.)*?)</h2>","
+<script>{
+    ""bevy_novelgame_dialog::dialog_box::public::events::bds::ChangeCurrentTextAreaInCurrentBox"": (
+        next_current_text_area_name: ${name_area},
+    ),
+}</script>
+[^feed]${name}[empty]
+<script>{
+    ""bevy_novelgame_dialog::dialog_box::public::events::bds::ChangeCurrentTextAreaInCurrentBox"": (
+        next_current_text_area_name: ${main_area},
+    ),
+}</script>
+[empty]
+[^feed]"
+"\[close scale: (?<num>.*?)\]","<script>{
+    ""bevy_novelgame_dialog::dialog_box::public::events::bds::SinkDownWindow"": (
+    sink_type: Scale(
+            sec: ${num},
+        ),
+    ),
+}</script>"
+"\[jump\]",""
+"\[\^wait\]","<script>{
+    ""bevy_novelgame_dialog::dialog_box::public::events::bds::SimpleWait"":(),
+}</script>"
+"\[\^signal\((?<signal>.*?)\)\]","<script>{
+    ""bevy_novelgame_dialog::dialog_box::public::events::bds::SimpleStringSignal"": (
+        signal: ""${signal}"",
+    ),
+}</script>"
+"\[\^feed\]","<script>{
+    ""bevy_novelgame_dialog::dialog_box::public::events::bds::writing::ForceFeedingCurrentBox"": (),
+}</script>"
+"\[empty\]","<script>{}</script>"
+"\[.*?\]:.*?",""
+"\[(?<text>.*?)\]\((?<jump>.*?)\)","${text}(${jump})"
+"\((?<jump>.*?)\?dialog_box=(?<target>.*?)\)","(${jump} ""${target}"")"
