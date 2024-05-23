@@ -22,6 +22,9 @@ pub struct ScrollFeed {
     pub count: usize,
 }
 
+// 改ページを読み込んだ時点でTextAreaにInputForFeedingを発行するWaitInputGoをセットします。
+// InputForFeedingはWaitInputGo内のInputForSkipping内にあり、Skip後の動作として登録されます。
+// 発行される時点ではtypeが終わっていない可能性が高いからです。
 #[allow(clippy::type_complexity)]
 pub fn setup_feed_starter(
     mut commands: Commands,
