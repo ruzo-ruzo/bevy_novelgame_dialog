@@ -1,0 +1,14 @@
+"\[\^close\]","[close scale: 0.8]"
+"\*(?<t>.*?)\*","<script>{
+    ""bevy_novelgame_dialog::dialog_box::public::events::bds::writing::ChangeFontSize"": (
+        size: 35.0,
+),}</script>
+$t
+<script>{
+    ""bevy_novelgame_dialog::dialog_box::public::events::bds::writing::ChangeFontSize"": (
+        size: 27.0,
+)}</script>"
+"\((?<jump>.*?)\)\r\n","(scripts/${jump}?dialog_box=Main Box)
+"
+"(?m)^(?<name>.*?)\n-{2,}","## ${name}"
+"(?m)## (?<name>.*?)$","<h2 name_area=""Name Area"" main_area=""Main Area"">${name}</h2>"
