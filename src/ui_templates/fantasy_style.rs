@@ -1,7 +1,7 @@
 use crate::prelude::public::*;
 use crate::prelude::*;
-use bevy::prelude::*;
 use bevy::asset::embedded_asset;
+use bevy::prelude::*;
 
 const ASSETS_PATH: &str = "embedded://bevy_novelgame_dialog/ui_templates/assets/";
 
@@ -61,13 +61,31 @@ impl Plugin for EmbeddedAssetPlugin {
         embedded_asset!(app, "assets/fantasy_style/textures/ui/dialog_box_02.png");
         embedded_asset!(app, "assets/fantasy_style/textures/ui/name_plate.png");
         embedded_asset!(app, "assets/fantasy_style/textures/ui/cursor.png");
-        embedded_asset!(app, "assets/fantasy_style/textures/ui/choice_buttons/button_default.png");
-        embedded_asset!(app, "assets/fantasy_style/textures/ui/choice_buttons/button_pushed.png");
-        embedded_asset!(app, "assets/fantasy_style/textures/ui/choice_buttons/choicing_frame.png");
-        embedded_asset!(app, "assets/fantasy_style/fonts/UnifrakturMaguntia/UnifrakturMaguntia-Regular.ttf");
-        embedded_asset!(app, "assets/fantasy_style/fonts/赤薔薇/akabara-cinderella.ttf");
+        embedded_asset!(
+            app,
+            "assets/fantasy_style/textures/ui/choice_buttons/button_default.png"
+        );
+        embedded_asset!(
+            app,
+            "assets/fantasy_style/textures/ui/choice_buttons/button_pushed.png"
+        );
+        embedded_asset!(
+            app,
+            "assets/fantasy_style/textures/ui/choice_buttons/choicing_frame.png"
+        );
+        embedded_asset!(
+            app,
+            "assets/fantasy_style/fonts/UnifrakturMaguntia/UnifrakturMaguntia-Regular.ttf"
+        );
+        embedded_asset!(
+            app,
+            "assets/fantasy_style/fonts/赤薔薇/akabara-cinderella.ttf"
+        );
         embedded_asset!(app, "assets/fantasy_style/fonts/网风雅宋/网风雅宋.ttf");
-        embedded_asset!(app, "assets/fantasy_style/fonts/noto/NotoEmoji-VariableFont_wght.ttf");
+        embedded_asset!(
+            app,
+            "assets/fantasy_style/fonts/noto/NotoEmoji-VariableFont_wght.ttf"
+        );
     }
 }
 
@@ -196,7 +214,8 @@ fn animate_sprite(
 }
 
 fn setup_messageframe(mut commands: Commands, asset_server: Res<AssetServer>) {
-    let dialog_box_image_handle = asset_server.load(ASSETS_PATH.to_owned() + "fantasy_style/textures/ui/dialog_box_02.png");
+    let dialog_box_image_handle =
+        asset_server.load(ASSETS_PATH.to_owned() + "fantasy_style/textures/ui/dialog_box_02.png");
     let dialog_box_slice = ImageScaleMode::Sliced(TextureSlicer {
         border: BorderRect::rectangle(55.0, 71.0),
         ..default()
@@ -226,7 +245,8 @@ fn setup_name_plate(
     mut is_setup: Local<bool>,
 ) {
     if !*is_setup {
-        let name_plate_image_handle = asset_server.load(ASSETS_PATH.to_owned() + "fantasy_style/textures/ui/name_plate.png");
+        let name_plate_image_handle =
+            asset_server.load(ASSETS_PATH.to_owned() + "fantasy_style/textures/ui/name_plate.png");
         for (
             dbb_entity,
             DialogBoxBackground {
@@ -307,8 +327,7 @@ fn setup_choice_images(
     let box_image_path = "fantasy_style/textures/ui/dialog_box_01.png";
     let button_image_handle = asset_server.load(ASSETS_PATH.to_owned() + button_image_path);
     let pushed_image_handle = asset_server.load(ASSETS_PATH.to_owned() + pushed_image_path);
-    let choicing_frame_image_handle =
-        asset_server.load(ASSETS_PATH.to_owned() + frame_image_path );
+    let choicing_frame_image_handle = asset_server.load(ASSETS_PATH.to_owned() + frame_image_path);
     let dialog_box_image_handle = asset_server.load(ASSETS_PATH.to_owned() + box_image_path);
     let button_slice = ImageScaleMode::Sliced(TextureSlicer {
         border: BorderRect::square(30.),
