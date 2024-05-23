@@ -35,10 +35,13 @@ impl Default for DialogBoxPlugin {
     }
 }
 
+// FireはEventを発行します。
+// ProgressはEventを受け取って実行します。
+// SettingはProgressの挙動を変えかねない設定（CurrentやDialogBoxPhase）を変更します。
 #[derive(SystemSet, Debug, Hash, PartialEq, Eq, Clone)]
 enum PhaseSet {
-    Setting,
     Progress,
+    Setting,
     Fire,
 }
 
@@ -84,11 +87,19 @@ impl Plugin for DialogBoxPlugin {
                 (PhaseSet::Progress, PhaseSet::Setting, PhaseSet::Fire).chain(),
             )
             .add_systems(Startup, setup_camera)
+            .add_systems(Update, settle_wating_icon.in_set(PhaseSet::Progress))
+            .add_systems(Update, settle_lines.in_set(PhaseSet::Progress))
+            .add_systems(Update, text_wipe.in_set(PhaseSet::Progress))
+            .add_systems(Update, hide_waiting_icon.in_set(PhaseSet::Progress))
+            .add_systems(Update, scaling_up.in_set(PhaseSet::Progress))
+            .add_systems(Update, scaling_down.in_set(PhaseSet::Progress))
+            .add_systems(Update, scroll_lines.in_set(PhaseSet::Progress))
+            .add_systems(Update, simple_wait.in_set(PhaseSet::Progress))
+            .add_systems(Update, skip_typing_or_next.in_set(PhaseSet::Progress))
             .add_systems(Update, script_on_load.in_set(PhaseSet::Setting))
             .add_systems(Update, trigger_type_animation.in_set(PhaseSet::Setting))
             .add_systems(Update, setup_feed_starter.in_set(PhaseSet::Setting))
             .add_systems(Update, setup_window_sink.in_set(PhaseSet::Setting))
-            .add_systems(Update, skip_typing_or_next.in_set(PhaseSet::Setting))
             .add_systems(Update, waiting_icon_setting.in_set(PhaseSet::Setting))
             .add_systems(Update, start_feeding.in_set(PhaseSet::Setting))
             .add_systems(Update, restart_typing.in_set(PhaseSet::Setting))
@@ -106,14 +117,6 @@ impl Plugin for DialogBoxPlugin {
                 Update,
                 reinstatement_external_entities.in_set(PhaseSet::Setting),
             )
-            .add_systems(Update, settle_wating_icon.in_set(PhaseSet::Progress))
-            .add_systems(Update, settle_lines.in_set(PhaseSet::Progress))
-            .add_systems(Update, text_wipe.in_set(PhaseSet::Progress))
-            .add_systems(Update, hide_waiting_icon.in_set(PhaseSet::Progress))
-            .add_systems(Update, scaling_up.in_set(PhaseSet::Progress))
-            .add_systems(Update, scaling_down.in_set(PhaseSet::Progress))
-            .add_systems(Update, scroll_lines.in_set(PhaseSet::Progress))
-            .add_systems(Update, simple_wait.in_set(PhaseSet::Progress))
             .add_systems(Update, open_window.in_set(PhaseSet::Fire))
             .add_systems(Update, open_choice_box.in_set(PhaseSet::Fire))
             .add_systems(Update, load_bds.in_set(PhaseSet::Fire))

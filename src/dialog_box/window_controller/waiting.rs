@@ -17,6 +17,8 @@ pub struct InputForSkipping {
     pub text_area_name: String,
 }
 
+// SimpleWaitが発行された時のCurrentのTextAreaにBreakWaitを詰めたWaitInputGoを設定します。
+// SimpleWaitが飛んでる間にCurrentのTextAreaが変更されていない事を期待しています。
 #[allow(clippy::type_complexity)]
 pub fn simple_wait(
     mut commands: Commands,
@@ -190,6 +192,11 @@ pub fn settle_wating_icon(
     }
 }
 
+// WaitingAction中のみ作動します。（Feeding中にはskip_feedingが作動します）
+// InputForSkippingを受け取り、すでに全ての文字の表示が終わっていれば内部のronをBSDEventとして発行します。
+// 文字の表示が終わっていなければ、WaitInputGo内にInputForSkippingを詰めてTextAreaにつけ直します。
+// その後当該TextArea内の文字を強制的に表示し終えます。
+// これをトリガーするInputForSkippingはSimpleWait経由で発行されていることが期待されています。
 #[allow(clippy::type_complexity)]
 pub fn skip_typing_or_next(
     mut commands: Commands,

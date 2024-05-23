@@ -5,13 +5,12 @@
         next_current_text_area_name: ${name_area},
     ),
 }</script>
-[^feed]${name}[empty]
+[^feed]${name}
 <script>{
     ""bevy_novelgame_dialog::dialog_box::public::events::bds::ChangeCurrentTextAreaInCurrentBox"": (
         next_current_text_area_name: ${main_area},
     ),
 }</script>
-[empty]
 [^feed]"
 "\[close scale: (?<num>.*?)\]","<script>{
     ""bevy_novelgame_dialog::dialog_box::public::events::bds::SinkDownWindow"": (
