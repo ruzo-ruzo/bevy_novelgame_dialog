@@ -1,2 +1,2 @@
-pub mod rpg_style;
-pub use rpg_style::*;
+pub mod fantasy_style;
+pub use fantasy_style::*;
