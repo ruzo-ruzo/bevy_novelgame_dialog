@@ -4,7 +4,7 @@ use super::super::*;
 // Entity直でぶち込むの正直あんまりお行儀良くはない。
 #[derive(Event, Debug)]
 pub struct FeedWaitingEvent {
-    pub target_box: Entity,
+    pub target_box_name: String,
     pub wait_sec: f32,
     pub last_pos: Vec2,
 }
@@ -41,7 +41,7 @@ pub fn setup_feed_starter(
     for event in waitting_event.read() {
         for (db_entity, wbs, DialogBox { name: db_name }) in &dialog_box_query {
             for (ta_entity, ta, parent, tb_tf, tb_sp) in &text_box_query {
-                if event.target_box == db_entity && db_entity == parent.get() {
+                if event.target_box_name == *db_name && db_entity == parent.get() {
                     match wbs {
                         WaitBrakerStyle::Auto { wait_sec: break_ws } => {
                             commands.entity(ta_entity).insert(WaitFeedingTrigger {
