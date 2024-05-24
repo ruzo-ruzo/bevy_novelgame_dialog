@@ -83,7 +83,7 @@ type AreaData = (
 
 pub fn add_new_text(
     mut commands: Commands,
-    mut dialog_box_query: Query<(Entity, &mut LoadedScript, &mut DialogBoxPhase)>,
+    mut dialog_box_query: Query<(Entity, &DialogBox, &mut LoadedScript, &mut DialogBoxPhase)>,
     text_area_query: CurrentTextAreaQuery,
     last_data: TextQuery,
     app_type_registry: Res<AppTypeRegistry>,
@@ -93,7 +93,7 @@ pub fn add_new_text(
     mut pending: Local<Option<Order>>,
     mut in_cr: Local<bool>,
 ) {
-    for (w_ent, mut script, mut dbp) in &mut dialog_box_query {
+    for (w_ent, DialogBox { name: w_name }, mut script, mut dbp) in &mut dialog_box_query {
         if *dbp != DialogBoxPhase::Typing {
             continue;
         }
@@ -127,13 +127,13 @@ pub fn add_new_text(
                         if add_empty_line(&mut commands, line_config, tb_ent) {
                             *in_cr = false;
                         } else {
-                            send_feed_event(&mut ps_event, w_ent, &last_char, &mut dbp);
+                            send_feed_event(&mut ps_event, w_name, &last_char, &mut dbp);
                             *in_cr = true;
                             break;
                         };
                     }
                     Some(Order::PageFeed) => {
-                        send_feed_event(&mut ps_event, w_ent, &last_char, &mut dbp);
+                        send_feed_event(&mut ps_event, w_name, &last_char, &mut dbp);
                         *in_cr = true;
                         break;
                     }
@@ -205,12 +205,12 @@ pub fn initialize_typing_data(
 
 fn send_feed_event(
     fw_event: &mut EventWriter<FeedWaitingEvent>,
-    entity: Entity,
+    name: &str,
     last_char: &LastChar,
     dbp: &mut DialogBoxPhase,
 ) {
     fw_event.send(FeedWaitingEvent {
-        target_box: entity,
+        target_box_name: name.to_string(),
         wait_sec: last_char.timer.timer.remaining_secs(),
         last_pos: Vec2::new(last_char.pos.x, last_char.pos.y),
     });
