@@ -210,7 +210,7 @@ fn send_feed_event(
     dbp: &mut DialogBoxPhase,
 ) {
     fw_event.send(FeedWaitingEvent {
-        target_window: entity,
+        target_box: entity,
         wait_sec: last_char.timer.timer.remaining_secs(),
         last_pos: Vec2::new(last_char.pos.x, last_char.pos.y),
     });

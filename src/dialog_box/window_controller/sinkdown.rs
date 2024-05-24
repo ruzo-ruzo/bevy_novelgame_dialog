@@ -156,7 +156,8 @@ pub fn scaling_down(
     }
 }
 
-// waiting iconだけ残すんじゃなくてlineとかだけ消す？（line以外の候補洗わないとだが）
+// waiting iconだけ残すんじゃなくてlineとかだけ消す？
+// （line以外の候補洗わないとだが。SelectedとかCurrentとか）
 pub fn despawn_dialog_box(
     mut commands: Commands,
     db_query: Query<(Entity, &DialogBox), With<Despawning>>,
