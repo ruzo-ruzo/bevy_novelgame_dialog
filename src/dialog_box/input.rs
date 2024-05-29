@@ -8,16 +8,16 @@ use bevy::window::PrimaryWindow;
 // ゲームパッド持ってないので全体的に挙動が未確認
 
 #[derive(Component, Debug)]
-pub struct Selected;
+pub(crate) struct Selected;
 
 #[derive(Component, Debug)]
-pub struct WaitInputGo {
+pub(in crate::dialog_box) struct WaitInputGo {
     pub ron: String,
     pub area: Rect,
 }
 
 #[derive(Component)]
-pub struct Selective {
+pub(in crate::dialog_box) struct Selective {
     pub key_vector: SelectVector,
     pub number: usize,
 }
@@ -25,7 +25,7 @@ pub struct Selective {
 // ToDo: 長押しで連続スキップできるようにしときたい
 // マウス連打の時だけなんかおかしくなる？
 #[allow(clippy::nonminimal_bool)]
-pub fn go_selected(
+pub(in crate::dialog_box) fn go_selected(
     mut commands: Commands,
     target_query: Query<(Entity, &WaitInputGo, &TextArea, &Parent), Without<Pending>>,
     dialog_box_query: Query<&DialogBox>,
@@ -87,7 +87,7 @@ pub fn go_selected(
 }
 
 // 流石に分割した方がいい気もする
-pub fn shift_selected(
+pub(in crate::dialog_box) fn shift_selected(
     mut commands: Commands,
     selective_query: Query<
         (Entity, &Selective, &TextArea, &WaitInputGo, &Parent),

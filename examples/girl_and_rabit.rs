@@ -1,6 +1,6 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 use bevy::prelude::*;
-use bevy_novelgame_dialog::prelude::*;
+use bevy_novelgame_dialog::{debug::DebugTextAreaPlugin, ui_templates::*};
 
 fn main() {
     App::new()
@@ -29,7 +29,7 @@ fn start_message(
 
 mod models_controller {
     use bevy::{gltf::Gltf, pbr::CascadeShadowConfigBuilder, prelude::*, utils::Duration};
-    use bevy_novelgame_dialog::prelude::public::bds::*;
+    use bevy_novelgame_dialog::prelude::*;
     use std::collections::HashMap;
     use std::f32::consts::TAU;
 

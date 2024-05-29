@@ -4,7 +4,7 @@ use bevy::render::view::RenderLayers;
 
 // Todo: 名前の重複を防ぐ機構を入れた方がいいかもしれない
 #[derive(Component)]
-pub struct ChoiceBoxState {
+pub(in crate::dialog_box) struct ChoiceBoxState {
     main_dialog_box_name: String,
     text_area_names: Vec<String>,
     choice_box_name: String,
@@ -15,22 +15,22 @@ pub struct ChoiceBoxState {
     background_scaling_anchor: Anchor,
 }
 
-#[derive(Event, Default, Debug, Reflect)]
-pub struct SetupChoice {
+#[derive(Event, Default, Reflect)]
+pub(in crate::dialog_box) struct SetupChoice {
     target_list: Vec<(String, String)>,
 }
 
-#[derive(Reflect, Default, Debug)]
-pub struct ChoosenEvent {
+#[derive(Reflect, Default)]
+pub(in crate::dialog_box) struct ChoosenEvent {
     pub choosen_event: String,
     pub choice_box_name: String,
 }
 
 #[derive(Component)]
-pub struct Choosable;
+pub(in crate::dialog_box) struct Choosable;
 
 #[allow(clippy::type_complexity)]
-pub fn open_choice_box(
+pub(in crate::dialog_box) fn open_choice_box(
     mut commands: Commands,
     mut db_query: Query<
         (&ChoiceBoxConfig, &mut DialogBoxPhase, &Children, &DialogBox),
@@ -184,7 +184,7 @@ fn make_choice_order(
     Some(parse_script(&script, &[""], ""))
 }
 
-pub fn setup_choice(
+pub(in crate::dialog_box) fn setup_choice(
     mut commands: Commands,
     cb_query: Query<(Entity, &ChoiceBoxState, &Children, &DialogBoxPhase), With<Current>>,
     ta_query: Query<(Entity, &TextArea, &GlobalTransform, &Sprite), Without<Selective>>,
@@ -230,7 +230,7 @@ fn get_rect(tf: &GlobalTransform, sp: &Sprite) -> Rect {
     Rect::from_corners(bottom_left, top_right)
 }
 
-pub fn close_choice_phase(
+pub(in crate::dialog_box) fn close_choice_phase(
     mut commands: Commands,
     cbs_query: Query<&ChoiceBoxState>,
     mut db_query: Query<(Entity, &DialogBox, &mut DialogBoxPhase)>,
@@ -268,7 +268,7 @@ pub fn close_choice_phase(
     }
 }
 
-pub fn reinstatement_external_entities(
+pub(in crate::dialog_box) fn reinstatement_external_entities(
     mut commands: Commands,
     cbs_query: Query<(Entity, &ChoiceBoxState), With<Choosable>>,
     cb_query: Query<(Entity, &ChoiceButton)>,

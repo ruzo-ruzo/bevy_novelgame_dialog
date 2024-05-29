@@ -6,21 +6,21 @@ use bevy::{
     sprite::Anchor,
 };
 
-pub mod feed_animation;
-pub mod typing_animations;
+pub(super) mod feed_animation;
+pub(super) mod typing_animations;
 
 use super::*;
 use crate::utility::*;
 use feed_animation::*;
 
 #[derive(Component)]
-pub struct MessageTextLine {
+pub(in crate::dialog_box) struct MessageTextLine {
     horizon_alignment: AlignHorizon,
     vertical_alignment: AlignVertical,
 }
 
 #[derive(Component, Debug)]
-pub struct MessageTextChar;
+pub(in crate::dialog_box) struct MessageTextChar;
 
 #[derive(Bundle, Debug)]
 struct CharBundle {
@@ -38,16 +38,16 @@ struct LineBundle {
 }
 
 #[derive(Component, Clone, Debug)]
-pub struct TypingTimer {
+pub(super) struct TypingTimer {
     pub timer: Timer,
 }
 
-pub struct CharPos {
+pub(super) struct CharPos {
     pub x: f32,
     pub y: f32,
 }
 
-pub struct LastChar {
+pub(super) struct LastChar {
     pub entity: Option<Entity>,
     pub pos: CharPos,
     pub timer: TypingTimer,
@@ -55,7 +55,7 @@ pub struct LastChar {
 
 #[derive(SystemParam, Debug)]
 #[allow(clippy::type_complexity)]
-pub struct TextQuery<'w, 's> {
+pub(super) struct TextQuery<'w, 's> {
     text: Query<'w, 's, CharData, (With<Current>, With<MessageTextChar>)>,
     line: Query<'w, 's, LineData, (With<Current>, With<MessageTextLine>)>,
 }
@@ -70,7 +70,7 @@ type CharData = (
 type LineData = (Entity, &'static Transform, &'static Sprite, &'static Parent);
 
 #[derive(SystemParam, Debug)]
-pub struct CurrentTextAreaQuery<'w, 's> {
+pub(super) struct CurrentTextAreaQuery<'w, 's> {
     area: Query<'w, 's, AreaData, (With<Current>, With<TextArea>)>,
 }
 
@@ -81,7 +81,7 @@ type AreaData = (
     &'static Parent,
 );
 
-pub fn add_new_text(
+pub(in crate::dialog_box) fn add_new_text(
     mut commands: Commands,
     mut dialog_box_query: Query<(Entity, &DialogBox, &mut LoadedScript, &mut DialogBoxPhase)>,
     text_area_query: CurrentTextAreaQuery,
@@ -153,7 +153,7 @@ pub fn add_new_text(
     }
 }
 
-pub fn initialize_typing_data(
+pub(in crate::dialog_box) fn initialize_typing_data(
     last_data: &TextQuery,
     text_box_entity: Entity,
 ) -> (Option<Entity>, LastChar) {
@@ -212,7 +212,7 @@ fn send_feed_event(
     fw_event.send(FeedWaitingEvent {
         target_box_name: name.to_string(),
         wait_sec: last_char.timer.timer.remaining_secs(),
-        last_pos: Vec2::new(last_char.pos.x, last_char.pos.y),
+        // last_pos: Vec2::new(last_char.pos.x, last_char.pos.y),
     });
     *dbp = DialogBoxPhase::WaitingAction;
 }
@@ -346,7 +346,7 @@ fn add_empty_line(
     }
 }
 
-pub fn settle_lines(
+pub(in crate::dialog_box) fn settle_lines(
     dialogbox_query: Query<(Entity, &DialogBoxPhase), With<DialogBox>>,
     mut text_lines: Query<(&MessageTextLine, &mut Transform), Without<MessageTextChar>>,
     text_char: Query<(&Text, &Transform), With<MessageTextChar>>,

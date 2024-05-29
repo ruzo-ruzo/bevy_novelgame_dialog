@@ -2,27 +2,27 @@ use super::*;
 use crate::dialog_box::*;
 
 #[derive(Component, Debug)]
-pub struct ScalingDown {
+pub(in crate::dialog_box) struct ScalingDown {
     pub sub_per_sec: f32,
 }
 
 #[derive(Component)]
-pub struct Despawning;
+pub(in crate::dialog_box) struct Despawning;
 
 #[derive(Component, Debug)]
-pub struct WaitSinkingTrigger {
+pub(in crate::dialog_box) struct WaitSinkingTrigger {
     pub sink_type: SinkDownType,
     pub timer: Timer,
 }
 
 #[derive(Reflect, Default, Event)]
-pub struct GoSinking {
+pub(in crate::dialog_box) struct GoSinking {
     pub dialog_box_name: String,
     pub sink_type: SinkDownType,
 }
 
 #[allow(clippy::type_complexity)]
-pub fn setup_window_sink(
+pub(in crate::dialog_box) fn setup_window_sink(
     mut commands: Commands,
     text_query: Query<(Entity, &TypingTimer), (With<Current>, With<MessageTextChar>)>,
     text_box_query: Query<(Entity, &TextArea, &GlobalTransform, &Sprite), With<Current>>,
@@ -79,7 +79,7 @@ pub fn setup_window_sink(
     }
 }
 
-pub fn trigger_window_sink_by_event(
+pub(in crate::dialog_box) fn trigger_window_sink_by_event(
     mut bds_reader: EventReader<BdsEvent>,
     mut gs_writer: EventWriter<GoSinking>,
 ) {
@@ -90,7 +90,7 @@ pub fn trigger_window_sink_by_event(
     }
 }
 
-pub fn trigger_window_sink_by_time(
+pub(in crate::dialog_box) fn trigger_window_sink_by_time(
     mut commands: Commands,
     mut db_query: Query<(Entity, &DialogBox, &mut WaitSinkingTrigger)>,
     time: Res<Time>,
@@ -107,7 +107,7 @@ pub fn trigger_window_sink_by_time(
     }
 }
 
-pub fn start_window_sink(
+pub(in crate::dialog_box) fn start_window_sink(
     mut commands: Commands,
     mut db_query: Query<(Entity, &DialogBox, &mut DialogBoxPhase)>,
     mut events: EventReader<GoSinking>,
@@ -137,7 +137,7 @@ pub fn start_window_sink(
 }
 
 // Todo: テキストが素っ頓狂な方向へ飛んでくの直したい
-pub fn scaling_down(
+pub(in crate::dialog_box) fn scaling_down(
     mut commands: Commands,
     mut db_query: Query<(Entity, &mut Transform, &ScalingDown)>,
     time: Res<Time>,
@@ -158,7 +158,7 @@ pub fn scaling_down(
 
 // waiting iconだけ残すんじゃなくてlineとかだけ消す？
 // （line以外の候補洗わないとだが。SelectedとかCurrentとか）
-pub fn despawn_dialog_box(
+pub(in crate::dialog_box) fn despawn_dialog_box(
     mut commands: Commands,
     db_query: Query<(Entity, &DialogBox), With<Despawning>>,
     w_icon_query: Query<&WaitingIcon>,
@@ -199,7 +199,7 @@ pub fn despawn_dialog_box(
 }
 
 #[allow(clippy::type_complexity)]
-pub fn remove_pending(
+pub(in crate::dialog_box) fn remove_pending(
     mut commands: Commands,
     mut pending_query: Query<(Entity, &mut DialogBoxPhase), (With<DialogBox>, With<Pending>)>,
     current_db_query: Query<&Current, (With<DialogBox>, Without<Pending>)>,

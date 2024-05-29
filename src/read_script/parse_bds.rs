@@ -17,7 +17,7 @@ enum ParsedOrder {
     Empty,
 }
 
-pub fn read_script<S1: AsRef<str>, S2: AsRef<str>>(
+pub(crate) fn read_script<S1: AsRef<str>, S2: AsRef<str>>(
     input: S1,
     templates: &[S2],
 ) -> HashMap<String, Vec<Order>> {
@@ -29,7 +29,7 @@ pub fn read_script<S1: AsRef<str>, S2: AsRef<str>>(
     read_bds(replaced)
 }
 
-pub fn parse_uri(uri: &str) -> (String, String) {
+pub(crate) fn parse_uri(uri: &str) -> (String, String) {
     let mut parser = separated_pair(take_until("#"), char('#'), many0(take(1usize)));
     let parsed: IResult<&str, (&str, Vec<&str>)> = parser(uri);
     if let Ok((_, (path, section_list))) = parsed {
@@ -40,7 +40,7 @@ pub fn parse_uri(uri: &str) -> (String, String) {
     }
 }
 
-pub fn read_bds<S: AsRef<str>>(input: S) -> HashMap<String, Vec<Order>> {
+pub(crate) fn read_bds<S: AsRef<str>>(input: S) -> HashMap<String, Vec<Order>> {
     let mut section_map = HashMap::new();
     let mut next_head = "".to_string();
     let mut next_list = vec![];

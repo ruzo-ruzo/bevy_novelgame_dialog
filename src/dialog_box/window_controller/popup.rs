@@ -2,7 +2,7 @@ use super::*;
 use crate::read_script::split_path_and_section;
 use bevy::render::view::{RenderLayers, Visibility::*};
 
-pub fn open_window(
+pub(in crate::dialog_box) fn open_window(
     mut commands: Commands,
     bg_query: Query<(Entity, &DialogBoxBackground)>,
     db_query: Query<Entity, (With<Current>, With<DialogBox>)>,
@@ -122,13 +122,13 @@ pub fn open_window(
     }
 }
 
-#[derive(Component, Debug)]
-pub struct ScalingUp {
+#[derive(Component)]
+pub(in crate::dialog_box) struct ScalingUp {
     pub add_per_sec: f32,
 }
 
 #[allow(clippy::type_complexity)]
-pub fn window_popper(
+pub(in crate::dialog_box) fn window_popper(
     mut commands: Commands,
     mut db_query: Query<
         (
@@ -157,7 +157,7 @@ pub fn window_popper(
     }
 }
 
-pub fn scaling_up(
+pub(in crate::dialog_box) fn scaling_up(
     mut commands: Commands,
     mut db_query: Query<(Entity, &mut Transform, &ScalingUp, &mut DialogBoxPhase)>,
     time: Res<Time>,

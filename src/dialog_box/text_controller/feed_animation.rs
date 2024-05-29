@@ -1,27 +1,26 @@
 use super::super::window_controller::waiting::*;
 use super::super::*;
 
-// Entity直でぶち込むの正直あんまりお行儀良くはない。
-#[derive(Event, Debug)]
-pub struct FeedWaitingEvent {
+#[derive(Event)]
+pub(in crate::dialog_box) struct FeedWaitingEvent {
     pub target_box_name: String,
     pub wait_sec: f32,
-    pub last_pos: Vec2,
+    // pub last_pos: Vec2,
 }
 
-#[derive(Event, Debug)]
-pub struct StartFeedingEvent {
+#[derive(Event)]
+pub(in crate::dialog_box) struct StartFeedingEvent {
     pub target_box_name: String,
     pub target_area_name: String,
 }
 
-#[derive(Component, Debug)]
-pub struct WaitFeedingTrigger {
+#[derive(Component)]
+pub(in crate::dialog_box) struct WaitFeedingTrigger {
     pub timer: Timer,
 }
 
-#[derive(Component, Debug)]
-pub struct ScrollFeed {
+#[derive(Component)]
+pub(in crate::dialog_box) struct ScrollFeed {
     pub line_per_sec: f32,
     pub count: usize,
 }
@@ -29,8 +28,9 @@ pub struct ScrollFeed {
 // 改ページを読み込んだ時点でTextAreaにInputForFeedingを発行するWaitInputGoをセットします。
 // InputForFeedingはWaitInputGo内のInputForSkipping内にあり、Skip後の動作として登録されます。
 // 発行される時点ではtypeが終わっていない可能性が高いからです。
+// ToDo: SimpleWaitとアイコンを分けておきたい。
 #[allow(clippy::type_complexity)]
-pub fn setup_feed_starter(
+pub(in crate::dialog_box) fn setup_feed_starter(
     mut commands: Commands,
     dialog_box_query: Query<(Entity, &WaitBrakerStyle, &DialogBox)>,
     text_box_query: Query<(Entity, &TextArea, &Parent, &GlobalTransform, &Sprite), With<Current>>,
@@ -101,7 +101,7 @@ pub fn setup_feed_starter(
 }
 
 #[allow(clippy::type_complexity)]
-pub fn trigger_feeding_by_event(
+pub(in crate::dialog_box) fn trigger_feeding_by_event(
     mut commands: Commands,
     mut line_query: Query<(Entity, &Parent), With<MessageTextLine>>,
     mut dialog_box_query: Query<(&DialogBox, &mut DialogBoxPhase)>,
@@ -141,7 +141,7 @@ pub fn trigger_feeding_by_event(
     }
 }
 
-pub fn trigger_feeding_by_time(
+pub(in crate::dialog_box) fn trigger_feeding_by_time(
     mut commands: Commands,
     mut dialog_box_query: Query<(&DialogBox, &mut DialogBoxPhase)>,
     mut text_area_query: Query<
@@ -175,7 +175,7 @@ pub fn trigger_feeding_by_time(
     }
 }
 
-pub fn start_feeding(
+pub(in crate::dialog_box) fn start_feeding(
     mut commands: Commands,
     mut window_query: Query<(&DialogBox, &mut DialogBoxPhase, &WaitBrakerStyle)>,
     text_box_query: Query<(Entity, &TextArea, &GlobalTransform, &Sprite)>,
@@ -241,7 +241,7 @@ pub fn start_feeding(
     }
 }
 
-pub fn scroll_lines(
+pub(in crate::dialog_box) fn scroll_lines(
     mut commands: Commands,
     mut window_query: Query<(Entity, &mut DialogBoxPhase)>,
     mut line_query: Query<(Entity, &mut Transform, &Sprite, &mut ScrollFeed)>,

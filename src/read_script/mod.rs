@@ -1,6 +1,7 @@
 mod parse_bds;
 mod regex;
 
+use crate::prelude::Order;
 use bevy::{
     asset::{io::Reader, AssetLoader, AsyncReadExt, LoadContext},
     prelude::*,
@@ -14,16 +15,8 @@ use parse_bds::*;
 use serde::{de::DeserializeSeed, Deserialize};
 use thiserror::Error;
 
-#[derive(Debug, Clone, PartialEq)]
-pub enum Order {
-    Type { character: char },
-    CarriageReturn,
-    PageFeed,
-    ThroghEvent { ron: String },
-}
-
 #[derive(Component, Debug)]
-pub struct LoadedScript {
+pub(crate) struct LoadedScript {
     pub bds_handle_opt: Option<Handle<BMWScript>>,
     pub bdt_handle_list: Vec<Handle<BMWTemplate>>,
     pub target_section: String,
@@ -31,16 +24,16 @@ pub struct LoadedScript {
 }
 
 #[derive(Asset, Debug, Deserialize, TypePath)]
-pub struct BMWScript {
+pub(crate) struct BMWScript {
     pub script: String,
 }
 
 #[derive(Default)]
-pub struct BMWScriptLoader;
+pub(crate) struct BMWScriptLoader;
 
 #[non_exhaustive]
 #[derive(Debug, Error)]
-pub enum BMWScriptLoaderError {
+pub(crate) enum BMWScriptLoaderError {
     /// An [IO](std::io) Error
     #[error("Could not load asset: {0}")]
     Io(#[from] std::io::Error),
@@ -74,16 +67,16 @@ impl AssetLoader for BMWScriptLoader {
 }
 
 #[derive(Asset, Debug, Deserialize, TypePath)]
-pub struct BMWTemplate {
+pub(crate) struct BMWTemplate {
     pub template: String,
 }
 
 #[derive(Default)]
-pub struct BMWTemplateLoader;
+pub(crate) struct BMWTemplateLoader;
 
 #[non_exhaustive]
 #[derive(Debug, Error)]
-pub enum BMWTemplateLoaderError {
+pub(crate) enum BMWTemplateLoaderError {
     /// An [IO](std::io) Error
     #[error("Could not load asset: {0}")]
     Io(#[from] std::io::Error),
@@ -116,7 +109,7 @@ impl AssetLoader for BMWTemplateLoader {
     }
 }
 
-pub fn script_on_load(
+pub(crate) fn script_on_load(
     mut loaded_script_query: Query<&mut LoadedScript>,
     script_assets: Res<Assets<BMWScript>>,
     template_assets: Res<Assets<BMWTemplate>>,
@@ -142,7 +135,7 @@ pub fn script_on_load(
     }
 }
 
-pub fn read_ron<S: AsRef<str>>(
+pub(crate) fn read_ron<S: AsRef<str>>(
     type_registry: &AppTypeRegistry,
     ron: S,
 ) -> Result<Box<dyn Reflect>, ron::Error> {
@@ -153,11 +146,11 @@ pub fn read_ron<S: AsRef<str>>(
     reflect_deserializer.deserialize(&mut deserializer)
 }
 
-pub fn split_path_and_section<S: AsRef<str>>(uri: S) -> (String, String) {
+pub(crate) fn split_path_and_section<S: AsRef<str>>(uri: S) -> (String, String) {
     parse_uri(uri.as_ref())
 }
 
-pub fn write_ron<R: Reflect>(
+pub(crate) fn write_ron<R: Reflect>(
     type_registry: &AppTypeRegistry,
     value: R,
 ) -> Result<String, ron::Error> {
@@ -166,7 +159,7 @@ pub fn write_ron<R: Reflect>(
     ron::ser::to_string_pretty(&serializer, ron::ser::PrettyConfig::default())
 }
 
-pub fn parse_script<S1: AsRef<str>, S2: AsRef<str>, S3: AsRef<str>>(
+pub(crate) fn parse_script<S1: AsRef<str>, S2: AsRef<str>, S3: AsRef<str>>(
     base: S1,
     templates: &[S2],
     section: S3,

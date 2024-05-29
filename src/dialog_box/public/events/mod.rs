@@ -3,7 +3,6 @@ pub use bds::*;
 
 use crate::dialog_box::public::components::*;
 use crate::dialog_box::public::configs::*;
-use crate::read_script::*;
 use bevy::prelude::*;
 
 #[derive(Event)]
@@ -18,6 +17,14 @@ pub struct OpenDialog {
     pub template_open_choice: ChoiceBoxConfig,
     pub text_area_configs: Vec<TextAreaConfig>,
     pub main_text_area_name: String,
+}
+
+#[derive(Debug, Clone, PartialEq)]
+pub enum Order {
+    Type { character: char },
+    CarriageReturn,
+    PageFeed,
+    ThroghEvent { ron: String },
 }
 
 impl Default for OpenDialog {

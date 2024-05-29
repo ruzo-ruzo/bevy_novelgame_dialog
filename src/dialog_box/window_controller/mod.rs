@@ -11,24 +11,26 @@ use crate::dialog_box::public::configs::*;
 use crate::dialog_box::OpenDialog;
 use crate::read_script::*;
 
-#[derive(Component, Debug)]
-pub struct DialogBox {
+#[derive(Component)]
+pub(crate) struct DialogBox {
     pub name: String,
 }
 
-#[derive(Component, Debug)]
-pub struct TextArea {
+#[derive(Component)]
+pub(crate) struct TextArea {
     pub name: String,
 }
 
-#[derive(Component, Debug)]
-pub struct Current;
+#[allow(private_interfaces)]
+#[derive(Component)]
+pub(crate) struct Current;
+
+#[allow(private_interfaces)]
+#[derive(Component)]
+pub(crate) struct Pending;
 
 #[derive(Component)]
-pub struct Pending;
-
-#[derive(Component)]
-pub struct Instant;
+pub(in crate::dialog_box) struct Instant;
 
 #[derive(Bundle)]
 struct DialogBoxBundle {
@@ -47,7 +49,7 @@ struct TextAreaBundle {
 }
 
 #[derive(Component, Debug, Clone, Copy, PartialEq)]
-pub enum DialogBoxPhase {
+pub(crate) enum DialogBoxPhase {
     Preparing,
     PoppingUp,
     WaitToType,

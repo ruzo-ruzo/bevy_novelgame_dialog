@@ -6,5 +6,6 @@ pub mod ui_templates;
 mod utility;
 
 pub mod prelude {
-    pub use crate::{debug::*, dialog_box::*, ui_templates::*};
+    pub use crate::dialog_box::public::*;
+    pub use crate::dialog_box::DialogBoxPlugin;
 }
