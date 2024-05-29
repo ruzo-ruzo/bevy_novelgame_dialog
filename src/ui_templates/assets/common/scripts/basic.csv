@@ -31,7 +31,7 @@
 "\[\^feed\]","<script>{
     ""bevy_novelgame_dialog::dialog_box::public::events::bds::writing::ForceFeedingCurrentBox"": (),
 }</script>"
-"\[empty\]","<script>{}</script>"
+"\[^empty\]","<script>{}</script>"
 "\[.*?\]:.*?",""
 "\[(?<text>.*?)\]\((?<jump>.*?)\)","${text}(${jump})"
 "\((?<jump>.*?)\?dialog_box=(?<target>.*?)\)","(${jump} ""${target}"")"

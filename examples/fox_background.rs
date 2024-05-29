@@ -1,7 +1,7 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 use bevy::prelude::*;
-use bevy_novelgame_dialog::ui_templates::*;
 use bevy_novelgame_dialog::debug::DebugTextAreaPlugin;
+use bevy_novelgame_dialog::ui_templates::*;
 
 fn main() {
     App::new()
