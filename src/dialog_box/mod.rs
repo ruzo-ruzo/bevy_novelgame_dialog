@@ -8,9 +8,9 @@ mod text_controller;
 pub(crate) mod window_controller;
 
 use input::*;
-use public::components::*;
-use public::configs::*;
-use public::events::*;
+pub use public::components::*;
+pub use public::configs::*;
+pub use public::events::*;
 use setup::*;
 use text_controller::feed_animation::*;
 use text_controller::typing_animations::*;
