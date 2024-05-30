@@ -7,7 +7,7 @@ mod utility;
 pub use crate::dialog_box as core;
 
 pub mod prelude {
+    pub use crate::debug::*;
     pub use crate::dialog_box::*;
     pub use crate::ui_templates::*;
-    pub use crate::debug::*;
 }
