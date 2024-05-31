@@ -4,7 +4,7 @@ pub mod dialog_box;
 mod read_script;
 pub mod ui_templates;
 mod utility;
-pub use crate::dialog_box as core;
+pub use crate::dialog_box::public as preference;
 
 pub mod prelude {
     pub use crate::debug::*;
