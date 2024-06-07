@@ -33,7 +33,7 @@ fn setup_choice_images(
     let button_image_handle = asset_server.load(ASSETS_PATH.to_owned() + button_image_path);
     let pushed_image_handle = asset_server.load(ASSETS_PATH.to_owned() + pushed_image_path);
     let choicing_frame_image_handle = asset_server.load(ASSETS_PATH.to_owned() + frame_image_path);
-    let dialog_box_image_handle = asset_server.load(ASSETS_PATH.to_owned() + box_image_path);
+    let writing_image_handle = asset_server.load(ASSETS_PATH.to_owned() + box_image_path);
     let button_slice = ImageScaleMode::Sliced(TextureSlicer {
         border: BorderRect::square(30.0),
         ..default()
@@ -42,19 +42,19 @@ fn setup_choice_images(
         border: BorderRect::rectangle(56.0, 102.0),
         ..default()
     });
-    let dialog_box_slice = ImageScaleMode::Sliced(TextureSlicer {
+    let writing_slice = ImageScaleMode::Sliced(TextureSlicer {
         border: BorderRect::rectangle(44.0, 52.0),
         ..default()
     });
     for i in 0..config.max_button_index {
-        let button_height = -70.0 - ((config.button_size.y + 40.0)*(i as f32));
+        let button_height = -70.0 - ((config.button_size.y + 40.0) * (i as f32));
         let button_sprite_bundle = SpriteBundle {
             sprite: Sprite {
                 custom_size: Some(config.button_size),
                 ..default()
             },
             texture: button_image_handle.clone(),
-            transform: Transform::from_xyz(0.0, button_height , 0.6),
+            transform: Transform::from_xyz(0.0, button_height, 0.6),
             ..default()
         };
         let cb = ChoiceButton {
@@ -65,10 +65,13 @@ fn setup_choice_images(
     }
     let frame_sprite_bundle = SpriteBundle {
         sprite: Sprite {
-            custom_size: Some(Vec2::new(config.button_size.x + 200.0, config.button_size.y)),
+            custom_size: Some(Vec2::new(
+                config.button_size.x + 200.0,
+                config.button_size.y,
+            )),
             ..default()
         },
-        texture: dialog_box_image_handle,
+        texture: writing_image_handle,
         transform: Transform::from_xyz(0.0, 0.0, 1.1),
         ..default()
     };
@@ -96,9 +99,9 @@ fn setup_choice_images(
     commands
         .spawn((
             frame_sprite_bundle,
-            dialog_box_slice,
+            writing_slice,
             DialogBoxBackground {
-                dialog_box_name: "Choice Box".to_string(),
+                writing_name: "Choice Box".to_string(),
             },
         ))
         .with_children(|c| {
@@ -145,7 +148,7 @@ fn reset_images(
     mut events: EventReader<FinisClosingBox>,
 ) {
     for fcb in events.read() {
-        if fcb.dialog_box_name == *"Choice Box" {
+        if fcb.writing_name == *"Choice Box" {
             if let Ok(mut vis) = cursor_query.get_single_mut() {
                 *vis = Visibility::Hidden;
             }
@@ -162,7 +165,7 @@ fn button_clicked(
     mut events: EventReader<ButtonIsPushed>,
 ) {
     for gse in events.read() {
-        if gse.dialog_box_name == *"Choice Box" {
+        if gse.writing_name == *"Choice Box" {
             for (button_tf, cb) in &button_query {
                 let ta_name = format!("Button Area {:02}", cb.sort_number);
                 if gse.text_area_name == ta_name {

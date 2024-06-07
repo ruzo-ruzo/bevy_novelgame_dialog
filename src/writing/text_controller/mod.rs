@@ -14,13 +14,13 @@ use crate::utility::*;
 use feed_animation::*;
 
 #[derive(Component)]
-pub(in crate::dialog_box) struct MessageTextLine {
+pub(in crate::writing) struct MessageTextLine {
     horizon_alignment: AlignHorizon,
     vertical_alignment: AlignVertical,
 }
 
 #[derive(Component, Debug)]
-pub(in crate::dialog_box) struct MessageTextChar;
+pub(in crate::writing) struct MessageTextChar;
 
 #[derive(Bundle, Debug)]
 struct CharBundle {
@@ -81,9 +81,9 @@ type AreaData = (
     &'static Parent,
 );
 
-pub(in crate::dialog_box) fn add_new_text(
+pub(in crate::writing) fn add_new_text(
     mut commands: Commands,
-    mut dialog_box_query: Query<(Entity, &DialogBox, &mut LoadedScript, &mut DialogBoxPhase)>,
+    mut writing_query: Query<(Entity, &DialogBox, &mut LoadedScript, &mut DialogBoxPhase)>,
     text_area_query: CurrentTextAreaQuery,
     last_data: TextQuery,
     app_type_registry: Res<AppTypeRegistry>,
@@ -93,7 +93,7 @@ pub(in crate::dialog_box) fn add_new_text(
     mut pending: Local<Option<Order>>,
     mut in_cr: Local<bool>,
 ) {
-    for (w_ent, DialogBox { name: w_name }, mut script, mut dbp) in &mut dialog_box_query {
+    for (w_ent, DialogBox { name: w_name }, mut script, mut dbp) in &mut writing_query {
         if *dbp != DialogBoxPhase::Typing {
             continue;
         }
@@ -153,7 +153,7 @@ pub(in crate::dialog_box) fn add_new_text(
     }
 }
 
-pub(in crate::dialog_box) fn initialize_typing_data(
+pub(in crate::writing) fn initialize_typing_data(
     last_data: &TextQuery,
     text_box_entity: Entity,
 ) -> (Option<Entity>, LastChar) {
@@ -346,7 +346,7 @@ fn add_empty_line(
     }
 }
 
-pub(in crate::dialog_box) fn settle_lines(
+pub(in crate::writing) fn settle_lines(
     dialogbox_query: Query<(Entity, &DialogBoxPhase), With<DialogBox>>,
     mut text_lines: Query<(&MessageTextLine, &mut Transform), Without<MessageTextChar>>,
     text_char: Query<(&Text, &Transform), With<MessageTextChar>>,

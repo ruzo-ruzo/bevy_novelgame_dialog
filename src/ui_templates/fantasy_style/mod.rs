@@ -12,24 +12,34 @@ const COMMON_PATH: &str = "embedded://bevy_novelgame_dialog/ui_templates/fantasy
 const ASSETS_PATH: &str = "embedded://bevy_novelgame_dialog/ui_templates/fantasy_style/assets/";
 
 #[derive(Resource, Default)]
-pub struct TemplateSetupConfig {
-    pub render_layer: u8,
-    pub render_order: isize,
-    pub box_size: Vec2,
-    pub box_pos: Vec2,
-    pub choice_pos: Vec2,
-    pub button_size: Vec2,
-    pub max_button_index: usize,
+struct TemplateSetupConfig {
+    render_layer: u8,
+    box_size: Vec2,
+    box_pos: Vec2,
+    choice_pos: Vec2,
+    button_size: Vec2,
+    max_button_index: usize,
+    font_size: f32,
 }
 
+/// `RPGStyleUIPlugin` is a plugin for creating RPG-style text box.
 pub struct RPGStyleUIPlugin {
+    /// The layer number of the UI. Specifies the order in which layers overlap.
     pub layer_num: u8,
+    /// Specifies the render order. Higher values are rendered in front.
     pub render_order: isize,
+    /// Specifies the size of the text box.
     pub box_size: Vec2,
+    /// Specifies the position of the text box.
     pub box_pos: Vec2,
+    /// Specifies the position of the choice buttons box.
     pub choice_pos: Vec2,
+    /// Specifies the size of the choice buttons.
     pub button_size: Vec2,
+    /// Specifies the maximum number of choice buttons.
     pub max_button_index: usize,
+    /// Specifies the font size.
+    pub font_size: f32,
 }
 
 impl Default for RPGStyleUIPlugin {
@@ -42,6 +52,7 @@ impl Default for RPGStyleUIPlugin {
             choice_pos: Vec2::new(0.0, -200.0),
             button_size: Vec2::new(400.0, 100.0),
             max_button_index: 3,
+            font_size: 32.0,
         }
     }
 }
@@ -59,12 +70,12 @@ impl Plugin for RPGStyleUIPlugin {
         ))
         .insert_resource(TemplateSetupConfig {
             render_layer: self.layer_num,
-            render_order: self.render_order,
             box_size: self.box_size,
             box_pos: self.box_pos,
             choice_pos: self.choice_pos,
             button_size: self.button_size,
             max_button_index: self.max_button_index,
+            font_size: self.font_size,
         })
         .add_event::<OpenRPGStyleDialog>()
         .add_systems(Update, open_message);
@@ -114,20 +125,20 @@ fn open_message(
                 size: *s,
             })
             .collect::<Vec<_>>();
-        let text_area_x = -config.box_size.x/2.0 + config.box_pos.x + 80.0;
-        let text_area_y = config.box_size.y/2.0 + config.box_pos.y + 120.0;
+        let text_area_x = -config.box_size.x / 2.0 + config.box_pos.x + 80.0;
+        let text_area_y = config.box_size.y / 2.0 + config.box_pos.y + 120.0;
         let frame_tac = TextAreaConfig {
             area_name: "Main Area".to_string(),
             font_sets: font_vec.clone(),
             feeding: FeedingStyle::Scroll { size: 0, sec: 0.5 },
             font_color: Color::rgb(0.7, 0.5, 0.3),
-            text_base_size: 32.0,
+            text_base_size: config.font_size,
             area_origin: Vec2::new(text_area_x, text_area_y),
             area_size: Vec2::new(config.box_size.x - 90.0, config.box_size.y - 160.0),
             ..default()
         };
-        let name_area_x = -(config.box_size.x/2.0) + 100.0;
-        let name_area_y = config.box_size.y/2.0 + 18.0;
+        let name_area_x = -(config.box_size.x / 2.0) + 100.0;
+        let name_area_y = config.box_size.y / 2.0 + 18.0;
         let name_plate_tac = TextAreaConfig {
             area_name: "Name Area".to_string(),
             area_origin: Vec2::new(name_area_x, name_area_y),
@@ -153,7 +164,7 @@ fn open_message(
         };
         let tac_list = (0..config.max_button_index)
             .map(|i| {
-                let button_x = -config.button_size.x/2.0 +20.0;
+                let button_x = -config.button_size.x / 2.0 + 20.0;
                 let button_y = -20.0 - (config.button_size.y + 40.0) * (i as f32);
                 TextAreaConfig {
                     area_origin: Vec2::new(button_x, button_y),
@@ -163,7 +174,7 @@ fn open_message(
             })
             .collect::<Vec<_>>();
         ow_event.send(OpenDialog {
-            dialog_box_name: "Main Box".to_string(),
+            writing_name: "Main Box".to_string(),
             script_path: path.clone(),
             template_path: vec![
                 (ASSETS_PATH.to_owned() + "scripts/custom.csv").to_string(),

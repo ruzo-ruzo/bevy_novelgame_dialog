@@ -2,25 +2,25 @@ use super::super::window_controller::waiting::*;
 use super::super::*;
 
 #[derive(Event)]
-pub(in crate::dialog_box) struct FeedWaitingEvent {
+pub(in crate::writing) struct FeedWaitingEvent {
     pub target_box_name: String,
     pub wait_sec: f32,
     // pub last_pos: Vec2,
 }
 
 #[derive(Event)]
-pub(in crate::dialog_box) struct StartFeedingEvent {
+pub(in crate::writing) struct StartFeedingEvent {
     pub target_box_name: String,
     pub target_area_name: String,
 }
 
 #[derive(Component)]
-pub(in crate::dialog_box) struct WaitFeedingTrigger {
+pub(in crate::writing) struct WaitFeedingTrigger {
     pub timer: Timer,
 }
 
 #[derive(Component)]
-pub(in crate::dialog_box) struct ScrollFeed {
+pub(in crate::writing) struct ScrollFeed {
     pub line_per_sec: f32,
     pub count: usize,
 }
@@ -30,16 +30,16 @@ pub(in crate::dialog_box) struct ScrollFeed {
 // 発行される時点ではtypeが終わっていない可能性が高いからです。
 // ToDo: SimpleWaitとアイコンを分けておきたい。
 #[allow(clippy::type_complexity)]
-pub(in crate::dialog_box) fn setup_feed_starter(
+pub(in crate::writing) fn setup_feed_starter(
     mut commands: Commands,
-    dialog_box_query: Query<(Entity, &WaitBrakerStyle, &DialogBox)>,
+    writing_query: Query<(Entity, &WaitBrakerStyle, &DialogBox)>,
     text_box_query: Query<(Entity, &TextArea, &Parent, &GlobalTransform, &Sprite), With<Current>>,
     w_icon_query: Query<(Entity, &WaitingIcon)>,
     mut waitting_event: EventReader<FeedWaitingEvent>,
     type_registry: Res<AppTypeRegistry>,
 ) {
     for event in waitting_event.read() {
-        for (db_entity, wbs, DialogBox { name: db_name }) in &dialog_box_query {
+        for (db_entity, wbs, DialogBox { name: db_name }) in &writing_query {
             for (ta_entity, ta, parent, tb_tf, tb_sp) in &text_box_query {
                 if event.target_box_name == *db_name && db_entity == parent.get() {
                     match wbs {
@@ -68,7 +68,7 @@ pub(in crate::dialog_box) fn setup_feed_starter(
                             let ron_iff = write_ron(
                                 &type_registry,
                                 InputForFeeding {
-                                    dialog_box_name: db_name.clone(),
+                                    writing_name: db_name.clone(),
                                     text_area_name: ta.name.clone(),
                                 },
                             )
@@ -101,10 +101,10 @@ pub(in crate::dialog_box) fn setup_feed_starter(
 }
 
 #[allow(clippy::type_complexity)]
-pub(in crate::dialog_box) fn trigger_feeding_by_event(
+pub(in crate::writing) fn trigger_feeding_by_event(
     mut commands: Commands,
     mut line_query: Query<(Entity, &Parent), With<MessageTextLine>>,
-    mut dialog_box_query: Query<(&DialogBox, &mut DialogBoxPhase)>,
+    mut writing_query: Query<(&DialogBox, &mut DialogBoxPhase)>,
     text_area_query: Query<(Entity, &TextArea, &FeedingStyle), With<Current>>,
     mut icon_query: Query<(Entity, &mut Visibility), (With<WaitingIcon>, Without<MessageTextChar>)>,
     mut start_feeding_event: EventWriter<StartFeedingEvent>,
@@ -112,11 +112,11 @@ pub(in crate::dialog_box) fn trigger_feeding_by_event(
 ) {
     for event_wrapper in events.read() {
         if let Some(InputForFeeding {
-            dialog_box_name: target_db_name,
+            writing_name: target_db_name,
             text_area_name: target_ta_name,
         }) = event_wrapper.get::<InputForFeeding>()
         {
-            let db_opt = dialog_box_query
+            let db_opt = writing_query
                 .iter_mut()
                 .find(|x| x.0.name == target_db_name);
             let ta_opt = text_area_query.iter().find(|x| x.1.name == target_ta_name);
@@ -141,9 +141,9 @@ pub(in crate::dialog_box) fn trigger_feeding_by_event(
     }
 }
 
-pub(in crate::dialog_box) fn trigger_feeding_by_time(
+pub(in crate::writing) fn trigger_feeding_by_time(
     mut commands: Commands,
-    mut dialog_box_query: Query<(&DialogBox, &mut DialogBoxPhase)>,
+    mut writing_query: Query<(&DialogBox, &mut DialogBoxPhase)>,
     mut text_area_query: Query<
         (Entity, &TextArea, &FeedingStyle, &mut WaitFeedingTrigger),
         With<Current>,
@@ -153,7 +153,7 @@ pub(in crate::dialog_box) fn trigger_feeding_by_time(
     mut start_feeding_event: EventWriter<StartFeedingEvent>,
     time: Res<Time>,
 ) {
-    for (db, mut dbp) in &mut dialog_box_query {
+    for (db, mut dbp) in &mut writing_query {
         if text_area_query.iter().len() > 0 {
             *dbp = DialogBoxPhase::Typing;
         }
@@ -175,7 +175,7 @@ pub(in crate::dialog_box) fn trigger_feeding_by_time(
     }
 }
 
-pub(in crate::dialog_box) fn start_feeding(
+pub(in crate::writing) fn start_feeding(
     mut commands: Commands,
     mut window_query: Query<(&DialogBox, &mut DialogBoxPhase, &WaitBrakerStyle)>,
     text_box_query: Query<(Entity, &TextArea, &GlobalTransform, &Sprite)>,
@@ -241,7 +241,7 @@ pub(in crate::dialog_box) fn start_feeding(
     }
 }
 
-pub(in crate::dialog_box) fn scroll_lines(
+pub(in crate::writing) fn scroll_lines(
     mut commands: Commands,
     mut window_query: Query<(Entity, &mut DialogBoxPhase)>,
     mut line_query: Query<(Entity, &mut Transform, &Sprite, &mut ScrollFeed)>,

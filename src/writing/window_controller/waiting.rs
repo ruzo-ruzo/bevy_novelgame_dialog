@@ -2,25 +2,25 @@ use super::super::*;
 use bevy::render::view::RenderLayers;
 
 #[derive(Component)]
-pub(in crate::dialog_box) struct Settled;
+pub(in crate::writing) struct Settled;
 
 #[derive(Reflect, Default)]
-pub(in crate::dialog_box) struct BreakWait {
-    pub dialog_box_name: String,
+pub(in crate::writing) struct BreakWait {
+    pub writing_name: String,
     pub text_area_name: String,
 }
 
 #[derive(Reflect, Default, Clone)]
-pub(in crate::dialog_box) struct InputForSkipping {
+pub(in crate::writing) struct InputForSkipping {
     pub next_event_ron: String,
-    pub dialog_box_name: String,
+    pub writing_name: String,
     pub text_area_name: String,
 }
 
 // SimpleWaitが発行された時のCurrentのTextAreaにBreakWaitを詰めたWaitInputGoを設定します。
 // SimpleWaitが飛んでる間にCurrentのTextAreaが変更されていない事を期待しています。
 #[allow(clippy::type_complexity)]
-pub(in crate::dialog_box) fn simple_wait(
+pub(in crate::writing) fn simple_wait(
     mut commands: Commands,
     mut dialog_query: Query<
         (Entity, &mut DialogBoxPhase, &DialogBox, &WaitBrakerStyle),
@@ -43,7 +43,7 @@ pub(in crate::dialog_box) fn simple_wait(
                     let ron = write_ron(
                         &type_registry,
                         BreakWait {
-                            dialog_box_name: db_name.clone(),
+                            writing_name: db_name.clone(),
                             text_area_name: ta.name.clone(),
                         },
                     )
@@ -81,20 +81,20 @@ pub(in crate::dialog_box) fn simple_wait(
     }
 }
 
-pub(in crate::dialog_box) fn restart_typing(
+pub(in crate::writing) fn restart_typing(
     mut commands: Commands,
-    mut dialog_box_query: Query<(&DialogBox, &mut DialogBoxPhase)>,
+    mut writing_query: Query<(&DialogBox, &mut DialogBoxPhase)>,
     text_area_query: Query<&TextArea>,
     mut icon_query: Query<(Entity, &mut Visibility, &mut WaitingIcon)>,
     mut bds_reader: EventReader<BdsEvent>,
 ) {
     for event_wrapper in bds_reader.read() {
         if let Some(BreakWait {
-            dialog_box_name: target_db_name,
+            writing_name: target_db_name,
             text_area_name: target_ta_name,
         }) = event_wrapper.get::<BreakWait>()
         {
-            for (DialogBox { name: db_name }, mut phase) in &mut dialog_box_query {
+            for (DialogBox { name: db_name }, mut phase) in &mut writing_query {
                 for TextArea { name: ta_name } in &text_area_query {
                     if *db_name == target_db_name
                         && *ta_name == target_ta_name
@@ -115,7 +115,7 @@ pub(in crate::dialog_box) fn restart_typing(
     }
 }
 
-pub(in crate::dialog_box) fn waiting_icon_setting(
+pub(in crate::writing) fn waiting_icon_setting(
     mut commands: Commands,
     w_icon_query: Query<(Entity, &WaitingIcon), Without<WritingStyle>>,
     wbs_query: Query<(&RenderLayers, &WaitBrakerStyle, &DialogBox)>,
@@ -135,7 +135,7 @@ pub(in crate::dialog_box) fn waiting_icon_setting(
 }
 
 #[allow(clippy::type_complexity)]
-pub(in crate::dialog_box) fn settle_wating_icon(
+pub(in crate::writing) fn settle_wating_icon(
     mut commands: Commands,
     window_query: Query<(Entity, &DialogBoxPhase, &WaitBrakerStyle, &DialogBox)>,
     text_box_query: Query<(Entity, &Parent, &TypeTextConfig), (With<TextArea>, With<Current>)>,
@@ -198,7 +198,7 @@ pub(in crate::dialog_box) fn settle_wating_icon(
 // その後当該TextArea内の文字を強制的に表示し終えます。
 // これをトリガーするInputForSkippingはSimpleWait経由で発行されていることが期待されています。
 #[allow(clippy::type_complexity)]
-pub(in crate::dialog_box) fn skip_typing_or_next(
+pub(in crate::writing) fn skip_typing_or_next(
     mut commands: Commands,
     mut waiting_text_query: Query<
         (
@@ -211,7 +211,7 @@ pub(in crate::dialog_box) fn skip_typing_or_next(
         With<MessageTextChar>,
     >,
     mut typing_texts_query: Query<(Entity, &mut TypingStyle, &Parent), With<MessageTextChar>>,
-    dialog_box_query: Query<(&DialogBox, &DialogBoxPhase, &WaitBrakerStyle)>,
+    writing_query: Query<(&DialogBox, &DialogBoxPhase, &WaitBrakerStyle)>,
     text_area_query: Query<(Entity, &TextArea, &GlobalTransform, &Sprite)>,
     line_query: Query<(Entity, &Parent), With<MessageTextLine>>,
     mut icon_query: Query<(Entity, &mut Visibility), (With<WaitingIcon>, Without<MessageTextChar>)>,
@@ -221,11 +221,11 @@ pub(in crate::dialog_box) fn skip_typing_or_next(
     for event_wrapper in bds_reader.read() {
         if let Some(InputForSkipping {
             next_event_ron: ron,
-            dialog_box_name: target_db_name,
+            writing_name: target_db_name,
             text_area_name: target_ta_name,
         }) = event_wrapper.get::<InputForSkipping>()
         {
-            let db_opt = dialog_box_query.iter().find(|x| x.0.name == target_db_name);
+            let db_opt = writing_query.iter().find(|x| x.0.name == target_db_name);
             let ta_opt = text_area_query.iter().find(|x| x.1.name == target_ta_name);
             if let (Some((db, phase, wbs)), Some((ta_entity, ta, tb_tf, tb_sp))) = (db_opt, ta_opt)
             {
@@ -283,21 +283,21 @@ pub(in crate::dialog_box) fn skip_typing_or_next(
     }
 }
 
-pub(in crate::dialog_box) fn skip_feeding(
+pub(in crate::writing) fn skip_feeding(
     mut commands: Commands,
-    mut dialog_box_query: Query<(&DialogBox, &mut DialogBoxPhase), With<Current>>,
+    mut writing_query: Query<(&DialogBox, &mut DialogBoxPhase), With<Current>>,
     text_area_query: Query<(Entity, &TextArea)>,
     line_query: Query<(Entity, &Parent), With<MessageTextLine>>,
     mut bds_reader: EventReader<BdsEvent>,
 ) {
     for event_wrapper in bds_reader.read() {
         if let Some(InputForSkipping {
-            dialog_box_name: target_db_name,
+            writing_name: target_db_name,
             text_area_name: target_ta_name,
             ..
         }) = event_wrapper.get::<InputForSkipping>()
         {
-            let db_opt = dialog_box_query
+            let db_opt = writing_query
                 .iter_mut()
                 .find(|x| x.0.name == target_db_name);
             let ta_opt = text_area_query.iter().find(|x| x.1.name == target_ta_name);
@@ -315,7 +315,7 @@ pub(in crate::dialog_box) fn skip_feeding(
     }
 }
 
-pub(in crate::dialog_box) fn make_wig_for_skip<S: AsRef<str>>(
+pub(in crate::writing) fn make_wig_for_skip<S: AsRef<str>>(
     db_name: S,
     ta_name: S,
     tb_tf: &GlobalTransform,
@@ -330,7 +330,7 @@ pub(in crate::dialog_box) fn make_wig_for_skip<S: AsRef<str>>(
         type_registry,
         InputForSkipping {
             next_event_ron: ron.as_ref().to_string(),
-            dialog_box_name: db_name.as_ref().to_string(),
+            writing_name: db_name.as_ref().to_string(),
             text_area_name: ta_name.as_ref().to_string(),
         },
     );
@@ -340,7 +340,7 @@ pub(in crate::dialog_box) fn make_wig_for_skip<S: AsRef<str>>(
     }
 }
 
-pub(in crate::dialog_box) fn make_wig_for_skip_all_range<S: AsRef<str>>(
+pub(in crate::writing) fn make_wig_for_skip_all_range<S: AsRef<str>>(
     db_name: S,
     ta_name: S,
     ron: S,
@@ -352,7 +352,7 @@ pub(in crate::dialog_box) fn make_wig_for_skip_all_range<S: AsRef<str>>(
         type_registry,
         InputForSkipping {
             next_event_ron: ron.as_ref().to_string(),
-            dialog_box_name: db_name.as_ref().to_string(),
+            writing_name: db_name.as_ref().to_string(),
             text_area_name: ta_name.as_ref().to_string(),
         },
     );
@@ -362,12 +362,12 @@ pub(in crate::dialog_box) fn make_wig_for_skip_all_range<S: AsRef<str>>(
     }
 }
 
-pub(in crate::dialog_box) fn hide_waiting_icon(
+pub(in crate::writing) fn hide_waiting_icon(
     mut icon_query: Query<(&WaitingIcon, &mut Visibility)>,
-    dialog_box_query: Query<(&DialogBox, &DialogBoxPhase)>,
+    writing_query: Query<(&DialogBox, &DialogBoxPhase)>,
 ) {
     if let Ok((icon, mut vis)) = icon_query.get_single_mut() {
-        let box_exists = dialog_box_query
+        let box_exists = writing_query
             .iter()
             .find(|x| x.0.name == icon.target_box_name);
         if let Some((_, phase)) = box_exists {

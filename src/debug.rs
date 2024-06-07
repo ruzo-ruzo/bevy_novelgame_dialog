@@ -1,7 +1,7 @@
-use crate::dialog_box::input::*;
-use crate::dialog_box::window_controller::*;
 use crate::prelude::*;
 use crate::read_script::*;
+use crate::writing::input::*;
+use crate::writing::window_controller::*;
 use bevy::prelude::*;
 
 pub struct DebugTextAreaPlugin;
@@ -12,7 +12,7 @@ impl Plugin for DebugTextAreaPlugin {
         app.add_systems(Update, monitor_bds_event);
         app.add_systems(Update, too_many_selected);
         // app.add_systems(Update, loaded_orders);
-        app.add_systems(Update, too_many_current_dialog_box);
+        app.add_systems(Update, too_many_current_writing);
     }
 }
 
@@ -36,7 +36,7 @@ fn too_many_selected(ta_query: Query<&TextArea, (With<Selected>, Without<Pending
     }
 }
 
-fn too_many_current_dialog_box(ta_query: Query<&DialogBox, With<Current>>) {
+fn too_many_current_writing(ta_query: Query<&DialogBox, With<Current>>) {
     let current_num = ta_query.iter().len();
     if current_num > 1 {
         error!("there are {:?} current dialog boxes.", current_num);

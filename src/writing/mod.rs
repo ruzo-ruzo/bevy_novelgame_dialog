@@ -1,16 +1,17 @@
 use crate::read_script::*;
 use bevy::prelude::*;
 
+pub mod events;
 pub(crate) mod input;
-pub mod public;
+pub mod settings;
 mod setup;
 mod text_controller;
 pub(crate) mod window_controller;
 
+pub use events::*;
 use input::*;
-pub use public::components::*;
-pub use public::configs::*;
-pub use public::events::*;
+pub use settings::configs::*;
+pub use settings::params::*;
 use setup::*;
 use text_controller::feed_animation::*;
 use text_controller::typing_animations::*;
@@ -97,10 +98,10 @@ impl Plugin for DialogBoxPlugin {
                 Update,
                 change_current_text_area_in_current_box.in_set(PhaseSet::Setting),
             )
-            .add_systems(Update, change_current_dialog_box.in_set(PhaseSet::Setting))
+            .add_systems(Update, change_current_writing.in_set(PhaseSet::Setting))
             .add_systems(Update, change_font_size.in_set(PhaseSet::Setting))
             .add_systems(Update, setup_choice.in_set(PhaseSet::Setting))
-            .add_systems(Update, despawn_dialog_box.in_set(PhaseSet::Setting))
+            .add_systems(Update, despawn_writing.in_set(PhaseSet::Setting))
             .add_systems(Update, remove_pending.in_set(PhaseSet::Setting))
             .add_systems(
                 Update,

@@ -6,7 +6,7 @@ pub(super) struct MainBoxPlugIn;
 impl Plugin for MainBoxPlugIn {
     fn build(&self, app: &mut App) {
         embedded_asset!(app, "assets/textures/ui/dialog_box_01.png");
-        embedded_asset!(app, "assets/textures/ui/dialog_box_02.png");
+        embedded_asset!(app, "assets/textures/ui/dialog_box_01.png");
         embedded_asset!(app, "assets/textures/ui/name_plate.png");
         embedded_asset!(app, "assets/textures/ui/cursor.png");
         app.add_systems(Startup, setup_messageframe)
@@ -34,9 +34,9 @@ fn setup_messageframe(
     config: Res<TemplateSetupConfig>,
     asset_server: Res<AssetServer>,
 ) {
-    let dialog_box_image_handle =
-        asset_server.load(ASSETS_PATH.to_owned() + "textures/ui/dialog_box_02.png");
-    let dialog_box_slice = ImageScaleMode::Sliced(TextureSlicer {
+    let writing_image_handle =
+        asset_server.load(ASSETS_PATH.to_owned() + "textures/ui/dialog_box_01.png");
+    let writing_slice = ImageScaleMode::Sliced(TextureSlicer {
         border: BorderRect::rectangle(55.0, 71.0),
         ..default()
     });
@@ -47,12 +47,12 @@ fn setup_messageframe(
                 ..default()
             },
             transform: Transform::from_translation(config.box_pos.extend(0.0)),
-            texture: dialog_box_image_handle,
+            texture: writing_image_handle,
             ..default()
         },
-        dialog_box_slice,
+        writing_slice,
         DialogBoxBackground {
-            dialog_box_name: "Main Box".to_string(),
+            writing_name: "Main Box".to_string(),
         },
     ));
 }
@@ -67,16 +67,10 @@ fn setup_name_plate(
     if !*is_setup {
         let name_plate_image_handle =
             asset_server.load(ASSETS_PATH.to_owned() + "textures/ui/name_plate.png");
-        for (
-            dbb_entity,
-            DialogBoxBackground {
-                dialog_box_name: name,
-            },
-        ) in &dbb_query
-        {
+        for (dbb_entity, DialogBoxBackground { writing_name: name }) in &dbb_query {
             if name == "Main Box" {
-                let name_x = -(config.box_size.x/2.0) + (config.box_pos.x + 230.0);
-                let name_y = config.box_size.y/2.0 + (config.box_pos.y + 180.0);
+                let name_x = -(config.box_size.x / 2.0) + (config.box_pos.x + 230.0);
+                let name_y = config.box_size.y / 2.0 + (config.box_pos.y + 180.0);
                 commands.entity(dbb_entity).with_children(|child_builder| {
                     child_builder.spawn((
                         SpriteBundle {
