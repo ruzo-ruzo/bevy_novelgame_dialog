@@ -5,10 +5,10 @@ pub(super) struct MainBoxPlugIn;
 
 impl Plugin for MainBoxPlugIn {
     fn build(&self, app: &mut App) {
-        embedded_asset!(app, "../assets/fantasy_style/textures/ui/dialog_box_01.png");
-        embedded_asset!(app, "../assets/fantasy_style/textures/ui/dialog_box_02.png");
-        embedded_asset!(app, "../assets/fantasy_style/textures/ui/name_plate.png");
-        embedded_asset!(app, "../assets/fantasy_style/textures/ui/cursor.png");
+        embedded_asset!(app, "assets/textures/ui/dialog_box_01.png");
+        embedded_asset!(app, "assets/textures/ui/dialog_box_02.png");
+        embedded_asset!(app, "assets/textures/ui/name_plate.png");
+        embedded_asset!(app, "assets/textures/ui/cursor.png");
         app.add_systems(Startup, setup_messageframe)
             .add_systems(Startup, waiting_sprite_setup)
             .add_systems(Update, setup_name_plate)
@@ -29,25 +29,13 @@ struct AnimationIndices {
 #[derive(Component, Deref, DerefMut)]
 struct AnimationTimer(Timer);
 
-fn animate_sprite(
-    time: Res<Time>,
-    mut query: Query<(&AnimationIndices, &mut AnimationTimer, &mut TextureAtlas)>,
+fn setup_messageframe(
+    mut commands: Commands,
+    config: Res<TemplateSetupConfig>,
+    asset_server: Res<AssetServer>,
 ) {
-    for (indices, mut timer, mut atlas) in &mut query {
-        timer.tick(time.delta());
-        if timer.just_finished() {
-            atlas.index = if atlas.index >= indices.last {
-                indices.first
-            } else {
-                atlas.index + indices.step
-            };
-        }
-    }
-}
-
-fn setup_messageframe(mut commands: Commands, asset_server: Res<AssetServer>) {
     let dialog_box_image_handle =
-        asset_server.load(ASSETS_PATH.to_owned() + "fantasy_style/textures/ui/dialog_box_02.png");
+        asset_server.load(ASSETS_PATH.to_owned() + "textures/ui/dialog_box_02.png");
     let dialog_box_slice = ImageScaleMode::Sliced(TextureSlicer {
         border: BorderRect::rectangle(55.0, 71.0),
         ..default()
@@ -55,10 +43,10 @@ fn setup_messageframe(mut commands: Commands, asset_server: Res<AssetServer>) {
     commands.spawn((
         SpriteBundle {
             sprite: Sprite {
-                custom_size: Some(Vec2::new(1200.0, 300.0)),
+                custom_size: Some(config.box_size),
                 ..default()
             },
-            transform: Transform::from_xyz(0.0, -200.0, 0.0),
+            transform: Transform::from_translation(config.box_pos.extend(0.0)),
             texture: dialog_box_image_handle,
             ..default()
         },
@@ -78,7 +66,7 @@ fn setup_name_plate(
 ) {
     if !*is_setup {
         let name_plate_image_handle =
-            asset_server.load(ASSETS_PATH.to_owned() + "fantasy_style/textures/ui/name_plate.png");
+            asset_server.load(ASSETS_PATH.to_owned() + "textures/ui/name_plate.png");
         for (
             dbb_entity,
             DialogBoxBackground {
@@ -87,10 +75,12 @@ fn setup_name_plate(
         ) in &dbb_query
         {
             if name == "Main Box" {
+                let name_x = -(config.box_size.x/2.0) + (config.box_pos.x + 230.0);
+                let name_y = config.box_size.y/2.0 + (config.box_pos.y + 180.0);
                 commands.entity(dbb_entity).with_children(|child_builder| {
                     child_builder.spawn((
                         SpriteBundle {
-                            transform: Transform::from_xyz(-350.0, 130.0, 0.1),
+                            transform: Transform::from_xyz(name_x, name_y, 0.1),
                             texture: name_plate_image_handle.clone(),
                             visibility: Visibility::Inherited,
                             ..default()
@@ -109,7 +99,7 @@ fn waiting_sprite_setup(
     asset_server: Res<AssetServer>,
     mut texture_atlases: ResMut<Assets<TextureAtlasLayout>>,
 ) {
-    let texture_image_path = "fantasy_style/textures/ui/cursor.png";
+    let texture_image_path = "textures/ui/cursor.png";
     let texture_handle = asset_server.load(ASSETS_PATH.to_owned() + texture_image_path);
     let texture_atlas = TextureAtlasLayout::from_grid(Vec2::new(44.0, 56.0), 1, 2, None, None);
     let animation_indices = AnimationIndices {
@@ -137,4 +127,20 @@ fn waiting_sprite_setup(
         },
         WaitingSprite,
     ));
+}
+
+fn animate_sprite(
+    time: Res<Time>,
+    mut query: Query<(&AnimationIndices, &mut AnimationTimer, &mut TextureAtlas)>,
+) {
+    for (indices, mut timer, mut atlas) in &mut query {
+        timer.tick(time.delta());
+        if timer.just_finished() {
+            atlas.index = if atlas.index >= indices.last {
+                indices.first
+            } else {
+                atlas.index + indices.step
+            };
+        }
+    }
 }

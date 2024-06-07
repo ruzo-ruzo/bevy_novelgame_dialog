@@ -5,18 +5,9 @@ pub(super) struct ChoiceBoxPlugIn;
 
 impl Plugin for ChoiceBoxPlugIn {
     fn build(&self, app: &mut App) {
-        embedded_asset!(
-            app,
-            "../assets/fantasy_style/textures/ui/choice_buttons/button_default.png"
-        );
-        embedded_asset!(
-            app,
-            "../assets/fantasy_style/textures/ui/choice_buttons/button_pushed.png"
-        );
-        embedded_asset!(
-            app,
-            "../assets/fantasy_style/textures/ui/choice_buttons/choicing_frame.png"
-        );
+        embedded_asset!(app, "assets/textures/ui/choice_buttons/button_default.png");
+        embedded_asset!(app, "assets/textures/ui/choice_buttons/button_pushed.png");
+        embedded_asset!(app, "assets/textures/ui/choice_buttons/choicing_frame.png");
         app.add_systems(Startup, setup_choice_images)
             .add_systems(Update, move_cursor)
             .add_systems(Update, reset_images)
@@ -35,34 +26,35 @@ fn setup_choice_images(
     asset_server: Res<AssetServer>,
     config: Res<TemplateSetupConfig>,
 ) {
-    let button_image_path = "fantasy_style/textures/ui/choice_buttons/button_default.png";
-    let pushed_image_path = "fantasy_style/textures/ui/choice_buttons/button_pushed.png";
-    let frame_image_path = "fantasy_style/textures/ui/choice_buttons/choicing_frame.png";
-    let box_image_path = "fantasy_style/textures/ui/dialog_box_01.png";
+    let button_image_path = "textures/ui/choice_buttons/button_default.png";
+    let pushed_image_path = "textures/ui/choice_buttons/button_pushed.png";
+    let frame_image_path = "textures/ui/choice_buttons/choicing_frame.png";
+    let box_image_path = "textures/ui/dialog_box_01.png";
     let button_image_handle = asset_server.load(ASSETS_PATH.to_owned() + button_image_path);
     let pushed_image_handle = asset_server.load(ASSETS_PATH.to_owned() + pushed_image_path);
     let choicing_frame_image_handle = asset_server.load(ASSETS_PATH.to_owned() + frame_image_path);
     let dialog_box_image_handle = asset_server.load(ASSETS_PATH.to_owned() + box_image_path);
     let button_slice = ImageScaleMode::Sliced(TextureSlicer {
-        border: BorderRect::square(30.),
+        border: BorderRect::square(30.0),
         ..default()
     });
     let choicing_frame_slice = ImageScaleMode::Sliced(TextureSlicer {
-        border: BorderRect::rectangle(56., 102.),
+        border: BorderRect::rectangle(56.0, 102.0),
         ..default()
     });
     let dialog_box_slice = ImageScaleMode::Sliced(TextureSlicer {
-        border: BorderRect::rectangle(44., 52.),
+        border: BorderRect::rectangle(44.0, 52.0),
         ..default()
     });
-    for i in 0..4 {
+    for i in 0..config.max_button_index {
+        let button_height = -70.0 - ((config.button_size.y + 40.0)*(i as f32));
         let button_sprite_bundle = SpriteBundle {
             sprite: Sprite {
-                custom_size: Some(Vec2::new(400., 100.)),
+                custom_size: Some(config.button_size),
                 ..default()
             },
             texture: button_image_handle.clone(),
-            transform: Transform::from_xyz(0.0, -70.0 - 140.0 * (i as f32), 0.6),
+            transform: Transform::from_xyz(0.0, button_height , 0.6),
             ..default()
         };
         let cb = ChoiceButton {
@@ -73,16 +65,16 @@ fn setup_choice_images(
     }
     let frame_sprite_bundle = SpriteBundle {
         sprite: Sprite {
-            custom_size: Some(Vec2::new(600., 100.)),
+            custom_size: Some(Vec2::new(config.button_size.x + 200.0, config.button_size.y)),
             ..default()
         },
         texture: dialog_box_image_handle,
-        transform: Transform::from_xyz(0., 0., 1.1),
+        transform: Transform::from_xyz(0.0, 0.0, 1.1),
         ..default()
     };
     let pushed_sprite_bundle = SpriteBundle {
         sprite: Sprite {
-            custom_size: Some(Vec2::new(400., 100.)),
+            custom_size: Some(config.button_size),
             ..default()
         },
         texture: pushed_image_handle,
@@ -90,13 +82,14 @@ fn setup_choice_images(
         visibility: Visibility::Hidden,
         ..default()
     };
+    let cursor_size = Vec2::new(config.button_size.x + 80.0, config.button_size.y + 100.0);
     let cursor_sprite_bundle = SpriteBundle {
         sprite: Sprite {
-            custom_size: Some(Vec2::new(480., 200.)),
+            custom_size: Some(cursor_size),
             ..default()
         },
         texture: choicing_frame_image_handle,
-        transform: Transform::from_xyz(-2., 200., 0.3),
+        transform: Transform::from_xyz(-2.0, cursor_size.y, 0.3),
         visibility: Visibility::Hidden,
         ..default()
     };
