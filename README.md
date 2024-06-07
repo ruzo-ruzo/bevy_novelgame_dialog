@@ -22,7 +22,7 @@ Open the choices box.[^wait]
 * [Fox walking](choice_example.md#walking)
 * [Fox stopping](choice_example.md#stopping)
 * [Fox running](choice_example.md#running)
-* [Another story](explain02.md#other-story)
+* [Close talk](choice_example.md#closing)
 
 # Walking
 The fox is walking[^wait]
@@ -42,11 +42,14 @@ The fox is running[^wait]
 
 [jump](choice_example.md#choices)
 
+# Closing
+The dialog box closing[^close]
+
 [^wait]: Waiting for input  
 [^signal(Fox_walk)]: Play fox walking motion  
 [^signal(Fox_stop)]: Play fox searching motion  
 [^signal(Fox_run)]: Play fox running motion  
-
+[^close]: Close dialog box
 ```
 
 ## License
