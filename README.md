@@ -17,30 +17,35 @@ This plugin provides a novel-game-style dialog box for the Bevy engine. You can 
 
 ## Example Script
 ```markdown
-# 選択肢
-選択肢ボックスを開きます。[^wait]
-* [きつね歩いて](choice_example.md#歩く)
-* [きつね止まって](choice_example.md#止まる)
-* [きつね走って](choice_example.md#走る)
-* [別の話](explain02.md#その他の話)
+# Choices
+Open the choices box.[^wait]
+* [Fox walking](choice_example.md#walking)
+* [Fox stopping](choice_example.md#stopping)
+* [Fox running](choice_example.md#running)
+* [Another story](explain02.md#other-story)
 
-# 歩く
-きつねが歩きます[^wait]
+# Walking
+The fox is walking[^wait]
 [^signal(Fox_walk)]
 
-[jump](choice_example.md#選択肢)
+[jump](choice_example.md#choices)
 
-# 止まる
-きつねが止まります[^wait]
+# Stopping
+The fox is stopping[^wait]
 [^signal(Fox_stop)]
 
-[jump](choice_example.md#選択肢)
+[jump](choice_example.md#choices)
 
-# 走る
-きつねが走ります[^wait]
+# Running
+The fox is running[^wait]
 [^signal(Fox_run)]
 
-[jump](choice_example.md#選択肢)
+[jump](choice_example.md#choices)
+
+[^wait]: Waiting for input  
+[^signal(Fox_walk)]: Play fox walking motion  
+[^signal(Fox_stop)]: Play fox searching motion  
+[^signal(Fox_run)]: Play fox running motion  
 
 ```
 
