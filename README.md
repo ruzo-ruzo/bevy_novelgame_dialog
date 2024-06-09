@@ -18,6 +18,7 @@ This plugin provides a novel-game-style dialog box for the Bevy engine. You can 
 ## Example Script
 ```markdown
 # Choices
+## docent
 Open the choices box.[^wait]
 * [Fox walking](choice_example.md#walking)
 * [Fox stopping](choice_example.md#stopping)
