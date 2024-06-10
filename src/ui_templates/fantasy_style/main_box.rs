@@ -5,8 +5,7 @@ pub(super) struct MainBoxPlugIn;
 
 impl Plugin for MainBoxPlugIn {
     fn build(&self, app: &mut App) {
-        embedded_asset!(app, "assets/textures/ui/dialog_box_01.png");
-        embedded_asset!(app, "assets/textures/ui/dialog_box_01.png");
+        embedded_asset!(app, "assets/textures/ui/dialog_box_02.png");
         embedded_asset!(app, "assets/textures/ui/name_plate.png");
         embedded_asset!(app, "assets/textures/ui/cursor.png");
         app.add_systems(Startup, setup_messageframe)
@@ -35,7 +34,7 @@ fn setup_messageframe(
     asset_server: Res<AssetServer>,
 ) {
     let writing_image_handle =
-        asset_server.load(ASSETS_PATH.to_owned() + "textures/ui/dialog_box_01.png");
+        asset_server.load(ASSETS_PATH.to_owned() + "textures/ui/dialog_box_02.png");
     let writing_slice = ImageScaleMode::Sliced(TextureSlicer {
         border: BorderRect::rectangle(55.0, 71.0),
         ..default()
