@@ -44,7 +44,7 @@ The fox is running[^wait]
 [jump](choice_example.md#choices)
 
 # Closing
-The dialog box is closing[^wait][^close]
+This dialog box is closing[^wait][^close]
 
 [^wait]: Waiting for input  
 [^signal(Fox_walk)]: Play fox walking motion  

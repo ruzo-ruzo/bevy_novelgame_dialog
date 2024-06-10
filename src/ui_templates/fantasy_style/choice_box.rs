@@ -5,6 +5,7 @@ pub(super) struct ChoiceBoxPlugIn;
 
 impl Plugin for ChoiceBoxPlugIn {
     fn build(&self, app: &mut App) {
+        embedded_asset!(app, "assets/textures/ui/dialog_box_01.png");
         embedded_asset!(app, "assets/textures/ui/choice_buttons/button_default.png");
         embedded_asset!(app, "assets/textures/ui/choice_buttons/button_pushed.png");
         embedded_asset!(app, "assets/textures/ui/choice_buttons/choicing_frame.png");
