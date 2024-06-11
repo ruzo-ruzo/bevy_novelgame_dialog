@@ -7,7 +7,10 @@ fn main() {
     App::new()
         .add_plugins((
             DefaultPlugins,
-            RPGStyleUIPlugin::default(),
+            RPGStyleUIPlugin {
+                max_button_index: 5,
+                ..default()
+            },
             fox_background::FoxBackgroundPlugin,
             DebugTextAreaPlugin,
         ))
@@ -58,9 +61,9 @@ mod fox_background {
     ) {
         // Insert a resource with the current scene information
         commands.insert_resource(Animations(vec![
-            asset_server.load("models/animated/Fox.glb#Animation2"),
-            asset_server.load("models/animated/Fox.glb#Animation1"),
-            asset_server.load("models/animated/Fox.glb#Animation0"),
+            asset_server.load("models/Fox.glb#Animation2"),
+            asset_server.load("models/Fox.glb#Animation1"),
+            asset_server.load("models/Fox.glb#Animation0"),
         ]));
 
         // Camera
@@ -100,12 +103,11 @@ mod fox_background {
 
         // Fox
         commands.spawn(SceneBundle {
-            scene: asset_server.load("models/animated/Fox.glb#Scene0"),
+            scene: asset_server.load("models/Fox.glb#Scene0"),
             ..default()
         });
     }
 
-    // Once the scene is loaded, start the animation
     fn setup_scene_once_loaded(
         animations: Res<Animations>,
         mut player: Query<&mut AnimationPlayer>,

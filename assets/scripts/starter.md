@@ -1,1 +1,1 @@
-[jump](explain02.md#最初の文言)
+[jump](choice_example.md#Choices)

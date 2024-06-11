@@ -196,7 +196,7 @@ fn next_paragraph(input: &str) -> IResult<&str, ParsedOrder> {
 
 fn simple_char(input: &str) -> IResult<&str, ParsedOrder> {
     take(1usize)(input).map(|(rem, c)| {
-        let order = if c == "\n" || c == "\r" || c == "\t" || c == " " {
+        let order = if c == "\n" || c == "\r" || c == "\t" {
             ParsedOrder::Empty
         } else {
             ParsedOrder::OrderWrapper(Order::Type {
