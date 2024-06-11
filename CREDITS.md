@@ -26,7 +26,7 @@ This project makes use of the following resources, each of which is licensed as 
    - **License:** [SIL Open Font License 1.1 (OFL)](https://scripts.sil.org/cms/scripts/page.php?item_id=OFL_web)
    - **Source:** https://fonts.google.com/specimen/UnifrakturMaguntia
 
-4. **Font Name:** [网风雅宋]
-   - **Author:** [猫啃网 x 新愚公 (中国大陆)]
+4. **Font Name:** 网风雅宋
+   - **Author:** 猫啃网 x 新愚公 (中国大陆)
    - **License:** [SIL Open Font License 1.1 (OFL)](https://scripts.sil.org/cms/scripts/page.php?item_id=OFL_web)
-   - **Source:** [https://www.maoken.com/freefonts/7026.html]
+   - **Source:** https://www.maoken.com/freefonts/7026.html
