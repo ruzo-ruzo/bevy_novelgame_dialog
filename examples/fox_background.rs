@@ -7,7 +7,10 @@ fn main() {
     App::new()
         .add_plugins((
             DefaultPlugins,
-            RPGStyleUIPlugin {max_button_index: 5, ..default()},
+            RPGStyleUIPlugin {
+                max_button_index: 5,
+                ..default()
+            },
             fox_background::FoxBackgroundPlugin,
             DebugTextAreaPlugin,
         ))
