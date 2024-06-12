@@ -5,7 +5,7 @@ This project makes use of the following resources, each of which is licensed as 
 ## 3D Model
 
 - **Model Name:** [glTF Sample Models]
-- **Author:** [KhronosGrou]
+- **Author:** [PixelMannen, tomkranis, scurest]
 - **License:** [CC0 1.0 Universal (CC0 1.0) Public Domain Dedication](https://creativecommons.org/publicdomain/zero/1.0/)
 - **Source:** [https://github.com/KhronosGroup/glTF-Sample-Models/tree/main/2.0/Fox]
 
