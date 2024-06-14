@@ -23,7 +23,7 @@ Open the choices box.[^wait]
 * [Fox walking](choice_example.md#Walking)
 * [Fox stopping](choice_example.md#Stopping)
 * [Fox running](choice_example.md#Running)
-* [Close talk](choice_example.md#Closing)
+* [Close dialog box](choice_example.md#Closing)
 
 # Walking
 [^feed]
