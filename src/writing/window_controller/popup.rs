@@ -72,27 +72,11 @@ pub(in crate::writing) fn open_window(
                     name: t_cfg.area_name.clone(),
                 },
                 feeding: t_cfg.feeding,
-                config: TypeTextConfig {
-                    fonts: t_cfg
-                        .font_sets
-                        .iter()
-                        .map(|f| asset_server.load(f.path.clone()))
-                        .collect(),
-                    kerning_by_fonts: t_cfg.font_sets.iter().map(|f| f.kerning).collect(),
-                    size_by_fonts: t_cfg.font_sets.iter().map(|f| f.size).collect(),
-                    text_style: TextStyle {
-                        font_size: t_cfg.text_base_size,
-                        color: t_cfg.font_color,
-                        ..default()
-                    },
-                    writing: t_cfg.writing,
-                    typing_timing: t_cfg.typing_timing,
-                    layer: RenderLayers::layer(setup_config.render_layer),
-                    horizon_alignment: t_cfg.horizon_alignment,
-                    vertical_alignment: t_cfg.vertical_alignment,
-                    monospace: t_cfg.monospace,
-                    pos_z: t_cfg.text_pos_z,
-                },
+                config: initialize_text_config(
+                    asset_server.clone(),
+                    t_cfg,
+                    Res::clone(&setup_config),
+                ),
             };
             let ta_sprite = SpriteBundle {
                 sprite: Sprite {
@@ -119,6 +103,35 @@ pub(in crate::writing) fn open_window(
                 commands.entity(*id).insert(Current);
             }
         }
+    }
+}
+
+fn initialize_text_config(
+    asset_server: AssetServer,
+    t_cfg: &TextAreaConfig,
+    setup_config: Res<SetupConfig>,
+) -> TypeTextConfig {
+    TypeTextConfig {
+        fonts: t_cfg
+            .text_config
+            .font_paths
+            .iter()
+            .map(|f| asset_server.load(f.clone()))
+            .collect(),
+        kerning_by_regulars: t_cfg.text_config.kerning_by_regulars.clone(),
+        size_by_regulars: t_cfg.text_config.size_by_regulars.clone(),
+        text_style: TextStyle {
+            font_size: t_cfg.text_config.text_base_size,
+            color: t_cfg.text_config.font_color,
+            ..default()
+        },
+        writing: t_cfg.writing,
+        typing_timing: t_cfg.typing_timing,
+        layer: RenderLayers::layer(setup_config.render_layer),
+        horizon_alignment: t_cfg.horizon_alignment,
+        vertical_alignment: t_cfg.vertical_alignment,
+        monospace: t_cfg.monospace,
+        pos_z: t_cfg.text_pos_z,
     }
 }
 

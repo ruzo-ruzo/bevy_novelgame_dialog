@@ -4,29 +4,13 @@ use bevy::{
     render::{color::Color, view::RenderLayers},
     sprite::Anchor,
 };
-
-#[derive(Clone)]
-pub struct FontConfig {
-    pub path: String,
-    pub kerning: f32,
-    pub size: f32,
-}
-
-impl Default for FontConfig {
-    fn default() -> Self {
-        FontConfig {
-            path: "fonts/FiraMono-Regular.ttf".to_string(),
-            kerning: 0.0,
-            size: 1.0,
-        }
-    }
-}
+use std::collections::HashMap;
 
 #[derive(Component)]
 pub struct TypeTextConfig {
     pub fonts: Vec<Handle<Font>>,
-    pub kerning_by_fonts: Vec<f32>,
-    pub size_by_fonts: Vec<f32>,
+    pub kerning_by_regulars: HashMap<String, f32>,
+    pub size_by_regulars: HashMap<String, f32>,
     pub text_style: TextStyle,
     pub writing: WritingStyle,
     pub typing_timing: TypingTiming,
@@ -38,6 +22,27 @@ pub struct TypeTextConfig {
 }
 
 #[derive(Clone)]
+pub struct CharConfig {
+    pub font_paths: Vec<String>,
+    pub kerning_by_regulars: HashMap<String, f32>,
+    pub size_by_regulars: HashMap<String, f32>,
+    pub text_base_size: f32,
+    pub font_color: Color,
+}
+
+impl Default for CharConfig {
+    fn default() -> Self {
+        CharConfig {
+            font_paths: vec!["fonts/FiraMono-Regular.ttf".to_string()],
+            kerning_by_regulars: HashMap::default(),
+            size_by_regulars: HashMap::default(),
+            text_base_size: 27.0,
+            font_color: Color::ANTIQUE_WHITE,
+        }
+    }
+}
+
+#[derive(Clone)]
 pub struct TextAreaConfig {
     pub area_name: String,
     pub area_origin: Vec2,
@@ -45,12 +50,10 @@ pub struct TextAreaConfig {
     pub horizon_alignment: AlignHorizon,
     pub vertical_alignment: AlignVertical,
     pub monospace: bool,
+    pub text_config: CharConfig,
     pub feeding: FeedingStyle,
     pub typing_timing: TypingTiming,
     pub writing: WritingStyle,
-    pub font_sets: Vec<FontConfig>,
-    pub text_base_size: f32,
-    pub font_color: Color,
     pub text_pos_z: f32,
 }
 
@@ -63,12 +66,10 @@ impl Default for TextAreaConfig {
             horizon_alignment: AlignHorizon::Left,
             vertical_alignment: AlignVertical::Top,
             monospace: false,
+            text_config: CharConfig::default(),
             feeding: FeedingStyle::Scroll { size: 0, sec: 40. },
             typing_timing: TypingTiming::ByChar { sec: 0.07 },
             writing: WritingStyle::Wipe { sec: 0.07 },
-            font_sets: vec![FontConfig::default()],
-            text_base_size: 27.0,
-            font_color: Color::ANTIQUE_WHITE,
             text_pos_z: 1.0,
         }
     }

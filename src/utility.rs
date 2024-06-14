@@ -1,6 +1,8 @@
-use ab_glyph::Font as AFont;
+use ab_glyph::Font as ABFont;
 use bevy::prelude::*;
 use rand::{distributions::uniform::SampleRange, Rng};
+use regex::Regex;
+use std::collections::HashMap;
 
 #[allow(dead_code)]
 pub(crate) fn get_random<T, R: AsRef<[T]>>(list: &R) -> Option<&T> {
@@ -8,7 +10,18 @@ pub(crate) fn get_random<T, R: AsRef<[T]>>(list: &R) -> Option<&T> {
     list_ref.get(rand::thread_rng().gen_range(0..list_ref.len()))
 }
 
-#[allow(dead_code)]
+pub(crate) fn find_by_regex<T: Clone, S: AsRef<str>>(s: S, base: &HashMap<String, T>) -> Option<T> {
+    let reg = base.keys().find_map(|k| {
+        let r = Regex::new(k).ok()?;
+        if r.is_match(s.as_ref()) {
+            Some(k)
+        } else {
+            None
+        }
+    });
+    reg.and_then(|r| base.get(r)).cloned()
+}
+
 pub(crate) fn choice_font<R: AsRef<[Handle<Font>]>>(
     list: &R,
     target: char,
@@ -27,6 +40,7 @@ pub(crate) fn choice_font<R: AsRef<[Handle<Font>]>>(
     finded.or(list.as_ref().iter().last().cloned())
 }
 
+#[allow(dead_code)]
 pub(crate) fn choice_font_with_index<R: AsRef<[Handle<Font>]>>(
     list: &R,
     target: char,
