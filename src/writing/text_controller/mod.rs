@@ -241,10 +241,10 @@ fn add_char(
         Option<Entity>,
     ),
 ) -> bool {
-    let font_conf = choice_font_with_index(&config.fonts, new_word, font_assets);
-    let font_index = font_conf.clone().map(|x| x.0).unwrap_or_default();
-    let size_coefficient = config.size_by_fonts.get(font_index).unwrap_or(&1.0);
-    let kerning_coefficient = config.kerning_by_fonts.get(font_index).unwrap_or(&0.0);
+    let new_str = String::from(new_word);
+    let font_h = choice_font(&config.fonts, new_word, font_assets);
+    let size_coefficient = find_by_regex(new_str.clone(), &config.size_by_regulars).unwrap_or(1.0);
+    let kerning_coefficient = find_by_regex(new_str, &config.kerning_by_regulars).unwrap_or(0.0);
     let true_size = config.text_style.font_size * size_coefficient;
     let kerning = true_size * kerning_coefficient;
     let target_x = last_char.pos.x + true_size + kerning;
@@ -252,7 +252,7 @@ fn add_char(
         false
     } else {
         let text_style = TextStyle {
-            font: font_conf.clone().map(|x| x.1).unwrap_or_default(),
+            font: font_h.clone().unwrap_or_default(),
             font_size: true_size,
             ..config.text_style
         };
@@ -279,7 +279,7 @@ fn add_char(
         let typing_timer = TypingTimer {
             timer: Timer::from_seconds(type_sec, TimerMode::Once),
         };
-        let font = &font_assets.get(font_conf.unwrap().1).unwrap().font;
+        let font = &font_assets.get(&font_h.unwrap_or_default()).unwrap().font;
         let pt_per_height = true_size / font.height_unscaled();
         let advance = pt_per_height * font.h_advance_unscaled(font.glyph_id(new_word));
         let next_x = last_char.pos.x + advance + kerning;

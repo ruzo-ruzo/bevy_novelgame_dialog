@@ -7,6 +7,7 @@ use bevy::prelude::*;
 use bevy::sprite::Anchor;
 use choice_box::ChoiceBoxPlugIn;
 use main_box::MainBoxPlugIn;
+use std::collections::HashMap;
 
 const COMMON_PATH: &str = "embedded://bevy_novelgame_dialog/ui_templates/fantasy_style/../assets/";
 const ASSETS_PATH: &str = "embedded://bevy_novelgame_dialog/ui_templates/fantasy_style/assets/";
@@ -116,23 +117,21 @@ fn open_message(
             "noto/NotoEmoji-VariableFont_wght.ttf",
         ]
         .iter()
-        .map(|s| ASSETS_PATH.to_owned() + "fonts/" + s);
-        let font_vec = font_path_vec
-            .zip([(1.0, 0.0), (1.0, 0.0), (1.3, 0.0), (1.0, 0.0)].iter())
-            .map(|(p, (s, k))| FontConfig {
-                path: p.clone(),
-                kerning: *k,
-                size: *s,
-            })
-            .collect::<Vec<_>>();
+        .map(|s| ASSETS_PATH.to_owned() + "fonts/" + s)
+        .collect::<Vec<_>>();
+        let text_conf = CharConfig {
+            font_paths: font_path_vec,
+            kerning_by_regulars: HashMap::from([(" ".to_string(), -0.7)]),
+            size_by_regulars: HashMap::from([("[[:alpha:]]".to_string(), 1.2)]),
+            text_base_size: config.font_size,
+            font_color: Color::rgb(0.7, 0.5, 0.3),
+        };
         let text_area_x = -config.box_size.x / 2.0 + config.box_pos.x + 80.0;
         let text_area_y = config.box_size.y / 2.0 + config.box_pos.y + 120.0;
         let frame_tac = TextAreaConfig {
             area_name: "Main Area".to_string(),
-            font_sets: font_vec.clone(),
+            text_config: text_conf.clone(),
             feeding: FeedingStyle::Scroll { size: 0, sec: 0.5 },
-            font_color: Color::rgb(0.7, 0.5, 0.3),
-            text_base_size: config.font_size,
             area_origin: Vec2::new(text_area_x, text_area_y),
             area_size: Vec2::new(config.box_size.x - 90.0, config.box_size.y - 160.0),
             ..default()
@@ -143,9 +142,10 @@ fn open_message(
             area_name: "Name Area".to_string(),
             area_origin: Vec2::new(name_area_x, name_area_y),
             area_size: Vec2::new(400.0, 80.0),
-            font_sets: font_vec.clone(),
-            font_color: Color::ANTIQUE_WHITE,
-            text_base_size: 32.0,
+            text_config: CharConfig {
+                font_color: Color::ANTIQUE_WHITE,
+                ..text_conf.clone()
+            },
             feeding: FeedingStyle::Rid,
             writing: WritingStyle::Put,
             typing_timing: TypingTiming::ByPage,
@@ -153,9 +153,11 @@ fn open_message(
             ..default()
         };
         let tac_base = TextAreaConfig {
-            font_sets: font_vec.clone(),
+            text_config: CharConfig {
+                font_color: Color::NAVY,
+                ..text_conf.clone()
+            },
             area_size: Vec2::new(config.button_size.x - 40.0, config.button_size.y),
-            font_color: Color::NAVY,
             writing: WritingStyle::Put,
             typing_timing: TypingTiming::ByPage,
             horizon_alignment: AlignHorizon::Center,
