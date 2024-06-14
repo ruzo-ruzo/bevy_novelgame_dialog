@@ -19,7 +19,7 @@ pub(crate) fn find_by_regex<T: Clone, S: AsRef<str>>(s: S, base: &HashMap<String
             None
         }
     });
-    reg.and_then(|r| base.get(r).clone()).cloned()
+    reg.and_then(|r| base.get(r)).cloned()
 }
 
 pub(crate) fn choice_font<R: AsRef<[Handle<Font>]>>(
