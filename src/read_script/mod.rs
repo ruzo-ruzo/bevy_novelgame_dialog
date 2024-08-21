@@ -6,7 +6,7 @@ use bevy::{
     asset::{io::Reader, AssetLoader, AsyncReadExt, LoadContext},
     prelude::*,
     reflect::{
-        serde::{ReflectSerializer, ReflectDeserializer},
+        serde::{ReflectDeserializer, ReflectSerializer},
         TypePath,
     },
 };
@@ -51,11 +51,11 @@ impl AssetLoader for BMWScriptLoader {
         _settings: &'a Self::Settings,
         _load_context: &'a mut LoadContext<'_>,
     ) -> Result<Self::Asset, Self::Error> {
-            let mut bytes = Vec::new();
-            reader.read_to_end(&mut bytes).await?;
-            let raw_text = String::from_utf8(bytes)?;
-            let bds = BMWScript { script: raw_text };
-            Ok(bds)
+        let mut bytes = Vec::new();
+        reader.read_to_end(&mut bytes).await?;
+        let raw_text = String::from_utf8(bytes)?;
+        let bds = BMWScript { script: raw_text };
+        Ok(bds)
     }
 
     fn extensions(&self) -> &[&str] {
@@ -92,11 +92,11 @@ impl AssetLoader for BMWTemplateLoader {
         _settings: &'a Self::Settings,
         _load_context: &'a mut LoadContext<'_>,
     ) -> Result<Self::Asset, Self::Error> {
-            let mut bytes = Vec::new();
-            reader.read_to_end(&mut bytes).await?;
-            let raw_text = String::from_utf8(bytes)?;
-            let bdt = BMWTemplate { template: raw_text };
-            Ok(bdt)
+        let mut bytes = Vec::new();
+        reader.read_to_end(&mut bytes).await?;
+        let raw_text = String::from_utf8(bytes)?;
+        let bdt = BMWTemplate { template: raw_text };
+        Ok(bdt)
     }
 
     fn extensions(&self) -> &[&str] {

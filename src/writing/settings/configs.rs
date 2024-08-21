@@ -1,9 +1,6 @@
 use super::params::*;
 use bevy::{
-    prelude::*,
-    color::Color,
-    color::palettes::css as CssColor,
-    render::view::RenderLayers,
+    color::palettes::css as CssColor, color::Color, prelude::*, render::view::RenderLayers,
     sprite::Anchor,
 };
 use std::collections::HashMap;

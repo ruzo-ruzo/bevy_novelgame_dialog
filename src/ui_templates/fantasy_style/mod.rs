@@ -3,9 +3,9 @@ mod main_box;
 
 use crate::prelude::*;
 use bevy::asset::embedded_asset;
+use bevy::color::palettes::css as CssColor;
 use bevy::prelude::*;
 use bevy::sprite::Anchor;
-use bevy::color::palettes::css as CssColor;
 use choice_box::ChoiceBoxPlugIn;
 use main_box::MainBoxPlugIn;
 use std::collections::HashMap;
