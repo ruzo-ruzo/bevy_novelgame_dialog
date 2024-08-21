@@ -11,20 +11,23 @@ categories:
       - 'bugfix'
       - 'bug'
   - title: '🧰 Maintenance'
-    label: 'chore'
+    label:
+      - 'chore'
+      - 'refactor'
 change-template: '- $TITLE @$AUTHOR (#$NUMBER)'
 change-title-escapes: '\<*_&' # You can add # and @ to disable mentions, and add ` to disable code blocks.
 autolabeler:
   - label: feature
     branch:
       - '/^feat(ure)?[/-].+/'
-  - label: bug
+  - label: bugfix
     branch:
       - '/^fix[/-].+/'
   - label: chore
     branch:
       - '/^chore[/-].+/'
       - '/^customize[/-].+/'
+      - '/^apply[/-].+/'
   - label: refactor
     branch:
       - '/(refactor|refactoring)[/-].+/'
