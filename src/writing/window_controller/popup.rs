@@ -60,10 +60,10 @@ pub(in crate::writing) fn open_window(
             tf.scale = Vec3::ONE;
         }
         let additional_mw = (Hidden, window_config.template_open_choice.clone());
-        let layer = RenderLayers::layer(setup_config.render_layer);
+        let layer = RenderLayers::layer(setup_config.render_layer.into());
         commands
             .entity(mw)
-            .insert((mwb, layer, Current, additional_mw));
+            .insert((mwb, layer.clone(), Current, additional_mw));
         let mut ta_id_list = Vec::new();
         let mut current_exists_in_text_areas = false;
         for t_cfg in &window_config.text_area_configs {
@@ -81,7 +81,7 @@ pub(in crate::writing) fn open_window(
             let ta_sprite = SpriteBundle {
                 sprite: Sprite {
                     anchor: Anchor::TopLeft,
-                    color: Color::WHITE.with_a(0.),
+                    color: Color::WHITE.with_alpha(0.0),
                     // color: Color::BLACK.with_a(0.5),
                     custom_size: Some(t_cfg.area_size),
                     ..default()
@@ -90,7 +90,7 @@ pub(in crate::writing) fn open_window(
                 // transform: Transform::from_translation(t_cfg.area_origin.extend(10.0)),
                 ..default()
             };
-            let tai = commands.spawn((tab, ta_sprite, layer)).id();
+            let tai = commands.spawn((tab, ta_sprite, layer.clone())).id();
             commands.entity(mw).add_child(tai);
             if t_cfg.area_name == window_config.main_text_area_name {
                 commands.entity(tai).insert(Current);
@@ -127,7 +127,7 @@ fn initialize_text_config(
         },
         writing: t_cfg.writing,
         typing_timing: t_cfg.typing_timing,
-        layer: RenderLayers::layer(setup_config.render_layer),
+        layer: RenderLayers::layer(setup_config.render_layer.into()),
         horizon_alignment: t_cfg.horizon_alignment,
         vertical_alignment: t_cfg.vertical_alignment,
         monospace: t_cfg.monospace,

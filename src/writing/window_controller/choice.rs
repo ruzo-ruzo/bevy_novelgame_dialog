@@ -106,7 +106,7 @@ pub(in crate::writing) fn open_choice_box(
                     }
                     commands
                         .entity(*entity)
-                        .insert(RenderLayers::layer(setup_config.render_layer));
+                        .insert(RenderLayers::layer(setup_config.render_layer.into()));
                     if let Ok(mut tf) = tf_query.get_mut(*entity) {
                         tf.translation.x += x_dir * x_expand / 2.0;
                         tf.translation.y += y_dir * y_expand / 2.0;

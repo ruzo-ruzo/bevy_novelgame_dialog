@@ -128,7 +128,7 @@ pub(in crate::writing) fn waiting_icon_setting(
             {
                 commands
                     .entity(ic_entity)
-                    .insert((WritingStyle::Put, *layer, Visibility::Hidden));
+                    .insert((WritingStyle::Put, layer.clone(), Visibility::Hidden));
             }
         }
     }

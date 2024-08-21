@@ -6,10 +6,9 @@ use bevy::{
     asset::{io::Reader, AssetLoader, AsyncReadExt, LoadContext},
     prelude::*,
     reflect::{
-        serde::{ReflectSerializer, UntypedReflectDeserializer},
+        serde::{ReflectSerializer, ReflectDeserializer},
         TypePath,
     },
-    utils::{thiserror, BoxedFuture},
 };
 use parse_bds::*;
 use serde::{de::DeserializeSeed, Deserialize};
@@ -46,19 +45,17 @@ impl AssetLoader for BMWScriptLoader {
     type Asset = BMWScript;
     type Settings = ();
     type Error = BMWScriptLoaderError;
-    fn load<'a>(
+    async fn load<'a>(
         &'a self,
-        reader: &'a mut Reader,
+        reader: &'a mut Reader<'_>,
         _settings: &'a Self::Settings,
-        _load_context: &'a mut LoadContext,
-    ) -> BoxedFuture<'a, Result<Self::Asset, Self::Error>> {
-        Box::pin(async move {
+        _load_context: &'a mut LoadContext<'_>,
+    ) -> Result<Self::Asset, Self::Error> {
             let mut bytes = Vec::new();
             reader.read_to_end(&mut bytes).await?;
             let raw_text = String::from_utf8(bytes)?;
             let bds = BMWScript { script: raw_text };
             Ok(bds)
-        })
     }
 
     fn extensions(&self) -> &[&str] {
@@ -89,19 +86,17 @@ impl AssetLoader for BMWTemplateLoader {
     type Asset = BMWTemplate;
     type Settings = ();
     type Error = BMWTemplateLoaderError;
-    fn load<'a>(
+    async fn load<'a>(
         &'a self,
-        reader: &'a mut Reader,
+        reader: &'a mut Reader<'_>,
         _settings: &'a Self::Settings,
-        _load_context: &'a mut LoadContext,
-    ) -> BoxedFuture<'a, Result<Self::Asset, Self::Error>> {
-        Box::pin(async move {
+        _load_context: &'a mut LoadContext<'_>,
+    ) -> Result<Self::Asset, Self::Error> {
             let mut bytes = Vec::new();
             reader.read_to_end(&mut bytes).await?;
             let raw_text = String::from_utf8(bytes)?;
             let bdt = BMWTemplate { template: raw_text };
             Ok(bdt)
-        })
     }
 
     fn extensions(&self) -> &[&str] {
@@ -119,7 +114,7 @@ pub(crate) fn script_on_load(
             let script_opt = loaded_script
                 .bds_handle_opt
                 .clone()
-                .and_then(|x| script_assets.get(x));
+                .and_then(|x| script_assets.get(&x));
             let template_list = loaded_script
                 .bdt_handle_list
                 .iter()
@@ -141,7 +136,7 @@ pub(crate) fn read_ron<S: AsRef<str>>(
 ) -> Result<Box<dyn Reflect>, ron::Error> {
     let ron_string = ron.as_ref().to_string();
     let reg = type_registry.read();
-    let reflect_deserializer = UntypedReflectDeserializer::new(&reg);
+    let reflect_deserializer = ReflectDeserializer::new(&reg);
     let mut deserializer = ron::de::Deserializer::from_str(&ron_string)?;
     reflect_deserializer.deserialize(&mut deserializer)
 }

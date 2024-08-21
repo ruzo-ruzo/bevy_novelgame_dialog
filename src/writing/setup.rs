@@ -22,7 +22,7 @@ pub fn setup_camera(mut commands: Commands, config: Res<SetupConfig>) {
             },
             ..default()
         },
-        RenderLayers::layer(config.render_layer),
+        RenderLayers::layer(config.render_layer.into()),
         DialogBoxCamera,
     ));
 }

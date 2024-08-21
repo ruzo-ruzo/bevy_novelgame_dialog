@@ -1,7 +1,9 @@
 use super::params::*;
 use bevy::{
     prelude::*,
-    render::{color::Color, view::RenderLayers},
+    color::Color,
+    color::palettes::css as CssColor,
+    render::view::RenderLayers,
     sprite::Anchor,
 };
 use std::collections::HashMap;
@@ -37,7 +39,7 @@ impl Default for CharConfig {
             kerning_by_regulars: HashMap::default(),
             size_by_regulars: HashMap::default(),
             text_base_size: 27.0,
-            font_color: Color::ANTIQUE_WHITE,
+            font_color: CssColor::ANTIQUE_WHITE.into(),
         }
     }
 }

@@ -289,7 +289,7 @@ fn add_char(
             text_char: MessageTextChar,
             timer: typing_timer,
             text2d: text2d_bundle,
-            layer: config.layer,
+            layer: config.layer.clone(),
             writing: config.writing,
         };
         if let Some(last_line) = last_line_opt {

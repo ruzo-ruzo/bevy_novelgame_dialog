@@ -5,6 +5,7 @@ use crate::prelude::*;
 use bevy::asset::embedded_asset;
 use bevy::prelude::*;
 use bevy::sprite::Anchor;
+use bevy::color::palettes::css as CssColor;
 use choice_box::ChoiceBoxPlugIn;
 use main_box::MainBoxPlugIn;
 use std::collections::HashMap;
@@ -124,7 +125,7 @@ fn open_message(
             kerning_by_regulars: HashMap::from([(" ".to_string(), -0.7)]),
             size_by_regulars: HashMap::from([("[[:alpha:]]".to_string(), 1.2)]),
             text_base_size: config.font_size,
-            font_color: Color::rgb(0.7, 0.5, 0.3),
+            font_color: Color::srgb(0.7, 0.5, 0.3),
         };
         let text_area_x = -config.box_size.x / 2.0 + config.box_pos.x + 80.0;
         let text_area_y = config.box_size.y / 2.0 + config.box_pos.y + 120.0;
@@ -143,7 +144,7 @@ fn open_message(
             area_origin: Vec2::new(name_area_x, name_area_y),
             area_size: Vec2::new(400.0, 80.0),
             text_config: CharConfig {
-                font_color: Color::ANTIQUE_WHITE,
+                font_color: CssColor::ANTIQUE_WHITE.into(),
                 ..text_conf.clone()
             },
             feeding: FeedingStyle::Rid,
@@ -154,7 +155,7 @@ fn open_message(
         };
         let tac_base = TextAreaConfig {
             text_config: CharConfig {
-                font_color: Color::NAVY,
+                font_color: CssColor::NAVY.into(),
                 ..text_conf.clone()
             },
             area_size: Vec2::new(config.button_size.x - 40.0, config.button_size.y),
