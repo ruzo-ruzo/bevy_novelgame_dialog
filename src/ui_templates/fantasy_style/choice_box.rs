@@ -110,13 +110,13 @@ fn setup_choice_images(
                 cursor_sprite_bundle,
                 choicing_frame_slice,
                 ChoiceCursor,
-                RenderLayers::layer(config.render_layer),
+                RenderLayers::layer(config.render_layer.into()),
             ));
             c.spawn((
                 pushed_sprite_bundle,
                 PushedButton,
                 button_slice,
-                RenderLayers::layer(config.render_layer),
+                RenderLayers::layer(config.render_layer.into()),
             ));
         });
 }

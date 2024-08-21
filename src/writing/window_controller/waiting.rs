@@ -126,9 +126,11 @@ pub(in crate::writing) fn waiting_icon_setting(
                 .iter()
                 .find(|x| x.1.target_box_name == *db_name)
             {
-                commands
-                    .entity(ic_entity)
-                    .insert((WritingStyle::Put, *layer, Visibility::Hidden));
+                commands.entity(ic_entity).insert((
+                    WritingStyle::Put,
+                    layer.clone(),
+                    Visibility::Hidden,
+                ));
             }
         }
     }

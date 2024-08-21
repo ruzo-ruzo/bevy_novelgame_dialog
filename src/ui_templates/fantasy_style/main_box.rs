@@ -78,7 +78,7 @@ fn setup_name_plate(
                             visibility: Visibility::Inherited,
                             ..default()
                         },
-                        RenderLayers::layer(config.render_layer),
+                        RenderLayers::layer(config.render_layer.into()),
                     ));
                 });
                 *is_setup = true;
@@ -94,7 +94,7 @@ fn waiting_sprite_setup(
 ) {
     let texture_image_path = "textures/ui/cursor.png";
     let texture_handle = asset_server.load(ASSETS_PATH.to_owned() + texture_image_path);
-    let texture_atlas = TextureAtlasLayout::from_grid(Vec2::new(44.0, 56.0), 1, 2, None, None);
+    let texture_atlas = TextureAtlasLayout::from_grid(UVec2::new(44, 56), 1, 2, None, None);
     let animation_indices = AnimationIndices {
         first: 0,
         last: 1,
@@ -103,11 +103,11 @@ fn waiting_sprite_setup(
     let texture_atlas_handle = texture_atlases.add(texture_atlas);
     let wi_sprite = Sprite::default();
     commands.spawn((
-        SpriteSheetBundle {
-            atlas: TextureAtlas {
-                layout: texture_atlas_handle,
-                index: animation_indices.first,
-            },
+        TextureAtlas {
+            layout: texture_atlas_handle,
+            index: animation_indices.first,
+        },
+        SpriteBundle {
             sprite: wi_sprite,
             transform: Transform::from_scale(Vec3::splat(0.5)),
             texture: texture_handle,
