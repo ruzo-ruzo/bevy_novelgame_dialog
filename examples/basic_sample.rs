@@ -268,30 +268,29 @@ mod models_controller {
             animations: Res<RabitAnimations>,
             mut signal_events: EventReader<BdsSignal>,
         ) {
+            let time = Duration::from_secs_f32(TRASITION_TIME);
             for BdsSignal { signal: sig } in signal_events.read() {
                 if let Ok((mut player, mut transition)) = animation_player.get_single_mut() {
-                    if *sig == "Rabit_greeting".to_string() {
-                        transition.play(
-                            &mut player,
-                            animations.name["greeting"].clone(),
-                            Duration::from_secs_f32(TRASITION_TIME),
-                        );
-                    } else if *sig == "Rabit_clap".to_string() {
-                        transition
-                            .play(
-                                &mut player,
-                                animations.name["clap"].clone(),
-                                Duration::from_secs_f32(TRASITION_TIME),
-                            )
-                            .repeat();
-                    } else if *sig == "Rabit_stay".to_string() {
-                        transition
-                            .play(
-                                &mut player,
-                                animations.name["stay.lookdown"].clone(),
-                                Duration::from_secs_f32(TRASITION_TIME),
-                            )
-                            .repeat();
+                    if let Some(current) = transition.get_main_animation() {
+                        if *sig == "Rabit_greeting".to_string() {
+                            if let Some(next) = animations.name.get("greeting") {
+                                if *next != current {
+                                    transition.play(&mut player, next.clone(), time);
+                                }
+                            }
+                        } else if *sig == "Rabit_clap".to_string() {
+                            if let Some(next) = animations.name.get("clap") {
+                                if *next != current {
+                                    transition.play(&mut player, next.clone(), time).repeat();
+                                }
+                            }
+                        } else if *sig == "Rabit_stay".to_string() {
+                            if let Some(next) = animations.name.get("stay.lookdown") {
+                                if *next != current {
+                                    transition.play(&mut player, next.clone(), time).repeat();
+                                }
+                            }
+                        }
                     }
                 }
             }
@@ -447,30 +446,29 @@ mod models_controller {
             animations: Res<KidAnimations>,
             mut signal_events: EventReader<BdsSignal>,
         ) {
+            let time = Duration::from_secs_f32(TRASITION_TIME);
             for BdsSignal { signal: sig } in signal_events.read() {
                 if let Ok((mut player, mut transition)) = animation_player.get_single_mut() {
-                    if *sig == "Kid_bow".to_string() {
-                        transition.play(
-                            &mut player,
-                            animations.name["bow"].clone(),
-                            Duration::from_secs_f32(TRASITION_TIME),
-                        );
-                    } else if *sig == "Kid_clap".to_string() {
-                        transition
-                            .play(
-                                &mut player,
-                                animations.name["clap"].clone(),
-                                Duration::from_secs_f32(TRASITION_TIME),
-                            )
-                            .repeat();
-                    } else if *sig == "Kid_stay".to_string() {
-                        transition
-                            .play(
-                                &mut player,
-                                animations.name["stay.bored"].clone(),
-                                Duration::from_secs_f32(TRASITION_TIME),
-                            )
-                            .repeat();
+                    if let Some(current) = transition.get_main_animation() {
+                        if *sig == "Kid_bow".to_string() {
+                            if let Some(next) = animations.name.get("bow") {
+                                if *next != current {
+                                    transition.play(&mut player, next.clone(), time);
+                                }
+                            }
+                        } else if *sig == "Kid_clap".to_string() {
+                            if let Some(next) = animations.name.get("clap") {
+                                if *next != current {
+                                    transition.play(&mut player, next.clone(), time).repeat();
+                                }
+                            }
+                        } else if *sig == "Kid_stay".to_string() {
+                            if let Some(next) = animations.name.get("stay.bored") {
+                                if *next != current {
+                                    transition.play(&mut player, next.clone(), time).repeat();
+                                }
+                            }
+                        }
                     }
                 }
             }
