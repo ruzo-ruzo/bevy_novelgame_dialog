@@ -1,0 +1,481 @@
+use bevy::prelude::*;
+
+fn main() {
+    App::new()
+        .add_plugins((
+            DefaultPlugins,
+            message_controler::MessageControllerPlugin,
+            models_controller::ModelsControllerPlugin,
+        ))
+        .run();
+}
+
+mod message_controler {
+    use bevy::prelude::*;
+    use bevy_novelgame_dialog::ui_templates::*;
+
+    pub struct MessageControllerPlugin;
+    impl Plugin for MessageControllerPlugin {
+        fn build(&self, app: &mut App) {
+            app.add_plugins(RPGStyleUIPlugin {
+                max_button_index: 4,
+                ..default()
+            })
+            .add_systems(Update, start_message);
+        }
+    }
+
+    fn start_message(
+        mut open_message_event: EventWriter<OpenRPGStyleDialog>,
+        mut is_started: Local<bool>,
+    ) {
+        if !*is_started {
+            let event = OpenRPGStyleDialog {
+                script_path: "scripts/starter.md".to_string(),
+            };
+            open_message_event.send(event);
+            *is_started = true;
+        }
+    }
+}
+
+mod models_controller {
+    use super::*;
+    use bevy::{gltf::Gltf, utils::Duration};
+    use bevy_novelgame_dialog::prelude::BdsSignal;
+    use std::collections::HashMap;
+    use std::f32::consts::TAU;
+
+    pub struct ModelsControllerPlugin;
+    impl Plugin for ModelsControllerPlugin {
+        fn build(&self, app: &mut App) {
+            app.add_plugins((rabit::RabitPlugin, kid::KidPlugin, room::RoomPlugin));
+        }
+    }
+
+    mod room {
+        use super::*;
+        use bevy::pbr::CascadeShadowConfigBuilder;
+
+        pub struct RoomPlugin;
+        impl Plugin for RoomPlugin {
+            fn build(&self, app: &mut App) {
+                app.insert_resource(AmbientLight {
+                    color: Color::WHITE,
+                    brightness: 0.0,
+                })
+                .add_systems(Startup, setup)
+                .add_systems(Update, load_scenes);
+            }
+        }
+
+        #[derive(Resource)]
+        struct Room(Handle<Gltf>);
+
+        fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
+            let gltf = asset_server.load("models/room.glb");
+            commands.insert_resource(Room(gltf));
+            commands.spawn(Camera3dBundle {
+                transform: Transform::from_xyz(0.0, 0.6, 2.0)
+                    .looking_at(Vec3::new(0.0, 0.6, 0.0), Vec3::Y),
+                ..default()
+            });
+            commands.spawn(DirectionalLightBundle {
+                transform: Transform::from_rotation(Quat::from_euler(
+                    EulerRot::ZYX,
+                    0.0,
+                    1.0,
+                    -TAU / 8.,
+                )),
+                directional_light: DirectionalLight {
+                    shadows_enabled: true,
+                    ..default()
+                },
+                cascade_shadow_config: CascadeShadowConfigBuilder {
+                    first_cascade_far_bound: 200.0,
+                    maximum_distance: 400.0,
+                    ..default()
+                }
+                .into(),
+                ..default()
+            });
+        }
+
+        fn load_scenes(
+            mut commands: Commands,
+            room: Res<Room>,
+            assets_gltf: Res<Assets<Gltf>>,
+            mut done: Local<bool>,
+        ) {
+            if !*done {
+                if let Some(gltf) = assets_gltf.get(&room.0) {
+                    commands.spawn(SceneBundle {
+                        scene: gltf.named_scenes["Scene"].clone(),
+                        ..default()
+                    });
+                    *done = true;
+                }
+            }
+        }
+    }
+
+    mod rabit {
+        use super::*;
+
+        const TRASITION_TIME: f32 = 0.5;
+
+        pub struct RabitPlugin;
+        impl Plugin for RabitPlugin {
+            fn build(&self, app: &mut App) {
+                app.add_systems(Startup, setup);
+                app.add_systems(Update, load_scenes);
+                app.add_systems(Update, start_stay);
+                app.add_systems(Update, resume_stay);
+                app.add_systems(Update, signal_animation_control);
+            }
+        }
+
+        #[derive(Resource)]
+        pub struct RabitGltf(Handle<Gltf>);
+
+        #[derive(Resource)]
+        struct RabitAnimations {
+            name: HashMap<String, AnimationNodeIndex>,
+            graph: Handle<AnimationGraph>,
+        }
+
+        #[derive(Component)]
+        pub struct Rabit;
+
+        fn setup(
+            mut commands: Commands,
+            asset_server: Res<AssetServer>,
+            graphs: Res<Assets<AnimationGraph>>,
+        ) {
+            let gltf = asset_server.load("models/rabit.glb");
+            commands.insert_resource(RabitGltf(gltf));
+            let animations: HashMap<String, AnimationNodeIndex> = HashMap::new();
+            let graph = graphs.reserve_handle();
+            commands.insert_resource(RabitAnimations {
+                name: animations,
+                graph: graph.clone(),
+            });
+        }
+
+        fn load_scenes(
+            mut commands: Commands,
+            rabit_gltf: Res<RabitGltf>,
+            mut graphs: ResMut<Assets<AnimationGraph>>,
+            assets_gltf: Res<Assets<Gltf>>,
+            mut rabit_animations: ResMut<RabitAnimations>,
+            mut done: Local<bool>,
+        ) {
+            if !*done {
+                if let Some(gltf) = assets_gltf.get(&rabit_gltf.0) {
+                    let mut graph = AnimationGraph::new();
+                    let mut animations: HashMap<String, AnimationNodeIndex> = HashMap::new();
+                    for (key, clip) in &gltf.named_animations {
+                        let index = graph.add_clip(clip.clone(), 1.0, graph.root);
+                        animations.insert(key.to_string(), index);
+                    }
+                    commands.spawn((
+                        SceneBundle {
+                            scene: gltf.named_scenes["Scene"].clone(),
+                            transform: Transform::from_xyz(0.5, 0.0, 0.0)
+                                .with_rotation(Quat::from_rotation_y(TAU * -0.05)),
+                            ..default()
+                        },
+                        Rabit,
+                    ));
+                    let graph = graphs.add(graph);
+                    *rabit_animations = RabitAnimations {
+                        name: animations,
+                        graph: graph.clone(),
+                    };
+                    *done = true;
+                }
+            }
+        }
+
+        fn start_stay(
+            mut commands: Commands,
+            mut players: Query<(Entity, &mut AnimationPlayer), Without<Rabit>>,
+            scenes: Query<Entity, With<Rabit>>,
+            parents: Query<&Parent>,
+            animations: Res<RabitAnimations>,
+        ) {
+            for (p_entity, mut player) in &mut players {
+                for s_entity in &scenes {
+                    for parent in parents.iter_ancestors(p_entity) {
+                        if parent == s_entity {
+                            if let Some(node) = animations.name.get("stay.lookdown") {
+                                let mut transitions = AnimationTransitions::new();
+                                transitions
+                                    .play(&mut player, *node, Duration::ZERO)
+                                    .repeat();
+                                commands
+                                    .entity(p_entity)
+                                    .insert(animations.graph.clone())
+                                    .insert(transitions)
+                                    .insert(Rabit);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        fn resume_stay(
+            mut animation_player: Query<
+                (&mut AnimationPlayer, &mut AnimationTransitions),
+                With<Rabit>,
+            >,
+            animations: Res<RabitAnimations>,
+            graphs: Res<Assets<AnimationGraph>>,
+            clips: Res<Assets<AnimationClip>>,
+        ) {
+            use bevy::animation::RepeatAnimation::*;
+            if let Ok((mut player, mut transition)) = animation_player.get_single_mut() {
+                if let Some(index) = transition.get_main_animation() {
+                    if let Some(active) = player.animation(index) {
+                        if let Some(graph) = graphs.get(&animations.graph) {
+                            if let Some(clip_handle) =
+                                graph.get(index).and_then(|x| x.clip.clone())
+                            {
+                                if let Some(clip) = clips.get(&clip_handle) {
+                                    let remain = clip.duration() - active.seek_time();
+                                    if active.repeat_mode() == Never && remain <= TRASITION_TIME {
+                                        transition
+                                            .play(
+                                                &mut player,
+                                                animations.name["stay.lookdown"],
+                                                Duration::from_secs_f32(TRASITION_TIME),
+                                            )
+                                            .repeat();
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        fn signal_animation_control(
+            mut animation_player: Query<
+                (&mut AnimationPlayer, &mut AnimationTransitions),
+                With<Rabit>,
+            >,
+            animations: Res<RabitAnimations>,
+            mut signal_events: EventReader<BdsSignal>,
+        ) {
+            for BdsSignal { signal: sig } in signal_events.read() {
+                if let Ok((mut player, mut transition)) = animation_player.get_single_mut() {
+                    if *sig == "Rabit_greeting".to_string() {
+                        transition.play(
+                            &mut player,
+                            animations.name["greeting"].clone(),
+                            Duration::from_secs_f32(TRASITION_TIME),
+                        );
+                    } else if *sig == "Rabit_clap".to_string() {
+                        transition
+                            .play(
+                                &mut player,
+                                animations.name["clap"].clone(),
+                                Duration::from_secs_f32(TRASITION_TIME),
+                            )
+                            .repeat();
+                    } else if *sig == "Rabit_stay".to_string() {
+                        transition
+                            .play(
+                                &mut player,
+                                animations.name["stay.lookdown"].clone(),
+                                Duration::from_secs_f32(TRASITION_TIME),
+                            )
+                            .repeat();
+                    }
+                }
+            }
+        }
+    }
+
+    mod kid {
+        use super::*;
+
+        const TRASITION_TIME: f32 = 0.5;
+
+        pub struct KidPlugin;
+        impl Plugin for KidPlugin {
+            fn build(&self, app: &mut App) {
+                app.add_systems(Startup, setup);
+                app.add_systems(Update, load_scenes);
+                app.add_systems(Update, start_stay);
+                app.add_systems(Update, resume_stay);
+                app.add_systems(Update, signal_animation_control);
+            }
+        }
+
+        #[derive(Resource)]
+        pub struct KidGltf(Handle<Gltf>);
+
+        #[derive(Resource)]
+        struct KidAnimations {
+            name: HashMap<String, AnimationNodeIndex>,
+            graph: Handle<AnimationGraph>,
+        }
+
+        #[derive(Component)]
+        pub struct Kid;
+
+        fn setup(
+            mut commands: Commands,
+            asset_server: Res<AssetServer>,
+            graphs: Res<Assets<AnimationGraph>>,
+        ) {
+            let gltf = asset_server.load("models/kid.glb");
+            commands.insert_resource(KidGltf(gltf));
+            let animations: HashMap<String, AnimationNodeIndex> = HashMap::new();
+            let graph = graphs.reserve_handle();
+            commands.insert_resource(KidAnimations {
+                name: animations,
+                graph: graph.clone(),
+            });
+        }
+
+        fn load_scenes(
+            mut commands: Commands,
+            kid_gltf: Res<KidGltf>,
+            mut graphs: ResMut<Assets<AnimationGraph>>,
+            assets_gltf: Res<Assets<Gltf>>,
+            mut kid_animations: ResMut<KidAnimations>,
+            mut done: Local<bool>,
+        ) {
+            if !*done {
+                if let Some(gltf) = assets_gltf.get(&kid_gltf.0) {
+                    let mut graph = AnimationGraph::new();
+                    let mut animations: HashMap<String, AnimationNodeIndex> = HashMap::new();
+                    for (key, clip) in &gltf.named_animations {
+                        let index = graph.add_clip(clip.clone(), 1.0, graph.root);
+                        animations.insert(key.to_string(), index);
+                    }
+                    commands.spawn((
+                        SceneBundle {
+                            scene: gltf.named_scenes["Scene"].clone(),
+                            transform: Transform::from_xyz(-0.5, 0.0, 0.0)
+                                .with_rotation(Quat::from_rotation_y(TAU * 0.1)),
+                            ..default()
+                        },
+                        Kid,
+                    ));
+                    let graph = graphs.add(graph);
+                    *kid_animations = KidAnimations {
+                        name: animations,
+                        graph: graph.clone(),
+                    };
+                    *done = true;
+                }
+            }
+        }
+
+        fn start_stay(
+            mut commands: Commands,
+            mut players: Query<(Entity, &mut AnimationPlayer), Without<Kid>>,
+            scenes: Query<Entity, With<Kid>>,
+            parents: Query<&Parent>,
+            animations: Res<KidAnimations>,
+        ) {
+            for (p_entity, mut player) in &mut players {
+                for s_entity in &scenes {
+                    for parent in parents.iter_ancestors(p_entity) {
+                        if parent == s_entity {
+                            if let Some(node) = animations.name.get("stay.bored") {
+                                let mut transitions = AnimationTransitions::new();
+                                transitions
+                                    .play(&mut player, *node, Duration::ZERO)
+                                    .repeat();
+                                commands
+                                    .entity(p_entity)
+                                    .insert(animations.graph.clone())
+                                    .insert(transitions)
+                                    .insert(Kid);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        fn resume_stay(
+            mut animation_player: Query<
+                (&mut AnimationPlayer, &mut AnimationTransitions),
+                With<Kid>,
+            >,
+            animations: Res<KidAnimations>,
+            graphs: Res<Assets<AnimationGraph>>,
+            clips: Res<Assets<AnimationClip>>,
+        ) {
+            use bevy::animation::RepeatAnimation::*;
+            if let Ok((mut player, mut transition)) = animation_player.get_single_mut() {
+                if let Some(index) = transition.get_main_animation() {
+                    if let Some(active) = player.animation(index) {
+                        if let Some(graph) = graphs.get(&animations.graph) {
+                            if let Some(clip_handle) =
+                                graph.get(index).and_then(|x| x.clip.clone())
+                            {
+                                if let Some(clip) = clips.get(&clip_handle) {
+                                    let remain = clip.duration() - active.seek_time();
+                                    if active.repeat_mode() == Never && remain <= TRASITION_TIME {
+                                        transition
+                                            .play(
+                                                &mut player,
+                                                animations.name["stay.bored"],
+                                                Duration::from_secs_f32(TRASITION_TIME),
+                                            )
+                                            .repeat();
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        fn signal_animation_control(
+            mut animation_player: Query<
+                (&mut AnimationPlayer, &mut AnimationTransitions),
+                With<Kid>,
+            >,
+            animations: Res<KidAnimations>,
+            mut signal_events: EventReader<BdsSignal>,
+        ) {
+            for BdsSignal { signal: sig } in signal_events.read() {
+                if let Ok((mut player, mut transition)) = animation_player.get_single_mut() {
+                    if *sig == "Kid_bow".to_string() {
+                        transition.play(
+                            &mut player,
+                            animations.name["bow"].clone(),
+                            Duration::from_secs_f32(TRASITION_TIME),
+                        );
+                    } else if *sig == "Kid_clap".to_string() {
+                        transition
+                            .play(
+                                &mut player,
+                                animations.name["clap"].clone(),
+                                Duration::from_secs_f32(TRASITION_TIME),
+                            )
+                            .repeat();
+                    } else if *sig == "Kid_stay".to_string() {
+                        transition
+                            .play(
+                                &mut player,
+                                animations.name["stay.bored"].clone(),
+                                Duration::from_secs_f32(TRASITION_TIME),
+                            )
+                            .repeat();
+                    }
+                }
+            }
+        }
+    }
+}
