@@ -239,8 +239,7 @@ mod models_controller {
                 if let Some(index) = transition.get_main_animation() {
                     if let Some(active) = player.animation(index) {
                         if let Some(graph) = graphs.get(&animations.graph) {
-                            if let Some(clip_handle) =
-                                graph.get(index).and_then(|x| x.clip.clone())
+                            if let Some(clip_handle) = graph.get(index).and_then(|x| x.clip.clone())
                             {
                                 if let Some(clip) = clips.get(&clip_handle) {
                                     let remain = clip.duration() - active.seek_time();
@@ -419,8 +418,7 @@ mod models_controller {
                 if let Some(index) = transition.get_main_animation() {
                     if let Some(active) = player.animation(index) {
                         if let Some(graph) = graphs.get(&animations.graph) {
-                            if let Some(clip_handle) =
-                                graph.get(index).and_then(|x| x.clip.clone())
+                            if let Some(clip_handle) = graph.get(index).and_then(|x| x.clip.clone())
                             {
                                 if let Some(clip) = clips.get(&clip_handle) {
                                     let remain = clip.duration() - active.seek_time();
