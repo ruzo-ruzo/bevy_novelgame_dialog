@@ -45,8 +45,8 @@ fn setup_choice_images(
     });
     let writing_slice = ImageScaleMode::Sliced(TextureSlicer {
         border: BorderRect::rectangle(198.0, 120.0),
-        center_scale_mode: SliceScaleMode::Tile {stretch_value: 1.0},
-        sides_scale_mode: SliceScaleMode::Tile {stretch_value: 1.0},
+        center_scale_mode: SliceScaleMode::Tile { stretch_value: 1.0 },
+        sides_scale_mode: SliceScaleMode::Tile { stretch_value: 1.0 },
         ..default()
     });
     for i in 0..config.max_button_index {

@@ -37,8 +37,12 @@ fn setup_messageframe(
         asset_server.load(ASSETS_PATH.to_owned() + "textures/ui/plate_base.png");
     let writing_slice = ImageScaleMode::Sliced(TextureSlicer {
         border: BorderRect::rectangle(360.0, 360.0),
-        center_scale_mode: SliceScaleMode::Tile {stretch_value: 0.33},
-        sides_scale_mode: SliceScaleMode::Tile {stretch_value: 0.33},
+        center_scale_mode: SliceScaleMode::Tile {
+            stretch_value: 0.33,
+        },
+        sides_scale_mode: SliceScaleMode::Tile {
+            stretch_value: 0.33,
+        },
         ..default()
     });
     commands.spawn((
