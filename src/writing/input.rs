@@ -62,7 +62,10 @@ pub(in crate::writing) fn go_selected(
         let gamepad = gamepads.iter().next();
         if (keys.any_just_pressed([KeyCode::Space, KeyCode::Enter, KeyCode::NumpadEnter])
             && is_selected)
-            || (gamepad.map(|x|x.just_pressed(GamepadButton::South)).is_some() && is_selected)
+            || (gamepad
+                .map(|x| x.just_pressed(GamepadButton::South))
+                .is_some()
+                && is_selected)
             || (mouse_buttons.just_pressed(MouseButton::Left) && is_pointed)
             || touched_position_list.any(|t| wig.area.contains(t))
         {
@@ -124,7 +127,7 @@ pub(in crate::writing) fn shift_selected(
     horizen_targets.sort_by_key(|x| x.1.number);
     let gamepad = gamepads.iter().next();
     if (keys.any_just_pressed([KeyCode::ArrowUp]))
-        || gamepad.is_some_and(|x|x.just_pressed(GamepadButton::DPadUp))
+        || gamepad.is_some_and(|x| x.just_pressed(GamepadButton::DPadUp))
     {
         if let Ok(selected_entity) = selected_res {
             if let Some((
@@ -155,7 +158,7 @@ pub(in crate::writing) fn shift_selected(
         }
     }
     if (keys.any_just_pressed([KeyCode::ArrowDown]))
-        || gamepad.is_some_and(|x|x.just_pressed(GamepadButton::DPadDown))
+        || gamepad.is_some_and(|x| x.just_pressed(GamepadButton::DPadDown))
     {
         if let Ok(selected_entity) = selected_res {
             if let Some((
@@ -186,7 +189,7 @@ pub(in crate::writing) fn shift_selected(
         }
     }
     if (keys.any_just_pressed([KeyCode::ArrowLeft]))
-        || gamepad.is_some_and(|x|x.just_pressed(GamepadButton::DPadLeft))
+        || gamepad.is_some_and(|x| x.just_pressed(GamepadButton::DPadLeft))
     {
         if let Ok(selected_entity) = selected_res {
             if let Some((
@@ -217,7 +220,7 @@ pub(in crate::writing) fn shift_selected(
         }
     }
     if (keys.any_just_pressed([KeyCode::ArrowRight]))
-        || gamepad.is_some_and(|x|x.just_pressed(GamepadButton::DPadRight))
+        || gamepad.is_some_and(|x| x.just_pressed(GamepadButton::DPadRight))
     {
         if let Ok(selected_entity) = selected_res {
             if let Some((

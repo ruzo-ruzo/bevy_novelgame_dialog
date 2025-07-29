@@ -132,7 +132,10 @@ fn move_cursor(
             .find(|x| x.1.sort_number == se.select_number);
         if let Some((button_entity, _)) = cb_opt {
             if let Ok((choice_entity, mut vis)) = cursor_query.get_single_mut() {
-                let cb_y = tf_query.get(button_entity).map(|x| x.translation.y).unwrap_or_default();
+                let cb_y = tf_query
+                    .get(button_entity)
+                    .map(|x| x.translation.y)
+                    .unwrap_or_default();
                 if let Ok(mut cc_tf) = tf_query.get_mut(choice_entity) {
                     cc_tf.translation.y = cb_y + 5.0;
                 }

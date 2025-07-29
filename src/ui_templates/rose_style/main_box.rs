@@ -110,7 +110,7 @@ fn waiting_sprite_setup(
         step: 1,
     };
     let texture_atlas_handle = texture_atlases.add(texture_atlas);
-    let wi_sprite = Sprite{
+    let wi_sprite = Sprite {
         image: texture_handle,
         texture_atlas: Some(TextureAtlas {
             layout: texture_atlas_handle,

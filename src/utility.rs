@@ -1,7 +1,7 @@
-use rustybuzz::{shape, Face, UnicodeBuffer, GlyphBuffer};
 use bevy::prelude::*;
 use rand::{distributions::uniform::SampleRange, Rng};
 use regex::Regex;
+use rustybuzz::{shape, Face, GlyphBuffer, UnicodeBuffer};
 use std::collections::HashMap;
 
 #[allow(dead_code)]
@@ -60,8 +60,14 @@ pub(crate) fn choice_font_with_index<R: AsRef<[Handle<Font>]>>(
 }
 
 fn glyph_exists_in_font(font: Font, target: char) -> bool {
-    let Some(buffer) = get_glyph_buffer(&font, target) else { return false };
-    buffer.glyph_infos().iter().next().is_some_and(|x|x.glyph_id != 0)
+    let Some(buffer) = get_glyph_buffer(&font, target) else {
+        return false;
+    };
+    buffer
+        .glyph_infos()
+        .iter()
+        .next()
+        .is_some_and(|x| x.glyph_id != 0)
 }
 
 pub(crate) fn get_glyph_buffer(font: &Font, target: char) -> Option<GlyphBuffer> {

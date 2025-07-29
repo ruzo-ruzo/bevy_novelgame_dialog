@@ -1,5 +1,5 @@
-use bevy::prelude::*;
 use bevy::prelude::AnimationNodeType::*;
+use bevy::prelude::*;
 
 fn main() {
     App::new()
@@ -85,17 +85,13 @@ mod models_controller {
                     shadows_enabled: true,
                     ..default()
                 },
-                Transform::from_rotation(Quat::from_euler(
-                    EulerRot::ZYX,
-                    0.0,
-                    1.0,
-                    -TAU / 8.,
-                )),
+                Transform::from_rotation(Quat::from_euler(EulerRot::ZYX, 0.0, 1.0, -TAU / 8.)),
                 CascadeShadowConfigBuilder {
                     first_cascade_far_bound: 200.0,
                     maximum_distance: 400.0,
                     ..default()
-                }.build(),
+                }
+                .build(),
             ));
         }
 
@@ -175,7 +171,8 @@ mod models_controller {
                     }
                     commands.spawn((
                         SceneRoot(gltf.named_scenes["Scene"].clone()),
-                        Transform::from_xyz(0.5, 0.0, 0.0).with_rotation(Quat::from_rotation_y(TAU * -0.05)),
+                        Transform::from_xyz(0.5, 0.0, 0.0)
+                            .with_rotation(Quat::from_rotation_y(TAU * -0.05)),
                         Rabit,
                     ));
                     let graph = graphs.add(graph);
@@ -230,7 +227,8 @@ mod models_controller {
                 if let Some(index) = transition.get_main_animation() {
                     if let Some(active) = player.animation(index) {
                         if let Some(graph) = graphs.get(&animations.graph) {
-                            if let Some(Clip(clip_handle)) = graph.get(index).map(|x| x.node_type.clone())
+                            if let Some(Clip(clip_handle)) =
+                                graph.get(index).map(|x| x.node_type.clone())
                             {
                                 if let Some(clip) = clips.get(&clip_handle) {
                                     let remain = clip.duration() - active.seek_time();
@@ -349,7 +347,8 @@ mod models_controller {
                     }
                     commands.spawn((
                         SceneRoot(gltf.named_scenes["Scene"].clone()),
-                        Transform::from_xyz(-0.5, 0.0, 0.0).with_rotation(Quat::from_rotation_y(TAU * 0.1)),
+                        Transform::from_xyz(-0.5, 0.0, 0.0)
+                            .with_rotation(Quat::from_rotation_y(TAU * 0.1)),
                         Kid,
                     ));
                     let graph = graphs.add(graph);
@@ -404,7 +403,8 @@ mod models_controller {
                 if let Some(index) = transition.get_main_animation() {
                     if let Some(active) = player.animation(index) {
                         if let Some(graph) = graphs.get(&animations.graph) {
-                            if let Some(Clip(clip_handle)) = graph.get(index).map(|x| x.node_type.clone())
+                            if let Some(Clip(clip_handle)) =
+                                graph.get(index).map(|x| x.node_type.clone())
                             {
                                 if let Some(clip) = clips.get(&clip_handle) {
                                     let remain = clip.duration() - active.seek_time();

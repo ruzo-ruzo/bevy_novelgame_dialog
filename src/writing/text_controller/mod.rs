@@ -168,7 +168,7 @@ pub(in crate::writing) fn initialize_typing_data(
         ),
     };
     let last_x = last_text_data_opt
-        .map(|t|  t.3.font_size + t.1.translation.x )
+        .map(|t| t.3.font_size + t.1.translation.x)
         .unwrap_or_default();
     let last_y = last_line_data_opt
         .map(|l| l.1.translation.y)
@@ -264,10 +264,18 @@ fn add_char(
         let typing_timer = TypingTimer {
             timer: Timer::from_seconds(type_sec, TimerMode::Once),
         };
-        let Some(font) = &font_assets.get(&font_h.unwrap_or_default()) else { return false };
-        let Some(glyph_buffer) = get_glyph_buffer(font, new_word) else { return false };
-        let Some(positions) = &glyph_buffer.glyph_positions().iter().next() else { return false };
-        let Some(face) = Face::from_slice(&font.data, 0) else { return false };
+        let Some(font) = &font_assets.get(&font_h.unwrap_or_default()) else {
+            return false;
+        };
+        let Some(glyph_buffer) = get_glyph_buffer(font, new_word) else {
+            return false;
+        };
+        let Some(positions) = &glyph_buffer.glyph_positions().iter().next() else {
+            return false;
+        };
+        let Some(face) = Face::from_slice(&font.data, 0) else {
+            return false;
+        };
         let pt_per_height = true_size / face.height() as f32;
         let advance = pt_per_height * positions.x_advance as f32;
         let next_x = last_char.pos.x + advance + kerning;
