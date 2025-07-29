@@ -14,7 +14,7 @@ This plugin provides a novel-game-style dialog box for the Bevy engine. You can 
 - Automatically switches to a lower priority font if glyphs are missing, by specifying multiple fonts.
 - Branching based on choices is supported.
 - Includes sample UI.
-- Animation of each character
+- Animation of each typed character.
 
 ## Unsupported features
 - Ligatures
