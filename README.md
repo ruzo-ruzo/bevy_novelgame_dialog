@@ -15,6 +15,10 @@ This plugin provides a novel-game-style dialog box for the Bevy engine. You can 
 - Branching based on choices is supported.
 - Includes sample UI.
 
+## Unsupported features
+- Ligatures
+- Text wrapping
+
 ## Example Script
 ```markdown
 # Choices
