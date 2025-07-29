@@ -36,7 +36,7 @@ fn setup_messageframe(
     let writing_image_handle =
         asset_server.load(ASSETS_PATH.to_owned() + "textures/ui/plate_base.png");
     let writing_slice = SpriteImageMode::Sliced(TextureSlicer {
-        border: BorderRect::rectangle(360.0, 360.0),
+        border: BorderRect::axes(360.0, 360.0),
         center_scale_mode: SliceScaleMode::Tile {
             stretch_value: 0.33,
         },
@@ -70,7 +70,7 @@ fn setup_name_plate(
         let name_plate_image_handle =
             asset_server.load(ASSETS_PATH.to_owned() + "textures/ui/square_plate.png");
         let writing_slice = SpriteImageMode::Sliced(TextureSlicer {
-            border: BorderRect::square(30.0),
+            border: BorderRect::all(30.0),
             ..default()
         });
         for (dbb_entity, DialogBoxBackground { writing_name: name }) in &dbb_query {

@@ -34,7 +34,7 @@ mod message_controler {
             let event = OpenRoseStyleDialog {
                 script_path: "scripts/starter.md".to_string(),
             };
-            open_message_event.send(event);
+            open_message_event.write(event);
             *is_started = true;
         }
     }
@@ -42,10 +42,11 @@ mod message_controler {
 
 mod models_controller {
     use super::*;
-    use bevy::{gltf::Gltf, utils::Duration};
+    use bevy::gltf::Gltf;
     use bevy_novelgame_dialog::prelude::BdsSignal;
     use std::collections::HashMap;
     use std::f32::consts::TAU;
+    use core::time::Duration;
 
     pub struct ModelsControllerPlugin;
     impl Plugin for ModelsControllerPlugin {
@@ -64,6 +65,7 @@ mod models_controller {
                 app.insert_resource(AmbientLight {
                     color: Color::WHITE,
                     brightness: 0.0,
+                    ..default()
                 })
                 .add_systems(Startup, setup)
                 .add_systems(Update, load_scenes);
@@ -189,7 +191,7 @@ mod models_controller {
             mut commands: Commands,
             mut players: Query<(Entity, &mut AnimationPlayer), Without<Rabit>>,
             scenes: Query<Entity, With<Rabit>>,
-            parents: Query<&Parent>,
+            parents: Query<&ChildOf>,
             animations: Res<RabitAnimations>,
         ) {
             for (p_entity, mut player) in &mut players {
@@ -223,7 +225,7 @@ mod models_controller {
             clips: Res<Assets<AnimationClip>>,
         ) {
             use bevy::animation::RepeatAnimation::*;
-            if let Ok((mut player, mut transition)) = animation_player.get_single_mut() {
+            if let Ok((mut player, mut transition)) = animation_player.single_mut() {
                 if let Some(index) = transition.get_main_animation() {
                     if let Some(active) = player.animation(index) {
                         if let Some(graph) = graphs.get(&animations.graph) {
@@ -259,24 +261,24 @@ mod models_controller {
         ) {
             let time = Duration::from_secs_f32(TRASITION_TIME);
             for BdsSignal { signal: sig } in signal_events.read() {
-                if let Ok((mut player, mut transition)) = animation_player.get_single_mut() {
+                if let Ok((mut player, mut transition)) = animation_player.single_mut() {
                     if let Some(current) = transition.get_main_animation() {
-                        if *sig == "Rabit_greeting".to_string() {
+                        if *sig == "Rabit_greeting" {
                             if let Some(next) = animations.name.get("greeting") {
                                 if *next != current {
-                                    transition.play(&mut player, next.clone(), time);
+                                    transition.play(&mut player, *next, time);
                                 }
                             }
-                        } else if *sig == "Rabit_clap".to_string() {
+                        } else if *sig == "Rabit_clap" {
                             if let Some(next) = animations.name.get("clap") {
                                 if *next != current {
-                                    transition.play(&mut player, next.clone(), time).repeat();
+                                    transition.play(&mut player, *next, time).repeat();
                                 }
                             }
-                        } else if *sig == "Rabit_stay".to_string() {
+                        } else if *sig == "Rabit_stay" {
                             if let Some(next) = animations.name.get("stay.lookdown") {
                                 if *next != current {
-                                    transition.play(&mut player, next.clone(), time).repeat();
+                                    transition.play(&mut player, *next, time).repeat();
                                 }
                             }
                         }
@@ -365,7 +367,7 @@ mod models_controller {
             mut commands: Commands,
             mut players: Query<(Entity, &mut AnimationPlayer), Without<Kid>>,
             scenes: Query<Entity, With<Kid>>,
-            parents: Query<&Parent>,
+            parents: Query<&ChildOf>,
             animations: Res<KidAnimations>,
         ) {
             for (p_entity, mut player) in &mut players {
@@ -399,7 +401,7 @@ mod models_controller {
             clips: Res<Assets<AnimationClip>>,
         ) {
             use bevy::animation::RepeatAnimation::*;
-            if let Ok((mut player, mut transition)) = animation_player.get_single_mut() {
+            if let Ok((mut player, mut transition)) = animation_player.single_mut() {
                 if let Some(index) = transition.get_main_animation() {
                     if let Some(active) = player.animation(index) {
                         if let Some(graph) = graphs.get(&animations.graph) {
@@ -435,24 +437,24 @@ mod models_controller {
         ) {
             let time = Duration::from_secs_f32(TRASITION_TIME);
             for BdsSignal { signal: sig } in signal_events.read() {
-                if let Ok((mut player, mut transition)) = animation_player.get_single_mut() {
+                if let Ok((mut player, mut transition)) = animation_player.single_mut() {
                     if let Some(current) = transition.get_main_animation() {
-                        if *sig == "Kid_bow".to_string() {
+                        if *sig == "Kid_bow" {
                             if let Some(next) = animations.name.get("bow") {
                                 if *next != current {
-                                    transition.play(&mut player, next.clone(), time);
+                                    transition.play(&mut player, *next, time);
                                 }
                             }
-                        } else if *sig == "Kid_clap".to_string() {
+                        } else if *sig == "Kid_clap" {
                             if let Some(next) = animations.name.get("clap") {
                                 if *next != current {
-                                    transition.play(&mut player, next.clone(), time).repeat();
+                                    transition.play(&mut player, *next, time).repeat();
                                 }
                             }
-                        } else if *sig == "Kid_stay".to_string() {
+                        } else if *sig == "Kid_stay" {
                             if let Some(next) = animations.name.get("stay.bored") {
                                 if *next != current {
-                                    transition.play(&mut player, next.clone(), time).repeat();
+                                    transition.play(&mut player, *next, time).repeat();
                                 }
                             }
                         }

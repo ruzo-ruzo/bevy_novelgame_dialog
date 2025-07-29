@@ -12,7 +12,7 @@ pub(in crate::writing) fn change_font_size(
 ) {
     for event_wrapper in events.read() {
         if let Some(ChangeFontSize { size: s }) = event_wrapper.get::<ChangeFontSize>() {
-            if let Ok(mut config) = ta_query.get_single_mut() {
+            if let Ok(mut config) = ta_query.single_mut() {
                 config.text_font.font_size = s;
             }
         }
@@ -35,14 +35,14 @@ pub struct ForceFeedingCurrentBox;
 pub(in crate::writing) fn force_feeding_current_box(
     mut commands: Commands,
     mut writing_query: Query<(Entity, &DialogBox, &mut DialogBoxPhase), With<Current>>,
-    text_area_query: Query<(&TextArea, &Parent)>,
+    text_area_query: Query<(&TextArea, &ChildOf)>,
     mut events: EventReader<BdsEvent>,
 ) {
     for event_wrapper in events.read() {
         if event_wrapper.get::<ForceFeedingCurrentBox>().is_some() {
             for (db_entity, db, mut phase) in &mut writing_query {
                 for (ta, ta_parent) in &text_area_query {
-                    if ta_parent.get() == db_entity {
+                    if ta_parent.parent() == db_entity {
                         let iff = InputForFeeding {
                             writing_name: db.name.clone(),
                             text_area_name: ta.name.clone(),

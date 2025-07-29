@@ -181,7 +181,7 @@ fn open_message(
                 }
             })
             .collect::<Vec<_>>();
-        ow_event.send(OpenDialog {
+        ow_event.write(OpenDialog {
             writing_name: "Main Box".to_string(),
             script_path: path.clone(),
             template_path: vec![

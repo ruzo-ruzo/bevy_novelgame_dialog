@@ -26,7 +26,7 @@ pub(in crate::writing) struct Selective {
 #[allow(clippy::nonminimal_bool)]
 pub(in crate::writing) fn go_selected(
     mut commands: Commands,
-    target_query: Query<(Entity, &WaitInputGo, &TextArea, &Parent), Without<Pending>>,
+    target_query: Query<(Entity, &WaitInputGo, &TextArea, &ChildOf), Without<Pending>>,
     writing_query: Query<&DialogBox>,
     selected_query: Query<Entity, (With<Selected>, Without<Pending>)>,
     window_query: Query<&Window, With<PrimaryWindow>>,
@@ -40,11 +40,11 @@ pub(in crate::writing) fn go_selected(
     type_registry: Res<AppTypeRegistry>,
 ) {
     let pointed_opt = camera_query
-        .get_single()
+        .single()
         .ok()
         .and_then(|x| {
             window_query
-                .get_single()
+                .single()
                 .ok()
                 .and_then(|y| y.cursor_position())
                 .map(|y| (x, y))
@@ -53,10 +53,10 @@ pub(in crate::writing) fn go_selected(
     for (target_entity, wig, ta, ta_parent) in &target_query {
         let mut touched_position_list = touches
             .iter_just_pressed()
-            .filter_map(|t| camera_query.get_single().ok().map(|c| (c, t)))
+            .filter_map(|t| camera_query.single().ok().map(|c| (c, t)))
             .filter_map(|(c, t)| c.0.viewport_to_world_2d(c.1, t.position()).ok());
         let is_selected = selected_query
-            .get_single()
+            .single()
             .is_ok_and(|e| e == target_entity);
         let is_pointed = pointed_opt.is_some_and(|x| (wig.area.contains(x)));
         let gamepad = gamepads.iter().next();
@@ -70,10 +70,10 @@ pub(in crate::writing) fn go_selected(
             || touched_position_list.any(|t| wig.area.contains(t))
         {
             if let Ok(ref_value) = read_ron(&type_registry, wig.ron.clone()) {
-                bds_event.send(BdsEvent { value: ref_value });
+                bds_event.write(BdsEvent { value: ref_value });
             }
-            let db_name_opt = writing_query.get(ta_parent.get()).map(|x| x.name.clone());
-            go_event.send(ButtonIsPushed {
+            let db_name_opt = writing_query.get(ta_parent.parent()).map(|x| x.name.clone());
+            go_event.write(ButtonIsPushed {
                 writing_name: db_name_opt.unwrap_or_default(),
                 text_area_name: ta.name.clone(),
             });
@@ -86,7 +86,7 @@ pub(in crate::writing) fn go_selected(
 pub(in crate::writing) fn shift_selected(
     mut commands: Commands,
     selective_query: Query<
-        (Entity, &Selective, &TextArea, &WaitInputGo, &Parent),
+        (Entity, &Selective, &TextArea, &WaitInputGo, &ChildOf),
         Without<Pending>,
     >,
     selected_query: Query<Entity, (With<Selected>, Without<Pending>)>,
@@ -99,11 +99,11 @@ pub(in crate::writing) fn shift_selected(
 ) {
     let mut next_select_opt: Option<Entity> = None;
     let pointed_opt = camera_query
-        .get_single()
+        .single()
         .ok()
         .and_then(|x| {
             window_query
-                .get_single()
+                .single()
                 .ok()
                 .and_then(|y| y.cursor_position())
                 .map(|y| (x, y))
@@ -114,7 +114,7 @@ pub(in crate::writing) fn shift_selected(
             next_select_opt = Some(target_entity);
         }
     }
-    let selected_res = selected_query.get_single();
+    let selected_res = selected_query.single();
     let mut vertical_targets = selective_query
         .iter()
         .filter(|x| x.1.key_vector == SelectVector::Vertical)
@@ -256,14 +256,14 @@ pub(in crate::writing) fn shift_selected(
         }
         commands.entity(next_entity).insert(Selected);
         if let Ok((_, selective, ta, _, parent)) = selective_query.get(next_entity) {
-            let db_name_opt = writing_query.get(parent.get()).map(|x| x.name.clone());
+            let db_name_opt = writing_query.get(parent.parent()).map(|x| x.name.clone());
             let event = ButtonIsSelected {
                 writing_name: db_name_opt.unwrap_or_default(),
                 text_area_name: ta.name.clone(),
                 select_vector: selective.key_vector,
                 select_number: selective.number,
             };
-            select_event.send(event);
+            select_event.write(event);
         }
     }
 }
