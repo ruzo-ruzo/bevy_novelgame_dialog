@@ -3,7 +3,7 @@ mod regex;
 
 use crate::prelude::Order;
 use bevy::{
-    asset::{io::Reader, AssetLoader, AsyncReadExt, LoadContext},
+    asset::{io::Reader, AssetLoader, LoadContext},
     prelude::*,
     reflect::{
         serde::{ReflectDeserializer, ReflectSerializer},
@@ -45,11 +45,11 @@ impl AssetLoader for BMWScriptLoader {
     type Asset = BMWScript;
     type Settings = ();
     type Error = BMWScriptLoaderError;
-    async fn load<'a>(
-        &'a self,
-        reader: &'a mut Reader<'_>,
-        _settings: &'a Self::Settings,
-        _load_context: &'a mut LoadContext<'_>,
+    async fn load(
+        &self,
+        reader: &mut dyn Reader,
+        _settings: &(),
+        _load_context: &mut LoadContext<'_>,
     ) -> Result<Self::Asset, Self::Error> {
         let mut bytes = Vec::new();
         reader.read_to_end(&mut bytes).await?;
@@ -86,11 +86,11 @@ impl AssetLoader for BMWTemplateLoader {
     type Asset = BMWTemplate;
     type Settings = ();
     type Error = BMWTemplateLoaderError;
-    async fn load<'a>(
-        &'a self,
-        reader: &'a mut Reader<'_>,
-        _settings: &'a Self::Settings,
-        _load_context: &'a mut LoadContext<'_>,
+    async fn load(
+        &self,
+        reader: &mut dyn Reader,
+        _settings: &(),
+        _load_context: &mut LoadContext<'_>,
     ) -> Result<Self::Asset, Self::Error> {
         let mut bytes = Vec::new();
         reader.read_to_end(&mut bytes).await?;
@@ -133,7 +133,7 @@ pub(crate) fn script_on_load(
 pub(crate) fn read_ron<S: AsRef<str>>(
     type_registry: &AppTypeRegistry,
     ron: S,
-) -> Result<Box<dyn Reflect>, ron::Error> {
+) -> Result<Box<dyn PartialReflect>, ron::Error> {
     let ron_string = ron.as_ref().to_string();
     let reg = type_registry.read();
     let reflect_deserializer = ReflectDeserializer::new(&reg);
@@ -145,7 +145,7 @@ pub(crate) fn split_path_and_section<S: AsRef<str>>(uri: S) -> (String, String) 
     parse_uri(uri.as_ref())
 }
 
-pub(crate) fn write_ron<R: Reflect>(
+pub(crate) fn write_ron<R: PartialReflect>(
     type_registry: &AppTypeRegistry,
     value: R,
 ) -> Result<String, ron::Error> {

@@ -55,7 +55,7 @@ pub(in crate::writing) fn open_choice_box(
                 let background_entity = if let Some((entity, _)) = bg_opt {
                     entity
                 } else {
-                    commands.spawn(SpriteBundle::default()).id()
+                    commands.spawn(Sprite::default()).id()
                 };
                 let button_entities = cb_query
                     .iter()
@@ -83,7 +83,7 @@ pub(in crate::writing) fn open_choice_box(
                 commands
                     .entity(background_entity)
                     .insert(cs)
-                    .push_children(&button_entities);
+                    .add_children(&button_entities);
                 if let Ok(mut vis) = vis_query.get_mut(background_entity) {
                     *vis = Visibility::Hidden;
                 }
@@ -242,7 +242,7 @@ pub(in crate::writing) fn close_choice_phase(
         }) = event_wrapper.get::<ChoosenEvent>()
         {
             if let Ok(next) = read_ron(&app_type_registry, ce) {
-                commands.add(|w: &mut World| {
+                commands.queue(|w: &mut World| {
                     w.send_event(BdsEvent { value: next });
                 });
             }
@@ -254,7 +254,7 @@ pub(in crate::writing) fn close_choice_phase(
                                 sink_type: cbs.sinkdown,
                             }),
                         };
-                        commands.add(|w: &mut World| {
+                        commands.queue(|w: &mut World| {
                             w.send_event(close);
                         });
                         commands.entity(db_entity).insert(Pending);

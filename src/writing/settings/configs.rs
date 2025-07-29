@@ -1,6 +1,6 @@
 use super::params::*;
 use bevy::{
-    color::palettes::css as CssColor, color::Color, prelude::*, render::view::RenderLayers,
+    color::palettes::css as CssColor, prelude::*, render::view::RenderLayers,
     sprite::Anchor,
 };
 use std::collections::HashMap;
@@ -10,7 +10,8 @@ pub struct TypeTextConfig {
     pub fonts: Vec<Handle<Font>>,
     pub kerning_by_regulars: HashMap<String, f32>,
     pub size_by_regulars: HashMap<String, f32>,
-    pub text_style: TextStyle,
+    pub text_font: TextFont,
+    pub text_color: TextColor,
     pub writing: WritingStyle,
     pub typing_timing: TypingTiming,
     pub layer: RenderLayers,
@@ -26,7 +27,7 @@ pub struct CharConfig {
     pub kerning_by_regulars: HashMap<String, f32>,
     pub size_by_regulars: HashMap<String, f32>,
     pub text_base_size: f32,
-    pub font_color: Color,
+    pub font_color: TextColor,
 }
 
 impl Default for CharConfig {

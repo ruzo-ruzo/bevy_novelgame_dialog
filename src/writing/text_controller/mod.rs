@@ -1,10 +1,10 @@
-use ab_glyph::Font as AbFont;
 use bevy::{
     ecs::system::SystemParam,
     prelude::*,
     render::view::{RenderLayers, Visibility},
     sprite::Anchor,
 };
+use rustybuzz::Face;
 
 pub(super) mod feed_animation;
 pub(super) mod typing_animations;
@@ -14,30 +14,17 @@ use crate::utility::*;
 use feed_animation::*;
 
 #[derive(Component)]
+#[require(Sprite)]
 pub(in crate::writing) struct MessageTextLine {
     horizon_alignment: AlignHorizon,
     vertical_alignment: AlignVertical,
 }
 
 #[derive(Component, Debug)]
+#[require(TypingTimer, Text2d, RenderLayers, WritingStyle)]
 pub(in crate::writing) struct MessageTextChar;
 
-#[derive(Bundle, Debug)]
-struct CharBundle {
-    text_char: MessageTextChar,
-    timer: TypingTimer,
-    text2d: Text2dBundle,
-    layer: RenderLayers,
-    writing: WritingStyle,
-}
-
-#[derive(Bundle)]
-struct LineBundle {
-    line: MessageTextLine,
-    sprites: SpriteBundle,
-}
-
-#[derive(Component, Clone, Debug)]
+#[derive(Component, Default, Clone, Debug)]
 pub(super) struct TypingTimer {
     pub timer: Timer,
 }
@@ -64,6 +51,7 @@ type CharData = (
     Entity,
     &'static Transform,
     &'static Text,
+    &'static TextFont,
     &'static TypingTimer,
     &'static Parent,
 );
@@ -162,7 +150,7 @@ pub(in crate::writing) fn initialize_typing_data(
     let last_text_data_opt = last_data
         .text
         .iter()
-        .filter(|x| Some(x.4.get()) == last_line_opt)
+        .filter(|x| Some(x.5.get()) == last_line_opt)
         .max_by(|x, y| {
             if x.1.translation.x >= y.1.translation.x {
                 std::cmp::Ordering::Greater
@@ -174,17 +162,13 @@ pub(in crate::writing) fn initialize_typing_data(
     let last_timer = TypingTimer {
         timer: Timer::from_seconds(
             last_text_data_opt
-                .map(|x| x.3.timer.remaining_secs())
+                .map(|x| x.4.timer.remaining_secs())
                 .unwrap_or_default(),
             TimerMode::Once,
         ),
     };
     let last_x = last_text_data_opt
-        .and_then(|t| {
-            t.2.sections
-                .first()
-                .map(|s| s.style.font_size + t.1.translation.x)
-        })
+        .map(|t|  t.3.font_size + t.1.translation.x )
         .unwrap_or_default();
     let last_y = last_line_data_opt
         .map(|l| l.1.translation.y)
@@ -245,24 +229,25 @@ fn add_char(
     let font_h = choice_font(&config.fonts, new_word, font_assets);
     let size_coefficient = find_by_regex(new_str.clone(), &config.size_by_regulars).unwrap_or(1.0);
     let kerning_coefficient = find_by_regex(new_str, &config.kerning_by_regulars).unwrap_or(0.0);
-    let true_size = config.text_style.font_size * size_coefficient;
+    let true_size = config.text_font.font_size * size_coefficient;
     let kerning = true_size * kerning_coefficient;
     let target_x = last_char.pos.x + true_size + kerning;
     if target_x > width {
         false
     } else {
-        let text_style = TextStyle {
+        let text_font = TextFont {
             font: font_h.clone().unwrap_or_default(),
             font_size: true_size,
-            ..config.text_style
+            ..Default::default()
         };
-        let text2d_bundle = Text2dBundle {
-            text: Text::from_section(new_word.to_string(), text_style),
-            transform: Transform::from_translation(Vec3::new(last_char.pos.x, 0.0, 0.0)),
-            visibility: Visibility::Hidden,
-            text_anchor: Anchor::BottomLeft,
-            ..default()
-        };
+        let text2d_bundle = (
+            Text2d::new(new_word.to_string()),
+            Transform::from_translation(Vec3::new(last_char.pos.x, 0.0, 0.0)),
+            Visibility::Hidden,
+            Anchor::BottomLeft,
+            text_font,
+            config.text_color,
+        );
         let last_secs = last_char.timer.timer.remaining_secs();
         let type_sec = match config.typing_timing {
             TypingTiming::ByChar { sec: s } => last_secs + s,
@@ -279,19 +264,22 @@ fn add_char(
         let typing_timer = TypingTimer {
             timer: Timer::from_seconds(type_sec, TimerMode::Once),
         };
-        let font = &font_assets.get(&font_h.unwrap_or_default()).unwrap().font;
-        let pt_per_height = true_size / font.height_unscaled();
-        let advance = pt_per_height * font.h_advance_unscaled(font.glyph_id(new_word));
+        let Some(font) = &font_assets.get(&font_h.unwrap_or_default()) else { return false };
+        let Some(glyph_buffer) = get_glyph_buffer(font, new_word) else { return false };
+        let Some(positions) = &glyph_buffer.glyph_positions().iter().next() else { return false };
+        let Some(face) = Face::from_slice(&font.data, 0) else { return false };
+        let pt_per_height = true_size / face.height() as f32;
+        let advance = pt_per_height * positions.x_advance as f32;
         let next_x = last_char.pos.x + advance + kerning;
         last_char.pos.x = if config.monospace { target_x } else { next_x };
         last_char.timer = typing_timer.clone();
-        let new_char = CharBundle {
-            text_char: MessageTextChar,
-            timer: typing_timer,
-            text2d: text2d_bundle,
-            layer: config.layer.clone(),
-            writing: config.writing,
-        };
+        let new_char = (
+            MessageTextChar,
+            typing_timer,
+            text2d_bundle,
+            config.layer.clone(),
+            config.writing,
+        );
         if let Some(last_line) = last_line_opt {
             let new_char_entity = commands.spawn((new_char, Current)).id();
             if let Some(last_text) = last_char.entity {
@@ -317,25 +305,24 @@ fn add_empty_line(
     tb_ent: Entity,
 ) -> bool {
     last_char.pos.x = 0.;
-    last_char.pos.y -= config.text_style.font_size;
+    last_char.pos.y -= config.text_font.font_size;
     if last_char.pos.y < -min_height {
         false
     } else {
-        let sprite_bundle = SpriteBundle {
-            sprite: Sprite {
+        let sprite_bundle = (
+            Sprite {
                 anchor: Anchor::BottomLeft,
                 ..default()
             },
-            transform: Transform::from_translation(Vec3::new(0., last_char.pos.y, config.pos_z)),
-            ..default()
-        };
-        let new_line = LineBundle {
-            sprites: sprite_bundle,
-            line: MessageTextLine {
+            Transform::from_translation(Vec3::new(0., last_char.pos.y, config.pos_z)),
+        );
+        let new_line = (
+            sprite_bundle,
+            MessageTextLine {
                 horizon_alignment: config.horizon_alignment,
                 vertical_alignment: config.vertical_alignment,
             },
-        };
+        );
         let new_line_entity = commands.spawn((new_line, Current)).id();
         if let Some(last_line) = last_line_opt {
             commands.entity(*last_line).remove::<Current>();
@@ -349,7 +336,7 @@ fn add_empty_line(
 pub(in crate::writing) fn settle_lines(
     dialogbox_query: Query<(Entity, &DialogBoxPhase), With<DialogBox>>,
     mut text_lines: Query<(&MessageTextLine, &mut Transform), Without<MessageTextChar>>,
-    text_char: Query<(&Text, &Transform), With<MessageTextChar>>,
+    text_char: Query<(&TextFont, &Transform), With<MessageTextChar>>,
     area_sprite_query: Query<&mut Sprite, With<TextArea>>,
     mut line_sprite_query: Query<&mut Sprite, Without<TextArea>>,
     children_query: Query<&Children>,
@@ -379,13 +366,13 @@ pub(in crate::writing) fn settle_lines(
                 let mut text_size_list: Vec<f32> = Vec::new();
                 let mut last_pos_x = 0.0;
                 for tx_entity in tx_entities {
-                    let Ok((text, t_tf)) = text_char.get(*tx_entity) else {
+                    let Ok((text_font, t_tf)) = text_char.get(*tx_entity) else {
                         continue;
                     };
-                    let text_size = text.sections.first().map(|x| x.style.font_size);
-                    text_size_list.push(text_size.unwrap_or_default());
+                    let text_size = text_font.font_size;
+                    text_size_list.push(text_size);
                     if t_tf.translation.x >= last_pos_x {
-                        last_pos_x = t_tf.translation.x + text_size.unwrap_or_default();
+                        last_pos_x = t_tf.translation.x + text_size;
                     }
                 }
                 let base_hight = tl_spr.custom_size.map(|x| x.y).unwrap_or_default();

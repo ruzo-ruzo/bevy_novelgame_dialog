@@ -35,7 +35,7 @@ fn setup_messageframe(
 ) {
     let writing_image_handle =
         asset_server.load(ASSETS_PATH.to_owned() + "textures/ui/plate_base.png");
-    let writing_slice = ImageScaleMode::Sliced(TextureSlicer {
+    let writing_slice = SpriteImageMode::Sliced(TextureSlicer {
         border: BorderRect::rectangle(360.0, 360.0),
         center_scale_mode: SliceScaleMode::Tile {
             stretch_value: 0.33,
@@ -46,16 +46,13 @@ fn setup_messageframe(
         ..default()
     });
     commands.spawn((
-        SpriteBundle {
-            sprite: Sprite {
-                custom_size: Some(config.box_size),
-                ..default()
-            },
-            transform: Transform::from_translation(config.box_pos.extend(0.0)),
-            texture: writing_image_handle,
+        Sprite {
+            custom_size: Some(config.box_size),
+            image: writing_image_handle,
+            image_mode: writing_slice,
             ..default()
         },
-        writing_slice,
+        Transform::from_translation(config.box_pos.extend(0.0)),
         DialogBoxBackground {
             writing_name: "Main Box".to_string(),
         },
@@ -72,7 +69,7 @@ fn setup_name_plate(
     if !*is_setup {
         let name_plate_image_handle =
             asset_server.load(ASSETS_PATH.to_owned() + "textures/ui/square_plate.png");
-        let writing_slice = ImageScaleMode::Sliced(TextureSlicer {
+        let writing_slice = SpriteImageMode::Sliced(TextureSlicer {
             border: BorderRect::square(30.0),
             ..default()
         });
@@ -82,17 +79,14 @@ fn setup_name_plate(
                 let name_y = config.box_size.y / 2.0 + (config.box_pos.y + 150.0);
                 commands.entity(dbb_entity).with_children(|child_builder| {
                     child_builder.spawn((
-                        SpriteBundle {
-                            sprite: Sprite {
-                                custom_size: Some(config.name_plate_size),
-                                ..default()
-                            },
-                            transform: Transform::from_xyz(name_x, name_y, 0.1),
-                            texture: name_plate_image_handle.clone(),
-                            visibility: Visibility::Inherited,
+                        Sprite {
+                            image: name_plate_image_handle.clone(),
+                            custom_size: Some(config.name_plate_size),
+                            image_mode: writing_slice.clone(),
                             ..default()
                         },
-                        writing_slice.clone(),
+                        Transform::from_xyz(name_x, name_y, 0.1),
+                        Visibility::Inherited,
                         RenderLayers::layer(config.render_layer.into()),
                     ));
                 });
@@ -116,18 +110,17 @@ fn waiting_sprite_setup(
         step: 1,
     };
     let texture_atlas_handle = texture_atlases.add(texture_atlas);
-    let wi_sprite = Sprite::default();
-    commands.spawn((
-        TextureAtlas {
+    let wi_sprite = Sprite{
+        image: texture_handle,
+        texture_atlas: Some(TextureAtlas {
             layout: texture_atlas_handle,
             index: animation_indices.first,
-        },
-        SpriteBundle {
-            sprite: wi_sprite,
-            transform: Transform::from_scale(Vec3::splat(0.5)),
-            texture: texture_handle,
-            ..default()
-        },
+        }),
+        ..default()
+    };
+    commands.spawn((
+        wi_sprite,
+        Transform::from_scale(Vec3::splat(0.5)),
         animation_indices,
         AnimationTimer(Timer::from_seconds(0.5, TimerMode::Repeating)),
         WaitingIcon {
@@ -139,16 +132,18 @@ fn waiting_sprite_setup(
 
 fn animate_sprite(
     time: Res<Time>,
-    mut query: Query<(&AnimationIndices, &mut AnimationTimer, &mut TextureAtlas)>,
+    mut query: Query<(&AnimationIndices, &mut AnimationTimer, &mut Sprite)>,
 ) {
-    for (indices, mut timer, mut atlas) in &mut query {
+    for (indices, mut timer, mut sprite) in &mut query {
         timer.tick(time.delta());
-        if timer.just_finished() {
-            atlas.index = if atlas.index >= indices.last {
-                indices.first
-            } else {
-                atlas.index + indices.step
-            };
+        if let Some(ref mut atlas) = &mut sprite.texture_atlas {
+            if timer.just_finished() {
+                atlas.index = if atlas.index >= indices.last {
+                    indices.first
+                } else {
+                    atlas.index + indices.step
+                };
+            }
         }
     }
 }

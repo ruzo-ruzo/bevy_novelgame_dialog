@@ -1,4 +1,5 @@
 use bevy::prelude::*;
+use bevy::prelude::AnimationNodeType::*;
 
 fn main() {
     App::new()
@@ -17,7 +18,7 @@ mod message_controler {
     pub struct MessageControllerPlugin;
     impl Plugin for MessageControllerPlugin {
         fn build(&self, app: &mut App) {
-            app.add_plugins(RPGStyleUIPlugin {
+            app.add_plugins(RoseStyleUIPlugin {
                 max_button_index: 4,
                 ..default()
             })
@@ -26,11 +27,11 @@ mod message_controler {
     }
 
     fn start_message(
-        mut open_message_event: EventWriter<OpenRPGStyleDialog>,
+        mut open_message_event: EventWriter<OpenRoseStyleDialog>,
         mut is_started: Local<bool>,
     ) {
         if !*is_started {
-            let event = OpenRPGStyleDialog {
+            let event = OpenRoseStyleDialog {
                 script_path: "scripts/starter.md".to_string(),
             };
             open_message_event.send(event);
@@ -75,30 +76,27 @@ mod models_controller {
         fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
             let gltf = asset_server.load("models/room.glb");
             commands.insert_resource(Room(gltf));
-            commands.spawn(Camera3dBundle {
-                transform: Transform::from_xyz(0.0, 0.6, 2.0)
-                    .looking_at(Vec3::new(0.0, 0.6, 0.0), Vec3::Y),
-                ..default()
-            });
-            commands.spawn(DirectionalLightBundle {
-                transform: Transform::from_rotation(Quat::from_euler(
+            commands.spawn((
+                Camera3d::default(),
+                Transform::from_xyz(0.0, 0.6, 2.0).looking_at(Vec3::new(0.0, 0.6, 0.0), Vec3::Y),
+            ));
+            commands.spawn((
+                DirectionalLight {
+                    shadows_enabled: true,
+                    ..default()
+                },
+                Transform::from_rotation(Quat::from_euler(
                     EulerRot::ZYX,
                     0.0,
                     1.0,
                     -TAU / 8.,
                 )),
-                directional_light: DirectionalLight {
-                    shadows_enabled: true,
-                    ..default()
-                },
-                cascade_shadow_config: CascadeShadowConfigBuilder {
+                CascadeShadowConfigBuilder {
                     first_cascade_far_bound: 200.0,
                     maximum_distance: 400.0,
                     ..default()
-                }
-                .into(),
-                ..default()
-            });
+                }.build(),
+            ));
         }
 
         fn load_scenes(
@@ -109,10 +107,7 @@ mod models_controller {
         ) {
             if !*done {
                 if let Some(gltf) = assets_gltf.get(&room.0) {
-                    commands.spawn(SceneBundle {
-                        scene: gltf.named_scenes["Scene"].clone(),
-                        ..default()
-                    });
+                    commands.spawn(SceneRoot(gltf.named_scenes["Scene"].clone()));
                     *done = true;
                 }
             }
@@ -179,12 +174,8 @@ mod models_controller {
                         animations.insert(key.to_string(), index);
                     }
                     commands.spawn((
-                        SceneBundle {
-                            scene: gltf.named_scenes["Scene"].clone(),
-                            transform: Transform::from_xyz(0.5, 0.0, 0.0)
-                                .with_rotation(Quat::from_rotation_y(TAU * -0.05)),
-                            ..default()
-                        },
+                        SceneRoot(gltf.named_scenes["Scene"].clone()),
+                        Transform::from_xyz(0.5, 0.0, 0.0).with_rotation(Quat::from_rotation_y(TAU * -0.05)),
                         Rabit,
                     ));
                     let graph = graphs.add(graph);
@@ -215,7 +206,7 @@ mod models_controller {
                                     .repeat();
                                 commands
                                     .entity(p_entity)
-                                    .insert(animations.graph.clone())
+                                    .insert(AnimationGraphHandle(animations.graph.clone()))
                                     .insert(transitions)
                                     .insert(Rabit);
                             }
@@ -239,7 +230,7 @@ mod models_controller {
                 if let Some(index) = transition.get_main_animation() {
                     if let Some(active) = player.animation(index) {
                         if let Some(graph) = graphs.get(&animations.graph) {
-                            if let Some(clip_handle) = graph.get(index).and_then(|x| x.clip.clone())
+                            if let Some(Clip(clip_handle)) = graph.get(index).map(|x| x.node_type.clone())
                             {
                                 if let Some(clip) = clips.get(&clip_handle) {
                                     let remain = clip.duration() - active.seek_time();
@@ -357,12 +348,8 @@ mod models_controller {
                         animations.insert(key.to_string(), index);
                     }
                     commands.spawn((
-                        SceneBundle {
-                            scene: gltf.named_scenes["Scene"].clone(),
-                            transform: Transform::from_xyz(-0.5, 0.0, 0.0)
-                                .with_rotation(Quat::from_rotation_y(TAU * 0.1)),
-                            ..default()
-                        },
+                        SceneRoot(gltf.named_scenes["Scene"].clone()),
+                        Transform::from_xyz(-0.5, 0.0, 0.0).with_rotation(Quat::from_rotation_y(TAU * 0.1)),
                         Kid,
                     ));
                     let graph = graphs.add(graph);
@@ -393,7 +380,7 @@ mod models_controller {
                                     .repeat();
                                 commands
                                     .entity(p_entity)
-                                    .insert(animations.graph.clone())
+                                    .insert(AnimationGraphHandle(animations.graph.clone()))
                                     .insert(transitions)
                                     .insert(Kid);
                             }
@@ -417,7 +404,7 @@ mod models_controller {
                 if let Some(index) = transition.get_main_animation() {
                     if let Some(active) = player.animation(index) {
                         if let Some(graph) = graphs.get(&animations.graph) {
-                            if let Some(clip_handle) = graph.get(index).and_then(|x| x.clip.clone())
+                            if let Some(Clip(clip_handle)) = graph.get(index).map(|x| x.node_type.clone())
                             {
                                 if let Some(clip) = clips.get(&clip_handle) {
                                     let remain = clip.duration() - active.seek_time();

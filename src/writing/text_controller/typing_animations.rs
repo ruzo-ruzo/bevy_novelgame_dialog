@@ -45,7 +45,7 @@ pub(in crate::writing) fn text_wipe(
 ) {
     for (entity, ts, mut tf) in &mut target {
         if let TypingStyle::Wiping { wipe_per_sec: sec } = ts {
-            tf.scale.x += time.delta_seconds() * sec;
+            tf.scale.x += time.delta_secs() * sec;
             if tf.scale.x > 1. {
                 tf.scale.x = 1.0;
                 commands.entity(entity).remove::<TypingStyle>();

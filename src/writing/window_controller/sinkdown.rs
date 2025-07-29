@@ -150,8 +150,8 @@ pub(in crate::writing) fn scaling_down(
                 .remove::<ScalingDown>()
                 .insert(Despawning);
         } else {
-            tf.scale.x -= time.delta_seconds() * aps;
-            tf.scale.y -= time.delta_seconds() * aps;
+            tf.scale.x -= time.delta_secs() * aps;
+            tf.scale.y -= time.delta_secs() * aps;
         };
     }
 }
