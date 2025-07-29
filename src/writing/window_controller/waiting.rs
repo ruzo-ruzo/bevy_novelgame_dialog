@@ -161,8 +161,9 @@ pub(in crate::writing) fn settle_wating_icon(
             if *ws == DialogBoxPhase::WaitingAction {
                 for (ic_entity, mut ic_tf, wi) in &mut float_icon_query {
                     if wi.target_box_name == *db_name {
-                        if let Some((tb_entity, _, config)) =
-                            text_box_query.iter().find(|(_, p, _)| p.parent() == mw_entity)
+                        if let Some((tb_entity, _, config)) = text_box_query
+                            .iter()
+                            .find(|(_, p, _)| p.parent() == mw_entity)
                         {
                             let (
                                 _,

@@ -44,9 +44,9 @@ mod models_controller {
     use super::*;
     use bevy::gltf::Gltf;
     use bevy_novelgame_dialog::prelude::BdsSignal;
+    use core::time::Duration;
     use std::collections::HashMap;
     use std::f32::consts::TAU;
-    use core::time::Duration;
 
     pub struct ModelsControllerPlugin;
     impl Plugin for ModelsControllerPlugin {

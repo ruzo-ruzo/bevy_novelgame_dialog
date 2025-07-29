@@ -55,9 +55,7 @@ pub(in crate::writing) fn go_selected(
             .iter_just_pressed()
             .filter_map(|t| camera_query.single().ok().map(|c| (c, t)))
             .filter_map(|(c, t)| c.0.viewport_to_world_2d(c.1, t.position()).ok());
-        let is_selected = selected_query
-            .single()
-            .is_ok_and(|e| e == target_entity);
+        let is_selected = selected_query.single().is_ok_and(|e| e == target_entity);
         let is_pointed = pointed_opt.is_some_and(|x| (wig.area.contains(x)));
         let gamepad = gamepads.iter().next();
         if (keys.any_just_pressed([KeyCode::Space, KeyCode::Enter, KeyCode::NumpadEnter])
@@ -72,7 +70,9 @@ pub(in crate::writing) fn go_selected(
             if let Ok(ref_value) = read_ron(&type_registry, wig.ron.clone()) {
                 bds_event.write(BdsEvent { value: ref_value });
             }
-            let db_name_opt = writing_query.get(ta_parent.parent()).map(|x| x.name.clone());
+            let db_name_opt = writing_query
+                .get(ta_parent.parent())
+                .map(|x| x.name.clone());
             go_event.write(ButtonIsPushed {
                 writing_name: db_name_opt.unwrap_or_default(),
                 text_area_name: ta.name.clone(),

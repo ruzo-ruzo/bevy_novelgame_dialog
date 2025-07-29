@@ -55,7 +55,12 @@ type CharData = (
     &'static TypingTimer,
     &'static ChildOf,
 );
-type LineData = (Entity, &'static Transform, &'static Sprite, &'static ChildOf);
+type LineData = (
+    Entity,
+    &'static Transform,
+    &'static Sprite,
+    &'static ChildOf,
+);
 
 #[derive(SystemParam, Debug)]
 pub(super) struct CurrentTextAreaQuery<'w, 's> {
@@ -145,7 +150,10 @@ pub(in crate::writing) fn initialize_typing_data(
     last_data: &TextQuery,
     text_box_entity: Entity,
 ) -> (Option<Entity>, LastChar) {
-    let last_line_data_opt = last_data.line.iter().find(|x| x.3.parent() == text_box_entity);
+    let last_line_data_opt = last_data
+        .line
+        .iter()
+        .find(|x| x.3.parent() == text_box_entity);
     let last_line_opt = last_line_data_opt.map(|x| x.0);
     let last_text_data_opt = last_data
         .text
