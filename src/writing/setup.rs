@@ -12,6 +12,7 @@ pub struct SetupConfig {
     pub render_order: isize,
 }
 
+#[allow(clippy::default_constructed_unit_structs)]
 pub fn setup_camera(mut commands: Commands, config: Res<SetupConfig>) {
     commands.spawn((
         Camera2d::default(),
