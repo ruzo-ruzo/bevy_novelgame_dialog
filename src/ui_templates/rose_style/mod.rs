@@ -130,7 +130,7 @@ fn open_message(
             kerning_by_regulars: HashMap::from([(" ".to_string(), -0.7)]),
             size_by_regulars: HashMap::from([("[[:alpha:]]".to_string(), 1.2)]),
             text_base_size: config.font_size,
-            font_color: Color::srgb(0.9, 0.9, 0.9),
+            font_color: TextColor(Color::srgb(0.9, 0.9, 0.9)),
         };
         let text_area_x = -config.box_size.x / 2.0 + config.box_pos.x + 80.0;
         let text_area_y = config.box_size.y / 2.0 + config.box_pos.y + 110.0;

@@ -17,3 +17,8 @@ Cargo.lock
 *.bak
 
 *.lnk
+
+log.txt
+
+# delete after
+*.glb

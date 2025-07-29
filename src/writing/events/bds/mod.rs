@@ -10,7 +10,7 @@ use bevy::prelude::*;
 // Reflect登録必須。逆にEventは基本要らない
 #[derive(Event)]
 pub struct BdsEvent {
-    pub value: Box<dyn Reflect>,
+    pub value: Box<dyn PartialReflect>,
 }
 
 impl BdsEvent {

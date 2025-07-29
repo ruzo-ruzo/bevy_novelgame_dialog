@@ -12,14 +12,13 @@ pub struct SetupConfig {
     pub render_order: isize,
 }
 
+#[allow(clippy::default_constructed_unit_structs)]
 pub fn setup_camera(mut commands: Commands, config: Res<SetupConfig>) {
     commands.spawn((
-        Camera2dBundle {
-            camera: Camera {
-                order: config.render_order,
-                clear_color: ClearColorConfig::None,
-                ..default()
-            },
+        Camera2d::default(),
+        Camera {
+            order: config.render_order,
+            clear_color: ClearColorConfig::None,
             ..default()
         },
         RenderLayers::layer(config.render_layer.into()),

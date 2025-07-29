@@ -13,7 +13,7 @@ pub(in crate::writing) fn change_font_size(
     for event_wrapper in events.read() {
         if let Some(ChangeFontSize { size: s }) = event_wrapper.get::<ChangeFontSize>() {
             if let Ok(mut config) = ta_query.get_single_mut() {
-                config.text_style.font_size = s;
+                config.text_font.font_size = s;
             }
         }
     }
@@ -47,7 +47,7 @@ pub(in crate::writing) fn force_feeding_current_box(
                             writing_name: db.name.clone(),
                             text_area_name: ta.name.clone(),
                         };
-                        commands.add(|w: &mut World| {
+                        commands.queue(|w: &mut World| {
                             w.send_event(BdsEvent {
                                 value: Box::new(iff),
                             });

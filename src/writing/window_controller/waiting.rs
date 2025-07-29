@@ -177,7 +177,7 @@ pub(in crate::writing) fn settle_wating_icon(
                             ) = initialize_typing_data(&last_data, tb_entity);
                             if *move_flag {
                                 ic_tf.translation =
-                                    Vec3::new(last_x + config.text_style.font_size, last_y, 1.);
+                                    Vec3::new(last_x + config.text_font.font_size, last_y, 1.);
                             }
                         }
                         commands.entity(ic_entity).insert(Settled);
@@ -255,7 +255,7 @@ pub(in crate::writing) fn skip_typing_or_next(
                 }
                 if text_count == typed_count {
                     if let Ok(ref_value) = read_ron(&type_registry, ron.clone()) {
-                        commands.add(|w: &mut World| {
+                        commands.queue(|w: &mut World| {
                             w.send_event(BdsEvent { value: ref_value });
                         })
                     }

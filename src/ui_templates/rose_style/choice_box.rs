@@ -35,15 +35,15 @@ fn setup_choice_images(
     let pushed_image_handle = asset_server.load(ASSETS_PATH.to_owned() + pushed_image_path);
     let choicing_frame_image_handle = asset_server.load(ASSETS_PATH.to_owned() + frame_image_path);
     let writing_image_handle = asset_server.load(ASSETS_PATH.to_owned() + box_image_path);
-    let button_slice = ImageScaleMode::Sliced(TextureSlicer {
+    let button_slice = SpriteImageMode::Sliced(TextureSlicer {
         border: BorderRect::square(127.0),
         ..default()
     });
-    let choicing_frame_slice = ImageScaleMode::Sliced(TextureSlicer {
+    let choicing_frame_slice = SpriteImageMode::Sliced(TextureSlicer {
         border: BorderRect::square(127.0),
         ..default()
     });
-    let writing_slice = ImageScaleMode::Sliced(TextureSlicer {
+    let writing_slice = SpriteImageMode::Sliced(TextureSlicer {
         border: BorderRect::rectangle(198.0, 120.0),
         center_scale_mode: SliceScaleMode::Tile { stretch_value: 1.0 },
         sides_scale_mode: SliceScaleMode::Tile { stretch_value: 1.0 },
@@ -51,58 +51,57 @@ fn setup_choice_images(
     });
     for i in 0..config.max_button_index {
         let button_height = -70.0 - ((config.button_size.y + 40.0) * (i as f32));
-        let button_sprite_bundle = SpriteBundle {
-            sprite: Sprite {
+        let button_sprite_bundle = (
+            Sprite {
+                image: button_image_handle.clone(),
                 custom_size: Some(config.button_size),
+                image_mode: button_slice.clone(),
                 ..default()
             },
-            texture: button_image_handle.clone(),
-            transform: Transform::from_xyz(0.0, button_height, 0.6),
-            ..default()
-        };
+            Transform::from_xyz(0.0, button_height, 0.6),
+        );
         let cb = ChoiceButton {
             target_box_name: "Choice Box".to_string(),
             sort_number: i,
         };
-        commands.spawn((button_sprite_bundle, button_slice.clone(), cb));
+        commands.spawn((button_sprite_bundle, cb));
     }
-    let frame_sprite_bundle = SpriteBundle {
-        sprite: Sprite {
+    let frame_sprite_bundle = (
+        Sprite {
+            image: writing_image_handle,
             custom_size: Some(Vec2::new(
                 config.button_size.x + 250.0,
                 config.button_size.y + 50.0,
             )),
+            image_mode: writing_slice,
             ..default()
         },
-        texture: writing_image_handle,
-        transform: Transform::from_xyz(0.0, 0.0, 1.1),
-        ..default()
-    };
-    let pushed_sprite_bundle = SpriteBundle {
-        sprite: Sprite {
+        Transform::from_xyz(0.0, 0.0, 1.1),
+    );
+    let pushed_sprite_bundle = (
+        Sprite {
+            image: pushed_image_handle,
             custom_size: Some(config.button_size),
+            image_mode: button_slice,
             ..default()
         },
-        texture: pushed_image_handle,
-        transform: Transform::from_xyz(0.0, -70.0, 0.7),
-        visibility: Visibility::Hidden,
-        ..default()
-    };
+        Transform::from_xyz(0.0, -70.0, 0.7),
+        Visibility::Hidden,
+    );
     let cursor_size = Vec2::new(config.button_size.x + 80.0, config.button_size.y + 100.0);
-    let cursor_sprite_bundle = SpriteBundle {
-        sprite: Sprite {
+    let cursor_sprite_bundle = (
+        Sprite {
+            image: choicing_frame_image_handle,
             custom_size: Some(cursor_size),
+            image_mode: choicing_frame_slice,
             ..default()
         },
-        texture: choicing_frame_image_handle,
-        transform: Transform::from_xyz(-2.0, cursor_size.y, 0.3),
-        visibility: Visibility::Hidden,
-        ..default()
-    };
+        Transform::from_xyz(-2.0, cursor_size.y, 0.3),
+        Visibility::Hidden,
+    );
     commands
         .spawn((
             frame_sprite_bundle,
-            writing_slice,
             DialogBoxBackground {
                 writing_name: "Choice Box".to_string(),
             },
@@ -110,14 +109,12 @@ fn setup_choice_images(
         .with_children(|c| {
             c.spawn((
                 cursor_sprite_bundle,
-                choicing_frame_slice,
                 ChoiceCursor,
                 RenderLayers::layer(config.render_layer.into()),
             ));
             c.spawn((
                 pushed_sprite_bundle,
                 PushedButton,
-                button_slice,
                 RenderLayers::layer(config.render_layer.into()),
             ));
         });
@@ -135,9 +132,12 @@ fn move_cursor(
             .find(|x| x.1.sort_number == se.select_number);
         if let Some((button_entity, _)) = cb_opt {
             if let Ok((choice_entity, mut vis)) = cursor_query.get_single_mut() {
-                let cb_y_opt = tf_query.get(button_entity).map(|x| x.translation.y);
+                let cb_y = tf_query
+                    .get(button_entity)
+                    .map(|x| x.translation.y)
+                    .unwrap_or_default();
                 if let Ok(mut cc_tf) = tf_query.get_mut(choice_entity) {
-                    cc_tf.translation.y = cb_y_opt.unwrap_or_default() + 5.0;
+                    cc_tf.translation.y = cb_y + 5.0;
                 }
                 *vis = Visibility::Inherited;
             }

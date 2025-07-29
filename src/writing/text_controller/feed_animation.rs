@@ -267,9 +267,9 @@ pub(in crate::writing) fn scroll_lines(
                     .and_then(|x| x.2.custom_size.map(|s| s.y))
                     .unwrap_or_default();
                 for (l_entity, ref mut tf, _, ref mut sf) in target_lines.iter_mut() {
-                    tf.translation.y += height * sf.line_per_sec * time.delta_seconds();
+                    tf.translation.y += height * sf.line_per_sec * time.delta_secs();
                     if tf.translation.y >= -height {
-                        tf.scale.y -= time.delta_seconds() * sf.line_per_sec;
+                        tf.scale.y -= time.delta_secs() * sf.line_per_sec;
                         if tf.scale.y <= 0. {
                             commands.entity(*l_entity).despawn_recursive();
                         }

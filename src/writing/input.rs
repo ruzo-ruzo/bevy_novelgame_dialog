@@ -34,10 +34,9 @@ pub(in crate::writing) fn go_selected(
     keys: Res<ButtonInput<KeyCode>>,
     mouse_buttons: Res<ButtonInput<MouseButton>>,
     touches: Res<Touches>,
-    gamepad_buttons: Res<ButtonInput<GamepadButton>>,
     mut bds_event: EventWriter<BdsEvent>,
     mut go_event: EventWriter<ButtonIsPushed>,
-    gamepads: Res<Gamepads>,
+    gamepads: Query<&Gamepad>,
     type_registry: Res<AppTypeRegistry>,
 ) {
     let pointed_opt = camera_query
@@ -50,23 +49,23 @@ pub(in crate::writing) fn go_selected(
                 .and_then(|y| y.cursor_position())
                 .map(|y| (x, y))
         })
-        .and_then(|(c, p)| c.0.viewport_to_world_2d(c.1, p));
+        .and_then(|(c, p)| c.0.viewport_to_world_2d(c.1, p).ok());
     for (target_entity, wig, ta, ta_parent) in &target_query {
         let mut touched_position_list = touches
             .iter_just_pressed()
             .filter_map(|t| camera_query.get_single().ok().map(|c| (c, t)))
-            .filter_map(|(c, t)| c.0.viewport_to_world_2d(c.1, t.position()));
+            .filter_map(|(c, t)| c.0.viewport_to_world_2d(c.1, t.position()).ok());
         let is_selected = selected_query
             .get_single()
             .is_ok_and(|e| e == target_entity);
         let is_pointed = pointed_opt.is_some_and(|x| (wig.area.contains(x)));
-        let gamepad_go_button = gamepads.iter().next().map(|x| GamepadButton {
-            gamepad: x,
-            button_type: GamepadButtonType::South,
-        });
+        let gamepad = gamepads.iter().next();
         if (keys.any_just_pressed([KeyCode::Space, KeyCode::Enter, KeyCode::NumpadEnter])
             && is_selected)
-            || (gamepad_go_button.is_some_and(|x| gamepad_buttons.just_pressed(x)) && is_selected)
+            || (gamepad
+                .map(|x| x.just_pressed(GamepadButton::South))
+                .is_some()
+                && is_selected)
             || (mouse_buttons.just_pressed(MouseButton::Left) && is_pointed)
             || touched_position_list.any(|t| wig.area.contains(t))
         {
@@ -95,8 +94,7 @@ pub(in crate::writing) fn shift_selected(
     window_query: Query<&Window, With<PrimaryWindow>>,
     camera_query: Query<(&Camera, &GlobalTransform), With<DialogBoxCamera>>,
     keys: Res<ButtonInput<KeyCode>>,
-    gamepad_buttons: Res<ButtonInput<GamepadButton>>,
-    gamepads: Res<Gamepads>,
+    gamepads: Query<&Gamepad>,
     mut select_event: EventWriter<ButtonIsSelected>,
 ) {
     let mut next_select_opt: Option<Entity> = None;
@@ -110,7 +108,7 @@ pub(in crate::writing) fn shift_selected(
                 .and_then(|y| y.cursor_position())
                 .map(|y| (x, y))
         })
-        .and_then(|(c, p)| c.0.viewport_to_world_2d(c.1, p));
+        .and_then(|(c, p)| c.0.viewport_to_world_2d(c.1, p).ok());
     for (target_entity, _, _, wig, _) in &selective_query {
         if pointed_opt.is_some_and(|x| (wig.area.contains(x))) {
             next_select_opt = Some(target_entity);
@@ -127,24 +125,9 @@ pub(in crate::writing) fn shift_selected(
         .collect::<Vec<_>>();
     vertical_targets.sort_by_key(|x| x.1.number);
     horizen_targets.sort_by_key(|x| x.1.number);
-    let gamepad_up_button = gamepads.iter().next().map(|x| GamepadButton {
-        gamepad: x,
-        button_type: GamepadButtonType::DPadUp,
-    });
-    let gamepad_down_button = gamepads.iter().next().map(|x| GamepadButton {
-        gamepad: x,
-        button_type: GamepadButtonType::DPadDown,
-    });
-    let gamepad_left_button = gamepads.iter().next().map(|x| GamepadButton {
-        gamepad: x,
-        button_type: GamepadButtonType::DPadLeft,
-    });
-    let gamepad_right_button = gamepads.iter().next().map(|x| GamepadButton {
-        gamepad: x,
-        button_type: GamepadButtonType::DPadRight,
-    });
+    let gamepad = gamepads.iter().next();
     if (keys.any_just_pressed([KeyCode::ArrowUp]))
-        || (gamepad_up_button.is_some_and(|x| gamepad_buttons.just_pressed(x)))
+        || gamepad.is_some_and(|x| x.just_pressed(GamepadButton::DPadUp))
     {
         if let Ok(selected_entity) = selected_res {
             if let Some((
@@ -175,7 +158,7 @@ pub(in crate::writing) fn shift_selected(
         }
     }
     if (keys.any_just_pressed([KeyCode::ArrowDown]))
-        || (gamepad_down_button.is_some_and(|x| gamepad_buttons.just_pressed(x)))
+        || gamepad.is_some_and(|x| x.just_pressed(GamepadButton::DPadDown))
     {
         if let Ok(selected_entity) = selected_res {
             if let Some((
@@ -206,7 +189,7 @@ pub(in crate::writing) fn shift_selected(
         }
     }
     if (keys.any_just_pressed([KeyCode::ArrowLeft]))
-        || (gamepad_left_button.is_some_and(|x| gamepad_buttons.just_pressed(x)))
+        || gamepad.is_some_and(|x| x.just_pressed(GamepadButton::DPadLeft))
     {
         if let Ok(selected_entity) = selected_res {
             if let Some((
@@ -237,7 +220,7 @@ pub(in crate::writing) fn shift_selected(
         }
     }
     if (keys.any_just_pressed([KeyCode::ArrowRight]))
-        || (gamepad_right_button.is_some_and(|x| gamepad_buttons.just_pressed(x)))
+        || gamepad.is_some_and(|x| x.just_pressed(GamepadButton::DPadRight))
     {
         if let Ok(selected_entity) = selected_res {
             if let Some((

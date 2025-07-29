@@ -1,0 +1,56 @@
+   Compiling bevy_novelgame_dialog v0.0.1 (E:\Documents\programs\rust\test\playground\bevy_novelgame_dialog)
+error: unexpected token: `)`
+   --> src\writing\text_controller\mod.rs:370:51
+    |
+370 |                     text_size_list.push(text_size.);
+    |                                                   ^
+
+error[E0609]: no field `font` on type `bevy::prelude::Font`
+  --> src\utility.rs:63:24
+   |
+63 |     let font_id = font.font.glyph_id(target);
+   |                        ^^^^ unknown field
+   |
+   = note: available field is: `data`
+
+error[E0609]: no field `font` on type `bevy::prelude::Font`
+  --> src\utility.rs:64:24
+   |
+64 |     let outline = font.font.outline(font_id);
+   |                        ^^^^ unknown field
+   |
+   = note: available field is: `data`
+
+error[E0609]: no field `font` on type `bevy::prelude::Font`
+  --> src\utility.rs:65:23
+   |
+65 |     let raster = font.font.glyph_raster_image2(font_id, 1);
+   |                       ^^^^ unknown field
+   |
+   = note: available field is: `data`
+
+error[E0609]: no field `font` on type `&bevy::prelude::Font`
+   --> src\writing\text_controller\mod.rs:267:75
+    |
+267 |         let font = &font_assets.get(&font_h.unwrap_or_default()).unwrap().font;
+    |                                                                           ^^^^ unknown field
+    |
+    = note: available field is: `data`
+
+warning: unused import: `ab_glyph::Font`
+ --> src\writing\text_controller\mod.rs:1:5
+  |
+1 | use ab_glyph::Font as AbFont;
+  |     ^^^^^^^^^^^^^^
+  |
+  = note: `#[warn(unused_imports)]` on by default
+
+warning: unused import: `ab_glyph::Font`
+ --> src\utility.rs:1:5
+  |
+1 | use ab_glyph::Font as ABFont;
+  |     ^^^^^^^^^^^^^^
+
+For more information about this error, try `rustc --explain E0609`.
+warning: `bevy_novelgame_dialog` (lib) generated 2 warnings
+error: could not compile `bevy_novelgame_dialog` (lib) due to 5 previous errors; 2 warnings emitted
