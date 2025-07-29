@@ -1,6 +1,6 @@
 # bevy_novelgame_dialog
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Bevy tracking](https://img.shields.io/badge/Bevy%20tracking-v0.14-lightblue)](https://github.com/bevyengine/bevy/blob/main/docs/plugins_guidelines.md#main-branch-tracking)
+[![Bevy tracking](https://img.shields.io/badge/Bevy%20tracking-v0.15-lightblue)](https://github.com/bevyengine/bevy/blob/main/docs/plugins_guidelines.md#main-branch-tracking)
 [![CI](https://github.com/ruzo-ruzo/bevy_novelgame_dialog/actions/workflows/bevy_ci.yml/badge.svg)](https://github.com/ruzo-ruzo/bevy_novelgame_dialog/actions/workflows/bevy_ci.yml)
 
 ## Bevy-engine's dialog Plug-in by Text2D
