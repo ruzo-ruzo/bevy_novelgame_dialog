@@ -15,5 +15,5 @@ regex = "1.8.4"
 blake3 = { version = "1.5", features=["pure"] }
 
 #bevy
-bevy = "0.15.0"
+bevy = "0.16.0"
 thiserror = "1.0"

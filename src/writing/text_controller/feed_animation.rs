@@ -33,7 +33,7 @@ pub(in crate::writing) struct ScrollFeed {
 pub(in crate::writing) fn setup_feed_starter(
     mut commands: Commands,
     writing_query: Query<(Entity, &WaitBrakerStyle, &DialogBox)>,
-    text_box_query: Query<(Entity, &TextArea, &Parent, &GlobalTransform, &Sprite), With<Current>>,
+    text_box_query: Query<(Entity, &TextArea, &ChildOf, &GlobalTransform, &Sprite), With<Current>>,
     w_icon_query: Query<(Entity, &WaitingIcon)>,
     mut waitting_event: EventReader<FeedWaitingEvent>,
     type_registry: Res<AppTypeRegistry>,
@@ -41,7 +41,7 @@ pub(in crate::writing) fn setup_feed_starter(
     for event in waitting_event.read() {
         for (db_entity, wbs, DialogBox { name: db_name }) in &writing_query {
             for (ta_entity, ta, parent, tb_tf, tb_sp) in &text_box_query {
-                if event.target_box_name == *db_name && db_entity == parent.get() {
+                if event.target_box_name == *db_name && db_entity == parent.parent() {
                     match wbs {
                         WaitBrakerStyle::Auto { wait_sec: break_ws } => {
                             commands.entity(ta_entity).insert(WaitFeedingTrigger {
@@ -63,7 +63,7 @@ pub(in crate::writing) fn setup_feed_starter(
                                     timer: Timer::from_seconds(event.wait_sec, TimerMode::Once),
                                 };
                                 commands.entity(ic_entity).insert(tt);
-                                commands.entity(ic_entity).set_parent(ta_entity);
+                                commands.entity(ic_entity).insert(ChildOf(ta_entity));
                             }
                             let ron_iff = write_ron(
                                 &type_registry,
@@ -103,7 +103,7 @@ pub(in crate::writing) fn setup_feed_starter(
 #[allow(clippy::type_complexity)]
 pub(in crate::writing) fn trigger_feeding_by_event(
     mut commands: Commands,
-    mut line_query: Query<(Entity, &Parent), With<MessageTextLine>>,
+    mut line_query: Query<(Entity, &ChildOf), With<MessageTextLine>>,
     mut writing_query: Query<(&DialogBox, &mut DialogBoxPhase)>,
     text_area_query: Query<(Entity, &TextArea, &FeedingStyle), With<Current>>,
     mut icon_query: Query<(Entity, &mut Visibility), (With<WaitingIcon>, Without<MessageTextChar>)>,
@@ -123,11 +123,11 @@ pub(in crate::writing) fn trigger_feeding_by_event(
             if let (Some((db, mut dbp)), Some((ta_entity, ta, fs))) = (db_opt, ta_opt) {
                 *dbp = DialogBoxPhase::Typing;
                 for (l_entity, l_parent) in &mut line_query {
-                    if l_parent.get() == ta_entity {
+                    if l_parent.parent() == ta_entity {
                         commands.entity(l_entity).insert(*fs);
                         *dbp = DialogBoxPhase::WaitingAction;
                     }
-                    start_feeding_event.send(StartFeedingEvent {
+                    start_feeding_event.write(StartFeedingEvent {
                         target_box_name: db.name.clone(),
                         target_area_name: ta.name.clone(),
                     });
@@ -149,7 +149,7 @@ pub(in crate::writing) fn trigger_feeding_by_time(
         With<Current>,
     >,
     mut line_query: Query<Entity, With<MessageTextLine>>,
-    parent_query: Query<&Parent>,
+    parent_query: Query<&ChildOf>,
     mut start_feeding_event: EventWriter<StartFeedingEvent>,
     time: Res<Time>,
 ) {
@@ -160,13 +160,13 @@ pub(in crate::writing) fn trigger_feeding_by_time(
         for (ta_entity, ta, fs, mut wft) in &mut text_area_query {
             if wft.timer.tick(time.delta()).finished() {
                 for l_entity in &mut line_query {
-                    if parent_query.get(l_entity).ok().map(|x| x.get()) == Some(ta_entity) {
+                    if parent_query.get(l_entity).ok().map(|x| x.parent()) == Some(ta_entity) {
                         commands.entity(l_entity).insert(*fs);
                         *dbp = DialogBoxPhase::WaitingAction;
                     }
                 }
                 commands.entity(ta_entity).remove::<WaitFeedingTrigger>();
-                start_feeding_event.send(StartFeedingEvent {
+                start_feeding_event.write(StartFeedingEvent {
                     target_box_name: db.name.clone(),
                     target_area_name: ta.name.clone(),
                 });
@@ -179,7 +179,7 @@ pub(in crate::writing) fn start_feeding(
     mut commands: Commands,
     mut window_query: Query<(&DialogBox, &mut DialogBoxPhase, &WaitBrakerStyle)>,
     text_box_query: Query<(Entity, &TextArea, &GlobalTransform, &Sprite)>,
-    line_query: Query<(Entity, &FeedingStyle, &Parent), With<MessageTextLine>>,
+    line_query: Query<(Entity, &FeedingStyle, &ChildOf), With<MessageTextLine>>,
     mut start_feeding_event: EventReader<StartFeedingEvent>,
     type_registry: Res<AppTypeRegistry>,
 ) {
@@ -194,7 +194,7 @@ pub(in crate::writing) fn start_feeding(
                 }
                 let target_lines = line_query
                     .iter()
-                    .filter(|q| q.2.get() == ta_entity)
+                    .filter(|q| q.2.parent() == ta_entity)
                     .map(|q| (q.0, q.1))
                     .collect::<Vec<(Entity, &FeedingStyle)>>();
                 if target_lines.iter().len() > 0 {
@@ -219,7 +219,7 @@ pub(in crate::writing) fn start_feeding(
                             *ws = DialogBoxPhase::Feeding;
                         }
                         FeedingStyle::Rid => {
-                            commands.entity(*l_entity).despawn_recursive();
+                            commands.entity(*l_entity).despawn();
                         }
                     };
                 }
@@ -245,7 +245,7 @@ pub(in crate::writing) fn scroll_lines(
     mut commands: Commands,
     mut window_query: Query<(Entity, &mut DialogBoxPhase)>,
     mut line_query: Query<(Entity, &mut Transform, &Sprite, &mut ScrollFeed)>,
-    parent_query: Query<&Parent>,
+    parent_query: Query<&ChildOf>,
     time: Res<Time>,
 ) {
     for (w_entity, mut ws) in &mut window_query {
@@ -271,7 +271,7 @@ pub(in crate::writing) fn scroll_lines(
                     if tf.translation.y >= -height {
                         tf.scale.y -= time.delta_secs() * sf.line_per_sec;
                         if tf.scale.y <= 0. {
-                            commands.entity(*l_entity).despawn_recursive();
+                            commands.entity(*l_entity).despawn();
                         }
                     }
                 }

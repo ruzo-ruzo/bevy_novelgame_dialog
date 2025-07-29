@@ -27,7 +27,7 @@ pub(in crate::writing) fn simple_wait(
         With<Current>,
     >,
     w_icon_query: Query<(Entity, &WaitingIcon)>,
-    text_area_query: Query<(Entity, &TextArea, &GlobalTransform, &Sprite, &Parent), With<Current>>,
+    text_area_query: Query<(Entity, &TextArea, &GlobalTransform, &Sprite, &ChildOf), With<Current>>,
     selected_query: Query<Entity, With<Selected>>,
     last_data: TextQuery,
     mut bds_reader: EventReader<BdsEvent>,
@@ -39,7 +39,7 @@ pub(in crate::writing) fn simple_wait(
         }
         for (mw_entity, mut ws, DialogBox { name: db_name }, wbs) in &mut dialog_query {
             for (ta_entity, ta, tb_tf, tb_sp, parent) in &text_area_query {
-                if parent.get() == mw_entity {
+                if parent.parent() == mw_entity {
                     let ron = write_ron(
                         &type_registry,
                         BreakWait {
@@ -69,7 +69,7 @@ pub(in crate::writing) fn simple_wait(
                         timer: Timer::from_seconds(time, TimerMode::Once),
                     };
                     commands.entity(ic_entity).insert(tt);
-                    commands.entity(ic_entity).set_parent(ta_entity);
+                    commands.entity(ic_entity).insert(ChildOf(ta_entity));
                 }
                 for s_entity in &selected_query {
                     commands.entity(s_entity).remove::<Selected>();
@@ -140,7 +140,7 @@ pub(in crate::writing) fn waiting_icon_setting(
 pub(in crate::writing) fn settle_wating_icon(
     mut commands: Commands,
     window_query: Query<(Entity, &DialogBoxPhase, &WaitBrakerStyle, &DialogBox)>,
-    text_box_query: Query<(Entity, &Parent, &TypeTextConfig), (With<TextArea>, With<Current>)>,
+    text_box_query: Query<(Entity, &ChildOf, &TypeTextConfig), (With<TextArea>, With<Current>)>,
     mut float_icon_query: Query<
         (Entity, &mut Transform, &mut WaitingIcon),
         (
@@ -161,8 +161,9 @@ pub(in crate::writing) fn settle_wating_icon(
             if *ws == DialogBoxPhase::WaitingAction {
                 for (ic_entity, mut ic_tf, wi) in &mut float_icon_query {
                     if wi.target_box_name == *db_name {
-                        if let Some((tb_entity, _, config)) =
-                            text_box_query.iter().find(|(_, p, _)| p.get() == mw_entity)
+                        if let Some((tb_entity, _, config)) = text_box_query
+                            .iter()
+                            .find(|(_, p, _)| p.parent() == mw_entity)
                         {
                             let (
                                 _,
@@ -207,15 +208,15 @@ pub(in crate::writing) fn skip_typing_or_next(
             Entity,
             &mut Visibility,
             &mut Transform,
-            &Parent,
+            &ChildOf,
             &mut TypingTimer,
         ),
         With<MessageTextChar>,
     >,
-    mut typing_texts_query: Query<(Entity, &mut TypingStyle, &Parent), With<MessageTextChar>>,
+    mut typing_texts_query: Query<(Entity, &mut TypingStyle, &ChildOf), With<MessageTextChar>>,
     writing_query: Query<(&DialogBox, &DialogBoxPhase, &WaitBrakerStyle)>,
     text_area_query: Query<(Entity, &TextArea, &GlobalTransform, &Sprite)>,
-    line_query: Query<(Entity, &Parent), With<MessageTextLine>>,
+    line_query: Query<(Entity, &ChildOf), With<MessageTextLine>>,
     mut icon_query: Query<(Entity, &mut Visibility), (With<WaitingIcon>, Without<MessageTextChar>)>,
     mut bds_reader: EventReader<BdsEvent>,
     type_registry: Res<AppTypeRegistry>,
@@ -237,7 +238,7 @@ pub(in crate::writing) fn skip_typing_or_next(
                 let mut typed_count = 0usize;
                 let mut text_count = 0usize;
                 for (text_entity, ts, t_parent) in &mut typing_texts_query {
-                    if line_query.get(t_parent.get()).map(|x| x.1.get()) == Ok(ta_entity) {
+                    if line_query.get(t_parent.parent()).map(|x| x.1.parent()) == Ok(ta_entity) {
                         match *ts {
                             TypingStyle::Typed => {
                                 typed_count += 1;
@@ -272,7 +273,7 @@ pub(in crate::writing) fn skip_typing_or_next(
                     commands.entity(ta_entity).insert(wig);
                 }
                 for (text_entity, mut t_vis, mut tf, t_parent, mut tt) in &mut waiting_text_query {
-                    if line_query.get(t_parent.get()).map(|x| x.1.get()) == Ok(ta_entity) {
+                    if line_query.get(t_parent.parent()).map(|x| x.1.parent()) == Ok(ta_entity) {
                         tf.scale = Vec3::ONE;
                         *t_vis = Visibility::Inherited;
                         let rem = tt.timer.duration();
@@ -289,7 +290,7 @@ pub(in crate::writing) fn skip_feeding(
     mut commands: Commands,
     mut writing_query: Query<(&DialogBox, &mut DialogBoxPhase), With<Current>>,
     text_area_query: Query<(Entity, &TextArea)>,
-    line_query: Query<(Entity, &Parent), With<MessageTextLine>>,
+    line_query: Query<(Entity, &ChildOf), With<MessageTextLine>>,
     mut bds_reader: EventReader<BdsEvent>,
 ) {
     for event_wrapper in bds_reader.read() {
@@ -306,8 +307,8 @@ pub(in crate::writing) fn skip_feeding(
             if let (Some((_, mut phase)), Some((ta_entity, _))) = (db_opt, ta_opt) {
                 if *phase == DialogBoxPhase::Feeding {
                     for (l_entity, l_parent) in &line_query {
-                        if l_parent.get() == ta_entity {
-                            commands.entity(l_entity).despawn_recursive();
+                        if l_parent.parent() == ta_entity {
+                            commands.entity(l_entity).despawn();
                         }
                     }
                     *phase = DialogBoxPhase::Typing;
@@ -368,7 +369,7 @@ pub(in crate::writing) fn hide_waiting_icon(
     mut icon_query: Query<(&WaitingIcon, &mut Visibility)>,
     writing_query: Query<(&DialogBox, &DialogBoxPhase)>,
 ) {
-    if let Ok((icon, mut vis)) = icon_query.get_single_mut() {
+    if let Ok((icon, mut vis)) = icon_query.single_mut() {
         let box_exists = writing_query
             .iter()
             .find(|x| x.0.name == icon.target_box_name);

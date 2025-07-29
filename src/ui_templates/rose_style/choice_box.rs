@@ -36,15 +36,15 @@ fn setup_choice_images(
     let choicing_frame_image_handle = asset_server.load(ASSETS_PATH.to_owned() + frame_image_path);
     let writing_image_handle = asset_server.load(ASSETS_PATH.to_owned() + box_image_path);
     let button_slice = SpriteImageMode::Sliced(TextureSlicer {
-        border: BorderRect::square(127.0),
+        border: BorderRect::all(127.0),
         ..default()
     });
     let choicing_frame_slice = SpriteImageMode::Sliced(TextureSlicer {
-        border: BorderRect::square(127.0),
+        border: BorderRect::all(127.0),
         ..default()
     });
     let writing_slice = SpriteImageMode::Sliced(TextureSlicer {
-        border: BorderRect::rectangle(198.0, 120.0),
+        border: BorderRect::axes(198.0, 120.0),
         center_scale_mode: SliceScaleMode::Tile { stretch_value: 1.0 },
         sides_scale_mode: SliceScaleMode::Tile { stretch_value: 1.0 },
         ..default()
@@ -131,7 +131,7 @@ fn move_cursor(
             .iter()
             .find(|x| x.1.sort_number == se.select_number);
         if let Some((button_entity, _)) = cb_opt {
-            if let Ok((choice_entity, mut vis)) = cursor_query.get_single_mut() {
+            if let Ok((choice_entity, mut vis)) = cursor_query.single_mut() {
                 let cb_y = tf_query
                     .get(button_entity)
                     .map(|x| x.translation.y)
@@ -152,10 +152,10 @@ fn reset_images(
 ) {
     for fcb in events.read() {
         if fcb.writing_name == *"Choice Box" {
-            if let Ok(mut vis) = cursor_query.get_single_mut() {
+            if let Ok(mut vis) = cursor_query.single_mut() {
                 *vis = Visibility::Hidden;
             }
-            if let Ok(mut vis) = pushed_query.get_single_mut() {
+            if let Ok(mut vis) = pushed_query.single_mut() {
                 *vis = Visibility::Hidden;
             }
         }
@@ -172,7 +172,7 @@ fn button_clicked(
             for (button_tf, cb) in &button_query {
                 let ta_name = format!("Button Area {:02}", cb.sort_number);
                 if gse.text_area_name == ta_name {
-                    if let Ok((mut pushed_tf, mut vis)) = pushed_query.get_single_mut() {
+                    if let Ok((mut pushed_tf, mut vis)) = pushed_query.single_mut() {
                         *pushed_tf = *button_tf;
                         pushed_tf.translation.z += 0.1;
                         *vis = Visibility::Inherited;

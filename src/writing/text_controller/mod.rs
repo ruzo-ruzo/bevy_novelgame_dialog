@@ -53,9 +53,14 @@ type CharData = (
     &'static Text,
     &'static TextFont,
     &'static TypingTimer,
-    &'static Parent,
+    &'static ChildOf,
 );
-type LineData = (Entity, &'static Transform, &'static Sprite, &'static Parent);
+type LineData = (
+    Entity,
+    &'static Transform,
+    &'static Sprite,
+    &'static ChildOf,
+);
 
 #[derive(SystemParam, Debug)]
 pub(super) struct CurrentTextAreaQuery<'w, 's> {
@@ -66,7 +71,7 @@ type AreaData = (
     Entity,
     &'static Sprite,
     &'static TypeTextConfig,
-    &'static Parent,
+    &'static ChildOf,
 );
 
 pub(in crate::writing) fn add_new_text(
@@ -86,7 +91,7 @@ pub(in crate::writing) fn add_new_text(
             continue;
         }
         for (tb_ent, tb_spr, config, parent) in &text_area_query.area {
-            if w_ent != parent.get() {
+            if w_ent != parent.parent() {
                 continue;
             }
             let (mut last_line_opt, mut last_char) = initialize_typing_data(&last_data, tb_ent);
@@ -128,7 +133,7 @@ pub(in crate::writing) fn add_new_text(
                     Some(Order::ThroghEvent { ron: r }) => {
                         let event_opt = read_ron(&app_type_registry, r);
                         if let Ok(reflect_value) = event_opt {
-                            wrapper.send(BdsEvent {
+                            wrapper.write(BdsEvent {
                                 value: reflect_value,
                             });
                         }
@@ -145,12 +150,15 @@ pub(in crate::writing) fn initialize_typing_data(
     last_data: &TextQuery,
     text_box_entity: Entity,
 ) -> (Option<Entity>, LastChar) {
-    let last_line_data_opt = last_data.line.iter().find(|x| x.3.get() == text_box_entity);
+    let last_line_data_opt = last_data
+        .line
+        .iter()
+        .find(|x| x.3.parent() == text_box_entity);
     let last_line_opt = last_line_data_opt.map(|x| x.0);
     let last_text_data_opt = last_data
         .text
         .iter()
-        .filter(|x| Some(x.5.get()) == last_line_opt)
+        .filter(|x| Some(x.5.parent()) == last_line_opt)
         .max_by(|x, y| {
             if x.1.translation.x >= y.1.translation.x {
                 std::cmp::Ordering::Greater
@@ -193,7 +201,7 @@ fn send_feed_event(
     last_char: &LastChar,
     dbp: &mut DialogBoxPhase,
 ) {
-    fw_event.send(FeedWaitingEvent {
+    fw_event.write(FeedWaitingEvent {
         target_box_name: name.to_string(),
         wait_sec: last_char.timer.timer.remaining_secs(),
         // last_pos: Vec2::new(last_char.pos.x, last_char.pos.y),

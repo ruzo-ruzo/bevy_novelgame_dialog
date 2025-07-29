@@ -48,7 +48,7 @@ pub(in crate::writing) fn open_choice_box(
 ) {
     for event_wrapper in events.read() {
         if let Some(SetupChoice { target_list: tl }) = event_wrapper.get::<SetupChoice>() {
-            if let Ok((cbc, mut dbs, children, db)) = db_query.get_single_mut() {
+            if let Ok((cbc, mut dbs, children, db)) = db_query.single_mut() {
                 let bg_opt = bg_query
                     .iter()
                     .find(|x| x.1.writing_name == cbc.choice_box_name);
@@ -132,7 +132,7 @@ pub(in crate::writing) fn open_choice_box(
                     },
                     ..default()
                 };
-                ow_event.send(opening_event);
+                ow_event.write(opening_event);
                 *dbs = DialogBoxPhase::Fixed;
                 for childe in children {
                     commands.entity(*childe).insert(Pending);
@@ -188,7 +188,7 @@ pub(in crate::writing) fn setup_choice(
     ta_query: Query<(Entity, &TextArea, &GlobalTransform, &Sprite), Without<Selective>>,
     app_type_registry: Res<AppTypeRegistry>,
 ) {
-    if let Ok((cb_entity, cbs, children, dbp)) = cb_query.get_single() {
+    if let Ok((cb_entity, cbs, children, dbp)) = cb_query.single() {
         if *dbp != DialogBoxPhase::Typing {
             return;
         }

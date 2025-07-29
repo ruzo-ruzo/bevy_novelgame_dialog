@@ -27,7 +27,7 @@ pub(in crate::writing) fn setup_window_sink(
     text_query: Query<(Entity, &TypingTimer), (With<Current>, With<MessageTextChar>)>,
     text_box_query: Query<(Entity, &TextArea, &GlobalTransform, &Sprite), With<Current>>,
     mut db_query: Query<(Entity, &DialogBox, &mut DialogBoxPhase, &WaitBrakerStyle), With<Current>>,
-    parents: Query<&Parent>,
+    parents: Query<&ChildOf>,
     mut events: EventReader<BdsEvent>,
     type_registry: Res<AppTypeRegistry>,
 ) {
@@ -85,7 +85,7 @@ pub(in crate::writing) fn trigger_window_sink_by_event(
 ) {
     for event_wrapper in bds_reader.read() {
         if let Some(gs @ GoSinking { .. }) = event_wrapper.get::<GoSinking>() {
-            gs_writer.send(gs);
+            gs_writer.write(gs);
         }
     }
 }
@@ -98,7 +98,7 @@ pub(in crate::writing) fn trigger_window_sink_by_time(
 ) {
     for (entity, db, mut wst) in &mut db_query {
         if wst.timer.tick(time.delta()).finished() {
-            events.send(GoSinking {
+            events.write(GoSinking {
                 writing_name: db.name.clone(),
                 sink_type: wst.sink_type,
             });
@@ -176,7 +176,7 @@ pub(in crate::writing) fn despawn_writing(
                             if w_icon_query.get(*ta_childe).is_ok() {
                                 commands.entity(ta_entity).remove_children(&[*ta_childe]);
                             } else {
-                                commands.entity(*ta_childe).despawn_recursive();
+                                commands.entity(*ta_childe).despawn();
                             }
                         }
                     }
@@ -192,7 +192,7 @@ pub(in crate::writing) fn despawn_writing(
         if instant_query.get(db_entity).is_ok() {
             commands.entity(db_entity).despawn();
         }
-        event.send(FinisClosingBox {
+        event.write(FinisClosingBox {
             writing_name: db.name.clone(),
         });
     }
@@ -206,7 +206,7 @@ pub(in crate::writing) fn remove_pending(
     children_query: Query<&Children>,
 ) {
     if current_db_query.iter().next().is_none() {
-        if let Ok((db_entity, mut dbp)) = pending_query.get_single_mut() {
+        if let Ok((db_entity, mut dbp)) = pending_query.single_mut() {
             commands.entity(db_entity).remove::<Pending>();
             commands.entity(db_entity).insert(Current);
             if let Ok(children) = children_query.get(db_entity) {

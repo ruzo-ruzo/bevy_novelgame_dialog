@@ -91,7 +91,7 @@ pub(in crate::writing) fn send_bds_signal(
             signal: base_signal,
         }) = event_wrapper.get::<SimpleStringSignal>()
         {
-            signal_events.send(BdsSignal {
+            signal_events.write(BdsSignal {
                 signal: base_signal.clone(),
             });
         }
@@ -109,7 +109,7 @@ pub struct ChangeCurrentTextArea {
 pub(crate) fn change_current_text_area(
     mut commands: Commands,
     db_query: Query<&DialogBox>,
-    ta_query: Query<(Entity, &TextArea, &Parent)>,
+    ta_query: Query<(Entity, &TextArea, &ChildOf)>,
     mut events: EventReader<BdsEvent>,
 ) {
     for event_wrapper in events.read() {
@@ -119,7 +119,7 @@ pub(crate) fn change_current_text_area(
         }) = event_wrapper.get::<ChangeCurrentTextArea>()
         {
             for (entity, text_area, parent) in &ta_query {
-                if let Ok(parent_db) = db_query.get(parent.get()) {
+                if let Ok(parent_db) = db_query.get(parent.parent()) {
                     if parent_db.name == db_name {
                         if ta_name == text_area.name {
                             commands.entity(entity).insert(Current);
@@ -141,7 +141,7 @@ pub struct ChangeCurrentTextAreaInCurrentBox {
 pub(crate) fn change_current_text_area_in_current_box(
     mut commands: Commands,
     db_query: Query<Entity, (With<DialogBox>, With<Current>)>,
-    ta_query: Query<(Entity, &TextArea, &Parent)>,
+    ta_query: Query<(Entity, &TextArea, &ChildOf)>,
     mut events: EventReader<BdsEvent>,
 ) {
     for event_wrapper in events.read() {
@@ -150,7 +150,7 @@ pub(crate) fn change_current_text_area_in_current_box(
         }) = event_wrapper.get::<ChangeCurrentTextAreaInCurrentBox>()
         {
             for (entity, text_area, parent) in &ta_query {
-                if db_query.get_single().ok() == Some(parent.get()) {
+                if db_query.single().ok() == Some(parent.parent()) {
                     if ta_name == text_area.name {
                         commands.entity(entity).insert(Current);
                     } else {
