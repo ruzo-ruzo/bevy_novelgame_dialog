@@ -5,6 +5,13 @@ use bevy::prelude::*;
 #[derive(Component, Debug, Default)]
 pub struct WaitingIcon {
     pub target_box_name: String,
+    pub wait_for: Vec<WaitTarget>,
+}
+
+#[derive(Component, Debug, PartialEq)]
+pub enum WaitTarget {
+    Feeding,
+    SimpleWaiting,
 }
 
 #[derive(Component, Debug, Default)]
