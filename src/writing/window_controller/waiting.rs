@@ -136,6 +136,7 @@ pub(in crate::writing) fn waiting_icon_setting(
     }
 }
 
+// TextQueryとiconのQueryがTransform取りあってるためWithoutかけてます
 #[allow(clippy::type_complexity)]
 pub(in crate::writing) fn settle_wating_icon(
     mut commands: Commands,
@@ -165,20 +166,10 @@ pub(in crate::writing) fn settle_wating_icon(
                             .iter()
                             .find(|(_, p, _)| p.parent() == mw_entity)
                         {
-                            let (
-                                _,
-                                LastChar {
-                                    pos:
-                                        CharPos {
-                                            x: last_x,
-                                            y: last_y,
-                                        },
-                                    ..
-                                },
-                            ) = initialize_typing_data(&last_data, tb_entity);
+                            let (_, lc) = initialize_typing_data(&last_data, tb_entity);
                             if *move_flag {
                                 ic_tf.translation =
-                                    Vec3::new(last_x + config.text_font.font_size, last_y, 1.);
+                                    Vec3::new(lc.pos.x + config.text_font.font_size, lc.pos.y, 1.);
                             }
                         }
                         commands.entity(ic_entity).insert(Settled);
