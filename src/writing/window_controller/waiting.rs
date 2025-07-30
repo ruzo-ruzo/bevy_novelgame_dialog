@@ -60,9 +60,10 @@ pub(in crate::writing) fn simple_wait(
                     commands.entity(ta_entity).insert(wig);
                 }
                 let (_, last_char) = initialize_typing_data(&last_data, ta_entity);
-                let ic_opt = w_icon_query
-                    .iter()
-                    .find(|x| x.1.target_box_name == *db_name);
+                let ic_opt = w_icon_query.iter().find(|x| {
+                    x.1.target_box_name == *db_name
+                        && x.1.wait_for.contains(&WaitTarget::SimpleWaiting)
+                });
                 if let Some((ic_entity, _)) = ic_opt {
                     let time = last_char.timer.timer.remaining_secs();
                     let tt = TypingTimer {

@@ -10,6 +10,7 @@ impl Plugin for MainBoxPlugIn {
         embedded_asset!(app, "assets/textures/ui/cursor.png");
         app.add_systems(Startup, setup_messageframe)
             .add_systems(Startup, waiting_sprite_setup)
+            .add_systems(Startup, wait_feeding_sprite_setup)
             .add_systems(Update, setup_name_plate)
             .add_systems(Update, animate_sprite);
     }
@@ -125,6 +126,42 @@ fn waiting_sprite_setup(
         AnimationTimer(Timer::from_seconds(0.5, TimerMode::Repeating)),
         WaitingIcon {
             target_box_name: "Main Box".to_string(),
+            wait_for: vec![WaitTarget::SimpleWaiting],
+        },
+        WaitingSprite,
+    ));
+}
+
+fn wait_feeding_sprite_setup(
+    mut commands: Commands,
+    asset_server: Res<AssetServer>,
+    mut texture_atlases: ResMut<Assets<TextureAtlasLayout>>,
+) {
+    let texture_image_path = "textures/ui/cursor.png";
+    let texture_handle = asset_server.load(ASSETS_PATH.to_owned() + texture_image_path);
+    let texture_atlas = TextureAtlasLayout::from_grid(UVec2::new(44, 56), 1, 2, None, None);
+    let animation_indices = AnimationIndices {
+        first: 0,
+        last: 1,
+        step: 1,
+    };
+    let texture_atlas_handle = texture_atlases.add(texture_atlas);
+    let wi_sprite = Sprite {
+        image: texture_handle,
+        texture_atlas: Some(TextureAtlas {
+            layout: texture_atlas_handle,
+            index: animation_indices.first,
+        }),
+        ..default()
+    };
+    commands.spawn((
+        wi_sprite,
+        Transform::from_scale(Vec3::splat(0.5)),
+        animation_indices,
+        AnimationTimer(Timer::from_seconds(0.5, TimerMode::Repeating)),
+        WaitingIcon {
+            target_box_name: "Main Box".to_string(),
+            wait_for: vec![WaitTarget::Feeding],
         },
         WaitingSprite,
     ));

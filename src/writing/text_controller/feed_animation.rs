@@ -55,9 +55,10 @@ pub(in crate::writing) fn setup_feed_starter(
                             is_all_range_area: is_all_range,
                             ..
                         } => {
-                            let icon_opt = w_icon_query
-                                .iter()
-                                .find(|x| *db_name == x.1.target_box_name);
+                            let icon_opt = w_icon_query.iter().find(|x| {
+                                *db_name == x.1.target_box_name
+                                    && x.1.wait_for.contains(&WaitTarget::Feeding)
+                            });
                             if let Some((ic_entity, _)) = icon_opt {
                                 let tt = TypingTimer {
                                     timer: Timer::from_seconds(event.wait_sec, TimerMode::Once),
