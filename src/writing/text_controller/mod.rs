@@ -50,7 +50,7 @@ pub(super) struct TextQuery<'w, 's> {
 type CharData = (
     Entity,
     &'static Transform,
-    &'static Text,
+    &'static Text2d,
     &'static TextFont,
     &'static TypingTimer,
     &'static ChildOf,
@@ -146,26 +146,16 @@ pub(in crate::writing) fn add_new_text(
     }
 }
 
+// Currentを取ってるので総ざらいする必要はない
 pub(in crate::writing) fn initialize_typing_data(
     last_data: &TextQuery,
     text_box_entity: Entity,
 ) -> (Option<Entity>, LastChar) {
-    let last_line_data_opt = last_data
-        .line
-        .iter()
-        .find(|x| x.3.parent() == text_box_entity);
+    let mut last_line_list = last_data.line.iter();
+    let last_line_data_opt = last_line_list.find(|x| x.3.parent() == text_box_entity);
     let last_line_opt = last_line_data_opt.map(|x| x.0);
-    let last_text_data_opt = last_data
-        .text
-        .iter()
-        .filter(|x| Some(x.5.parent()) == last_line_opt)
-        .max_by(|x, y| {
-            if x.1.translation.x >= y.1.translation.x {
-                std::cmp::Ordering::Greater
-            } else {
-                std::cmp::Ordering::Less
-            }
-        });
+    let mut last_text_list = last_data.text.iter();
+    let last_text_data_opt = last_text_list.find(|x| Some(x.5.parent()) == last_line_opt);
     let last_text_opt = last_text_data_opt.map(|x| x.0);
     let last_timer = TypingTimer {
         timer: Timer::from_seconds(
@@ -185,14 +175,12 @@ pub(in crate::writing) fn initialize_typing_data(
         x: last_x,
         y: last_y,
     };
-    (
-        last_line_opt,
-        LastChar {
-            entity: last_text_opt,
-            pos: char_pos,
-            timer: last_timer,
-        },
-    )
+    let last_char = LastChar {
+        entity: last_text_opt,
+        pos: char_pos,
+        timer: last_timer,
+    };
+    (last_line_opt, last_char)
 }
 
 fn send_feed_event(
