@@ -95,13 +95,9 @@ impl Plugin for EmbeddedAssetPlugin {
     fn build(&self, app: &mut App) {
         embedded_asset!(app, "../assets/scripts/basic.csv");
         embedded_asset!(app, "assets/scripts/custom.csv");
-        embedded_asset!(
-            app,
-            "assets/fonts/UnifrakturMaguntia/UnifrakturMaguntia-Regular.ttf"
-        );
         embedded_asset!(app, "assets/fonts/赤薔薇/akabara-cinderella.ttf");
-        embedded_asset!(app, "assets/fonts/网风雅宋/网风雅宋.ttf");
-        embedded_asset!(app, "assets/fonts/noto/NotoEmoji-VariableFont_wght.ttf");
+        embedded_asset!(app, "assets/fonts/网风雅宋/MaoKenWangFengYaSong.ttf");
+        embedded_asset!(app, "assets/fonts/noto/NotoColorEmoji.ttf");
     }
 }
 
@@ -117,10 +113,9 @@ fn open_message(
 ) {
     for OpenRoseStyleDialog { script_path: path } in open_message_event.read() {
         let font_path_vec = [
-            "UnifrakturMaguntia/UnifrakturMaguntia-Regular.ttf",
             "赤薔薇/akabara-cinderella.ttf",
-            "网风雅宋/网风雅宋.ttf",
-            "noto/NotoEmoji-VariableFont_wght.ttf",
+            "网风雅宋/MaoKenWangFengYaSong.ttf",
+            "noto/NotoColorEmoji.ttf",
         ]
         .iter()
         .map(|s| ASSETS_PATH.to_owned() + "fonts/" + s)
@@ -139,7 +134,7 @@ fn open_message(
             text_config: text_conf.clone(),
             feeding: FeedingStyle::Scroll { size: 0, sec: 0.5 },
             area_origin: Vec2::new(text_area_x, text_area_y),
-            area_size: Vec2::new(config.box_size.x - 90.0, config.box_size.y - 160.0),
+            area_size: Vec2::new(config.box_size.x - 140.0, config.box_size.y - 160.0),
             ..default()
         };
         let name_area_x = -(config.box_size.x / 2.0) + 110.0;

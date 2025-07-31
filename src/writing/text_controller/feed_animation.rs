@@ -106,7 +106,7 @@ pub(in crate::writing) fn trigger_feeding_by_event(
     mut line_query: Query<(Entity, &ChildOf), With<MessageTextLine>>,
     mut writing_query: Query<(&DialogBox, &mut DialogBoxPhase)>,
     text_area_query: Query<(Entity, &TextArea, &FeedingStyle), With<Current>>,
-    mut icon_query: Query<(Entity, &mut Visibility), (With<WaitingIcon>, Without<MessageTextChar>)>,
+    mut icon_query: Query<(Entity, &mut Visibility), With<WaitingIcon>>,
     mut start_feeding_event: EventWriter<StartFeedingEvent>,
     mut events: EventReader<BdsEvent>,
 ) {
@@ -134,6 +134,7 @@ pub(in crate::writing) fn trigger_feeding_by_event(
                 }
                 for (ic_entity, mut ic_vis) in &mut icon_query {
                     *ic_vis = Visibility::Hidden;
+                    commands.entity(ic_entity).remove::<TypingStyle>();
                     commands.entity(ic_entity).remove::<TypingTimer>();
                 }
             }
