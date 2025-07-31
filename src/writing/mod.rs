@@ -103,6 +103,7 @@ impl Plugin for DialogBoxPlugin {
             .add_systems(Update, setup_choice.in_set(PhaseSet::Setting))
             .add_systems(Update, despawn_writing.in_set(PhaseSet::Setting))
             .add_systems(Update, remove_pending.in_set(PhaseSet::Setting))
+            .add_systems(Update, add_new_text.in_set(PhaseSet::Setting))
             .add_systems(
                 Update,
                 reinstatement_external_entities.in_set(PhaseSet::Setting),
@@ -123,7 +124,6 @@ impl Plugin for DialogBoxPlugin {
             .add_systems(Update, load_bds.in_set(PhaseSet::Fire))
             .add_systems(Update, window_popper.in_set(PhaseSet::Fire))
             .add_systems(Update, start_window_sink.in_set(PhaseSet::Fire))
-            .add_systems(Update, add_new_text.in_set(PhaseSet::Fire))
             .add_systems(Update, trigger_feeding_by_time.in_set(PhaseSet::Fire))
             .add_systems(Update, close_choice_phase.in_set(PhaseSet::Fire))
             .add_systems(Update, trigger_feeding_by_event.in_set(PhaseSet::Fire))

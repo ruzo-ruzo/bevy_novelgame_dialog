@@ -23,6 +23,7 @@ pub(in crate::writing) struct Selective {
 
 // ToDo: 長押しで連続スキップできるようにしときたい
 // マウス連打の時だけなんかおかしくなる？
+// ボタン選択の場合target以外のPendingされてない奴もwig消すかいっそまとめてPendingするかするべき？
 #[allow(clippy::nonminimal_bool)]
 pub(in crate::writing) fn go_selected(
     mut commands: Commands,

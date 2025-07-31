@@ -7,7 +7,8 @@ impl Plugin for MainBoxPlugIn {
     fn build(&self, app: &mut App) {
         embedded_asset!(app, "assets/textures/ui/plate_base.png");
         embedded_asset!(app, "assets/textures/ui/square_plate.png");
-        embedded_asset!(app, "assets/textures/ui/cursor.png");
+        embedded_asset!(app, "assets/textures/ui/waiting.png");
+        embedded_asset!(app, "assets/textures/ui/wait_feeding.png");
         app.add_systems(Startup, setup_messageframe)
             .add_systems(Startup, waiting_sprite_setup)
             .add_systems(Startup, wait_feeding_sprite_setup)
@@ -102,9 +103,9 @@ fn waiting_sprite_setup(
     asset_server: Res<AssetServer>,
     mut texture_atlases: ResMut<Assets<TextureAtlasLayout>>,
 ) {
-    let texture_image_path = "textures/ui/cursor.png";
+    let texture_image_path = "textures/ui/waiting.png";
     let texture_handle = asset_server.load(ASSETS_PATH.to_owned() + texture_image_path);
-    let texture_atlas = TextureAtlasLayout::from_grid(UVec2::new(44, 56), 1, 2, None, None);
+    let texture_atlas = TextureAtlasLayout::from_grid(UVec2::new(128, 128), 1, 2, None, None);
     let animation_indices = AnimationIndices {
         first: 0,
         last: 1,
@@ -137,9 +138,9 @@ fn wait_feeding_sprite_setup(
     asset_server: Res<AssetServer>,
     mut texture_atlases: ResMut<Assets<TextureAtlasLayout>>,
 ) {
-    let texture_image_path = "textures/ui/cursor.png";
+    let texture_image_path = "textures/ui/wait_feeding.png";
     let texture_handle = asset_server.load(ASSETS_PATH.to_owned() + texture_image_path);
-    let texture_atlas = TextureAtlasLayout::from_grid(UVec2::new(44, 56), 1, 2, None, None);
+    let texture_atlas = TextureAtlasLayout::from_grid(UVec2::new(128, 128), 1, 2, None, None);
     let animation_indices = AnimationIndices {
         first: 0,
         last: 1,
