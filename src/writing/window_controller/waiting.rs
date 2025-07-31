@@ -106,7 +106,8 @@ pub(in crate::writing) fn restart_typing(
                             .iter_mut()
                             .find(|x| x.2.target_box_name == *db_name);
                         if let Some((ic_entity, mut ic_vis, _)) = ic_opt {
-                            commands.entity(ic_entity).remove::<Settled>();
+                            commands.entity(ic_entity).remove::<TypingStyle>();
+                            commands.entity(ic_entity).remove::<TypingTimer>();
                             *ic_vis = Visibility::Hidden;
                         }
                     }
@@ -209,7 +210,14 @@ pub(in crate::writing) fn skip_typing_or_next(
     writing_query: Query<(&DialogBox, &DialogBoxPhase, &WaitBrakerStyle)>,
     text_area_query: Query<(Entity, &TextArea, &GlobalTransform, &Sprite)>,
     line_query: Query<(Entity, &ChildOf), With<MessageTextLine>>,
-    mut icon_query: Query<(Entity, &mut Visibility), (With<WaitingIcon>, Without<MessageTextChar>)>,
+    mut icon_query: Query<
+        (Entity, &mut Visibility),
+        (
+            With<WaitingIcon>,
+            With<TypingTimer>,
+            Without<MessageTextChar>,
+        ),
+    >,
     mut bds_reader: EventReader<BdsEvent>,
     type_registry: Res<AppTypeRegistry>,
 ) {
@@ -242,11 +250,12 @@ pub(in crate::writing) fn skip_typing_or_next(
                         text_count += 1;
                     }
                 }
-                for (ic_entity, mut ic_vis) in &mut icon_query {
-                    *ic_vis = Visibility::Inherited;
-                    commands.entity(ic_entity).remove::<TypingTimer>();
-                }
-                if text_count == typed_count {
+                if text_count <= typed_count {
+                    for (ic_entity, mut ic_vis) in &mut icon_query {
+                        *ic_vis = Visibility::Hidden;
+                        commands.entity(ic_entity).remove::<TypingTimer>();
+                        commands.entity(ic_entity).remove::<TypingStyle>();
+                    }
                     if let Ok(ref_value) = read_ron(&type_registry, ron.clone()) {
                         commands.queue(|w: &mut World| {
                             w.send_event(BdsEvent { value: ref_value });
@@ -263,6 +272,9 @@ pub(in crate::writing) fn skip_typing_or_next(
                         make_wig_for_skip(&db.name, &ta.name, tb_tf, tb_sp, &ron, &type_registry)
                     };
                     commands.entity(ta_entity).insert(wig);
+                    for (_, mut ic_vis) in &mut icon_query {
+                        *ic_vis = Visibility::Inherited;
+                    }
                 }
                 for (text_entity, mut t_vis, mut tf, t_parent, mut tt) in &mut waiting_text_query {
                     if line_query.get(t_parent.parent()).map(|x| x.1.parent()) == Ok(ta_entity) {

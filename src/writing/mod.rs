@@ -87,6 +87,7 @@ impl Plugin for DialogBoxPlugin {
                 Update,
                 (PhaseSet::Setting, PhaseSet::Progress, PhaseSet::Fire).chain(),
             )
+            .add_systems(Startup, setup_camera)
             .add_systems(Update, script_on_load.in_set(PhaseSet::Setting))
             .add_systems(Update, trigger_type_animation.in_set(PhaseSet::Setting))
             .add_systems(Update, setup_window_sink.in_set(PhaseSet::Setting))
@@ -103,12 +104,11 @@ impl Plugin for DialogBoxPlugin {
             .add_systems(Update, setup_choice.in_set(PhaseSet::Setting))
             .add_systems(Update, despawn_writing.in_set(PhaseSet::Setting))
             .add_systems(Update, remove_pending.in_set(PhaseSet::Setting))
-            .add_systems(Update, add_new_text.in_set(PhaseSet::Setting))
             .add_systems(
                 Update,
                 reinstatement_external_entities.in_set(PhaseSet::Setting),
             )
-            .add_systems(Startup, setup_camera)
+            .add_systems(Update, add_new_text.in_set(PhaseSet::Fire))
             .add_systems(Update, settle_wating_icon.in_set(PhaseSet::Progress))
             .add_systems(Update, settle_lines.in_set(PhaseSet::Progress))
             .add_systems(Update, text_wipe.in_set(PhaseSet::Progress))

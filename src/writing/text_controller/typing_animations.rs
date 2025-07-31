@@ -26,12 +26,14 @@ pub(in crate::writing) fn trigger_type_animation(
         if timer.timer.tick(time.delta()).finished() {
             match w_style {
                 WritingStyle::Wipe { sec: s } => {
-                    tf.scale = Vec3::new(0., 1., 1.);
+                    tf.scale = Vec3::new(0.0, 1.0, 1.0);
                     commands.entity(entity).insert(TypingStyle::Wiping {
                         wipe_per_sec: 1.0 / s,
                     });
                 }
-                WritingStyle::Put => (),
+                WritingStyle::Put => {
+                    commands.entity(entity).insert(TypingStyle::Typed);
+                }
             }
             *visibility = Visibility::Inherited;
         }
@@ -48,7 +50,6 @@ pub(in crate::writing) fn text_wipe(
             tf.scale.x += time.delta_secs() * sec;
             if tf.scale.x > 1. {
                 tf.scale.x = 1.0;
-                commands.entity(entity).remove::<TypingStyle>();
                 commands.entity(entity).insert(TypingStyle::Typed);
             }
         }
