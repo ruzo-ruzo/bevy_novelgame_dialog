@@ -31,7 +31,9 @@ pub(in crate::writing) fn trigger_type_animation(
                         wipe_per_sec: 1.0 / s,
                     });
                 }
-                WritingStyle::Put => { commands.entity(entity).insert(TypingStyle::Typed);},
+                WritingStyle::Put => {
+                    commands.entity(entity).insert(TypingStyle::Typed);
+                }
             }
             *visibility = Visibility::Inherited;
         }

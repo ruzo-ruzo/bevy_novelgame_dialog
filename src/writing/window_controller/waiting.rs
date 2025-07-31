@@ -210,7 +210,14 @@ pub(in crate::writing) fn skip_typing_or_next(
     writing_query: Query<(&DialogBox, &DialogBoxPhase, &WaitBrakerStyle)>,
     text_area_query: Query<(Entity, &TextArea, &GlobalTransform, &Sprite)>,
     line_query: Query<(Entity, &ChildOf), With<MessageTextLine>>,
-    mut icon_query: Query<(Entity, &mut Visibility), (With<WaitingIcon>, With<TypingTimer>, Without<MessageTextChar>)>,
+    mut icon_query: Query<
+        (Entity, &mut Visibility),
+        (
+            With<WaitingIcon>,
+            With<TypingTimer>,
+            Without<MessageTextChar>,
+        ),
+    >,
     mut bds_reader: EventReader<BdsEvent>,
     type_registry: Res<AppTypeRegistry>,
 ) {
