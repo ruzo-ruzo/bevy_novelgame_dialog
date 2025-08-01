@@ -64,10 +64,10 @@ pub(in crate::writing) fn setup_feed_starter(
                             commands.entity(ic_entity).insert(tt);
                             commands.entity(ic_entity).insert(ChildOf(ta_entity));
                         }
-						let iff = InputForFeeding {
-                                writing_name: db_name.clone(),
-                                text_area_name: ta.name.clone(),
-                            },
+                        let iff = InputForFeeding {
+                            writing_name: db_name.clone(),
+                            text_area_name: ta.name.clone(),
+                        };
                         let ron_iff = write_ron(&type_registry, iff).unwrap_or_default();
                         let wig = if *is_all_range {
                             make_wig_for_skip_all_range(db_name, &ta.name, &ron_iff, &type_registry)
