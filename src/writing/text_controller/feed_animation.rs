@@ -40,59 +40,49 @@ pub(in crate::writing) fn setup_feed_starter(
     for event in waitting_event.read() {
         for (db_entity, wbs, DialogBox { name: db_name }) in &writing_query {
             for (ta_entity, ta, parent, tb_tf, tb_sp) in &text_box_query {
-                if event.target_box_name == *db_name && db_entity == parent.parent() {
-                    match wbs {
-                        WaitBrakerStyle::Auto { wait_sec: break_ws } => {
-                            commands.entity(ta_entity).insert(WaitFeedingTrigger {
-                                timer: Timer::from_seconds(
-                                    event.wait_sec + break_ws,
-                                    TimerMode::Once,
-                                ),
-                            });
-                        }
-                        WaitBrakerStyle::Input {
-                            is_all_range_area: is_all_range,
-                            ..
-                        } => {
-                            let icon_opt = w_icon_query.iter().find(|x| {
-                                *db_name == x.1.target_box_name
-                                    && x.1.wait_for.contains(&WaitTarget::Feeding)
-                            });
-                            if let Some((ic_entity, _)) = icon_opt {
-                                let tt = TypingTimer {
-                                    timer: Timer::from_seconds(event.wait_sec, TimerMode::Once),
-                                };
-                                commands.entity(ic_entity).insert(tt);
-                                commands.entity(ic_entity).insert(ChildOf(ta_entity));
-                            }
-                            let ron_iff = write_ron(
-                                &type_registry,
-                                InputForFeeding {
-                                    writing_name: db_name.clone(),
-                                    text_area_name: ta.name.clone(),
-                                },
-                            )
-                            .unwrap_or_default();
-                            let wig = if *is_all_range {
-                                make_wig_for_skip_all_range(
-                                    db_name,
-                                    &ta.name,
-                                    &ron_iff,
-                                    &type_registry,
-                                )
-                            } else {
-                                make_wig_for_skip(
-                                    db_name,
-                                    &ta.name,
-                                    tb_tf,
-                                    tb_sp,
-                                    &ron_iff,
-                                    &type_registry,
-                                )
+                if event.target_box_name != *db_name || db_entity != parent.parent() {
+                    break;
+                }
+                match wbs {
+                    WaitBrakerStyle::Auto { wait_sec: break_ws } => {
+                        commands.entity(ta_entity).insert(WaitFeedingTrigger {
+                            timer: Timer::from_seconds(event.wait_sec + break_ws, TimerMode::Once),
+                        });
+                    }
+                    WaitBrakerStyle::Input {
+                        is_all_range_area: is_all_range,
+                        ..
+                    } => {
+                        let icon_opt = w_icon_query.iter().find(|x| {
+                            *db_name == x.1.target_box_name
+                                && x.1.wait_for.contains(&WaitTarget::Feeding)
+                        });
+                        if let Some((ic_entity, _)) = icon_opt {
+                            let tt = TypingTimer {
+                                timer: Timer::from_seconds(event.wait_sec, TimerMode::Once),
                             };
-                            commands.entity(ta_entity).insert(wig);
-                            commands.entity(ta_entity).insert(Selected);
+                            commands.entity(ic_entity).insert(tt);
+                            commands.entity(ic_entity).insert(ChildOf(ta_entity));
                         }
+						let iff = InputForFeeding {
+                                writing_name: db_name.clone(),
+                                text_area_name: ta.name.clone(),
+                            },
+                        let ron_iff = write_ron(&type_registry, iff).unwrap_or_default();
+                        let wig = if *is_all_range {
+                            make_wig_for_skip_all_range(db_name, &ta.name, &ron_iff, &type_registry)
+                        } else {
+                            make_wig_for_skip(
+                                db_name,
+                                &ta.name,
+                                tb_tf,
+                                tb_sp,
+                                &ron_iff,
+                                &type_registry,
+                            )
+                        };
+                        commands.entity(ta_entity).insert(wig);
+                        commands.entity(ta_entity).insert(Selected);
                     }
                 }
             }
