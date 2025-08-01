@@ -56,7 +56,7 @@ pub(crate) fn choice_font_with_index<R: AsRef<[Handle<Font>]>>(
         .as_ref()
         .iter()
         .map(|x| (list.as_ref().iter().len() - 1, x.clone()))
-        .last())
+        .next_back())
 }
 
 fn glyph_exists_in_font(font: Font, target: char) -> bool {
