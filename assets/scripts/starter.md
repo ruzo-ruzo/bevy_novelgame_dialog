@@ -1,1 +1,1 @@
-[jump](explain01.md#最初の文言)
+[jump](explain02.md#最初の文言)

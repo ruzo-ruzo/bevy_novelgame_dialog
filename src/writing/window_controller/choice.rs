@@ -135,7 +135,9 @@ pub(in crate::writing) fn open_choice_box(
                 ow_event.write(opening_event);
                 *dbs = DialogBoxPhase::Fixed;
                 for childe in children {
-                    commands.entity(*childe).insert(Pending);
+                    commands.entity(*childe).insert(Pending {
+                        name: "Waiting Choice".to_string(),
+                    });
                 }
             }
         }
@@ -208,6 +210,7 @@ pub(in crate::writing) fn setup_choice(
                     let wa = WaitInputGo {
                         ron: ron.clone(),
                         area: get_rect(tf, sp),
+                        waiter_name: "".to_string(),
                     };
                     let se = Selective {
                         key_vector: cbs.select_vector,
@@ -257,7 +260,9 @@ pub(in crate::writing) fn close_choice_phase(
                         commands.queue(|w: &mut World| {
                             w.send_event(close);
                         });
-                        commands.entity(db_entity).insert(Pending);
+                        commands.entity(db_entity).insert(Pending {
+                            name: "Waiting Sink".to_string(),
+                        });
                         *dbp = DialogBoxPhase::WaitToType;
                     }
                 }

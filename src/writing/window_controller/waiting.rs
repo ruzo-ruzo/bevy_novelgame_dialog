@@ -17,6 +17,14 @@ pub(in crate::writing) struct InputForSkipping {
     pub text_area_name: String,
 }
 
+pub(crate) struct MakeWigConfig<'a, S: AsRef<str>> {
+    pub dialog_box_name: S,
+    pub text_area_name: S,
+    pub waiter_name: S,
+    pub ron: S,
+    pub type_registry: &'a AppTypeRegistry,
+}
+
 // SimpleWaitが発行された時のCurrentのTextAreaにBreakWaitを詰めたWaitInputGoを設定します。
 // SimpleWaitが飛んでる間にCurrentのTextAreaが変更されていない事を期待しています。
 #[allow(clippy::type_complexity)]
@@ -48,14 +56,21 @@ pub(in crate::writing) fn simple_wait(
                         },
                     )
                     .unwrap_or_default();
+                    let mf_config = MakeWigConfig {
+                        dialog_box_name: db_name,
+                        text_area_name: &ta.name,
+                        waiter_name: &"".to_string(),
+                        ron: &ron,
+                        type_registry: &type_registry,
+                    };
                     let wig = if let WaitBrakerStyle::Input {
                         is_all_range_area: true,
                         ..
                     } = wbs
                     {
-                        make_wig_for_skip_all_range(db_name, &ta.name, &ron, &type_registry)
+                        make_wig_for_skip_all_range(mf_config)
                     } else {
-                        make_wig_for_skip(db_name, &ta.name, tb_tf, tb_sp, &ron, &type_registry)
+                        make_wig_for_skip(mf_config, tb_tf, tb_sp)
                     };
                     commands.entity(ta_entity).insert(wig);
                 }
@@ -262,14 +277,21 @@ pub(in crate::writing) fn skip_typing_or_next(
                         })
                     }
                 } else {
+                    let mf_config = MakeWigConfig {
+                        dialog_box_name: &db.name,
+                        text_area_name: &ta.name,
+                        waiter_name: &"Waiting Next Type".to_string(),
+                        ron: &ron,
+                        type_registry: &type_registry,
+                    };
                     let wig = if let WaitBrakerStyle::Input {
                         is_all_range_area: true,
                         ..
                     } = wbs
                     {
-                        make_wig_for_skip_all_range(&db.name, &ta.name, &ron, &type_registry)
+                        make_wig_for_skip_all_range(mf_config)
                     } else {
-                        make_wig_for_skip(&db.name, &ta.name, tb_tf, tb_sp, &ron, &type_registry)
+                        make_wig_for_skip(mf_config, tb_tf, tb_sp)
                     };
                     commands.entity(ta_entity).insert(wig);
                     for (_, mut ic_vis) in &mut icon_query {
@@ -323,49 +345,45 @@ pub(in crate::writing) fn skip_feeding(
 }
 
 pub(in crate::writing) fn make_wig_for_skip<S: AsRef<str>>(
-    db_name: S,
-    ta_name: S,
+    config: MakeWigConfig<S>,
     tb_tf: &GlobalTransform,
     tb_sp: &Sprite,
-    ron: S,
-    type_registry: &AppTypeRegistry,
 ) -> WaitInputGo {
     let base_size = tb_sp.custom_size.unwrap_or_default();
     let bottom_left = Vec2::new(tb_tf.translation().x, tb_tf.translation().y - base_size.y);
     let top_right = Vec2::new(bottom_left.x + base_size.x, tb_tf.translation().y);
     let ron_ifs_opt = write_ron(
-        type_registry,
+        config.type_registry,
         InputForSkipping {
-            next_event_ron: ron.as_ref().to_string(),
-            writing_name: db_name.as_ref().to_string(),
-            text_area_name: ta_name.as_ref().to_string(),
+            next_event_ron: config.ron.as_ref().to_string(),
+            writing_name: config.dialog_box_name.as_ref().to_string(),
+            text_area_name: config.text_area_name.as_ref().to_string(),
         },
     );
     WaitInputGo {
         ron: ron_ifs_opt.unwrap_or_default(),
         area: Rect::from_corners(bottom_left, top_right),
+        waiter_name: config.waiter_name.as_ref().to_string(),
     }
 }
 
 pub(in crate::writing) fn make_wig_for_skip_all_range<S: AsRef<str>>(
-    db_name: S,
-    ta_name: S,
-    ron: S,
-    type_registry: &AppTypeRegistry,
+    config: MakeWigConfig<S>,
 ) -> WaitInputGo {
     let bottom_left = Vec2::new(f32::MIN, f32::MIN);
     let top_right = Vec2::new(f32::MAX, f32::MAX);
     let ron_ifs_opt = write_ron(
-        type_registry,
+        config.type_registry,
         InputForSkipping {
-            next_event_ron: ron.as_ref().to_string(),
-            writing_name: db_name.as_ref().to_string(),
-            text_area_name: ta_name.as_ref().to_string(),
+            next_event_ron: config.ron.as_ref().to_string(),
+            writing_name: config.dialog_box_name.as_ref().to_string(),
+            text_area_name: config.text_area_name.as_ref().to_string(),
         },
     );
     WaitInputGo {
         ron: ron_ifs_opt.unwrap_or_default(),
         area: Rect::from_corners(bottom_left, top_right),
+        waiter_name: config.waiter_name.as_ref().to_string(),
     }
 }
 

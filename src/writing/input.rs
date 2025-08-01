@@ -13,6 +13,7 @@ pub(crate) struct Selected;
 pub(in crate::writing) struct WaitInputGo {
     pub ron: String,
     pub area: Rect,
+    pub waiter_name: String,
 }
 
 #[derive(Component)]
@@ -22,14 +23,14 @@ pub(in crate::writing) struct Selective {
 }
 
 // ToDo: 長押しで連続スキップできるようにしときたい
-// マウス連打の時だけなんかおかしくなる？
-// ボタン選択の場合target以外のPendingされてない奴もwig消すかいっそまとめてPendingするかするべき？
 #[allow(clippy::nonminimal_bool)]
 pub(in crate::writing) fn go_selected(
     mut commands: Commands,
     target_query: Query<(Entity, &WaitInputGo, &TextArea, &ChildOf), Without<Pending>>,
     writing_query: Query<&DialogBox>,
     selected_query: Query<Entity, (With<Selected>, Without<Pending>)>,
+    selective_query: Query<Entity, (With<Selective>, Without<Pending>)>,
+    pending_query: Query<(Entity, &Pending)>,
     window_query: Query<&Window, With<PrimaryWindow>>,
     camera_query: Query<(&Camera, &GlobalTransform), With<DialogBoxCamera>>,
     keys: Res<ButtonInput<KeyCode>>,
@@ -78,6 +79,17 @@ pub(in crate::writing) fn go_selected(
                 writing_name: db_name_opt.unwrap_or_default(),
                 text_area_name: ta.name.clone(),
             });
+            for (p_entity, pending) in &pending_query {
+                if pending.name == wig.waiter_name {
+                    commands.entity(p_entity).remove::<Pending>();
+                }
+            }
+            for s_entity in &selective_query {
+                let pending = Pending {
+                    name: "Went".to_string(),
+                };
+                commands.entity(s_entity).insert(pending);
+            }
             commands.entity(target_entity).remove::<WaitInputGo>();
         }
     }

@@ -27,7 +27,9 @@ pub(crate) struct Current;
 
 #[allow(private_interfaces)]
 #[derive(Component)]
-pub(crate) struct Pending;
+pub(crate) struct Pending {
+    pub name: String,
+}
 
 #[derive(Component)]
 pub(in crate::writing) struct Instant;

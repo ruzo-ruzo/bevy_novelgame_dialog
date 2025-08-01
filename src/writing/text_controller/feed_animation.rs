@@ -5,7 +5,6 @@ use super::super::*;
 pub(in crate::writing) struct FeedWaitingEvent {
     pub target_box_name: String,
     pub wait_sec: f32,
-    // pub last_pos: Vec2,
 }
 
 #[derive(Event)]
@@ -68,18 +67,17 @@ pub(in crate::writing) fn setup_feed_starter(
                             writing_name: db_name.clone(),
                             text_area_name: ta.name.clone(),
                         };
-                        let ron_iff = write_ron(&type_registry, iff).unwrap_or_default();
+                        let mf_config = MakeWigConfig {
+                            dialog_box_name: &db_name,
+                            text_area_name: &&ta.name,
+                            waiter_name: &&"".to_string(),
+                            ron: &&write_ron(&type_registry, iff).unwrap_or_default(),
+                            type_registry: &type_registry,
+                        };
                         let wig = if *is_all_range {
-                            make_wig_for_skip_all_range(db_name, &ta.name, &ron_iff, &type_registry)
+                            make_wig_for_skip_all_range(mf_config)
                         } else {
-                            make_wig_for_skip(
-                                db_name,
-                                &ta.name,
-                                tb_tf,
-                                tb_sp,
-                                &ron_iff,
-                                &type_registry,
-                            )
+                            make_wig_for_skip(mf_config, tb_tf, tb_sp)
                         };
                         commands.entity(ta_entity).insert(wig);
                         commands.entity(ta_entity).insert(Selected);
@@ -219,11 +217,17 @@ pub(in crate::writing) fn start_feeding(
                     ..
                 } = wbs
                 {
-                    let empty = "".to_string();
+                    let mf_config = MakeWigConfig {
+                        dialog_box_name: &db.name,
+                        text_area_name: &ta.name,
+                        waiter_name: &"Waiting Feeding".to_string(),
+                        ron: &"".to_string(),
+                        type_registry: &type_registry,
+                    };
                     let wig = if *is_all_range {
-                        make_wig_for_skip_all_range(&db.name, &ta.name, &empty, &type_registry)
+                        make_wig_for_skip_all_range(mf_config)
                     } else {
-                        make_wig_for_skip(&db.name, &ta.name, tb_tf, tb_sp, &empty, &type_registry)
+                        make_wig_for_skip(mf_config, tb_tf, tb_sp)
                     };
                     commands.entity(ta_entity).insert(wig);
                 }

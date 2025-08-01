@@ -61,14 +61,14 @@ pub(in crate::writing) fn setup_window_sink(
                                     sink_type: sdt,
                                 },
                             );
-                            let wig = make_wig_for_skip(
-                                &db.name,
-                                &ta.name,
-                                tb_tf,
-                                tb_sp,
-                                &gs_ron.unwrap_or_default(),
-                                &type_registry,
-                            );
+                            let mf_config = MakeWigConfig {
+                                dialog_box_name: &db.name,
+                                text_area_name: &ta.name,
+                                waiter_name: &"".to_string(),
+                                ron: &gs_ron.unwrap_or_default(),
+                                type_registry: &type_registry,
+                            };
+                            let wig = make_wig_for_skip(mf_config, tb_tf, tb_sp);
                             commands.entity(target_tb).insert(wig);
                         }
                     }
@@ -201,21 +201,23 @@ pub(in crate::writing) fn despawn_writing(
 #[allow(clippy::type_complexity)]
 pub(in crate::writing) fn remove_pending(
     mut commands: Commands,
-    mut pending_query: Query<(Entity, &mut DialogBoxPhase), (With<DialogBox>, With<Pending>)>,
+    mut pending_query: Query<(Entity, &mut DialogBoxPhase, &Pending), With<DialogBox>>,
     current_db_query: Query<&Current, (With<DialogBox>, Without<Pending>)>,
     children_query: Query<&Children>,
 ) {
     if current_db_query.iter().next().is_none() {
-        if let Ok((db_entity, mut dbp)) = pending_query.single_mut() {
-            commands.entity(db_entity).remove::<Pending>();
-            commands.entity(db_entity).insert(Current);
-            if let Ok(children) = children_query.get(db_entity) {
-                for childe in children {
-                    commands.entity(*childe).remove::<Pending>();
+        if let Ok((db_entity, mut dbp, pd)) = pending_query.single_mut() {
+            if pd.name == "Waiting Sink" {
+                commands.entity(db_entity).remove::<Pending>();
+                commands.entity(db_entity).insert(Current);
+                if let Ok(children) = children_query.get(db_entity) {
+                    for childe in children {
+                        commands.entity(*childe).remove::<Pending>();
+                    }
                 }
-            }
-            if *dbp == DialogBoxPhase::WaitToType {
-                *dbp = DialogBoxPhase::Typing;
+                if *dbp == DialogBoxPhase::WaitToType {
+                    *dbp = DialogBoxPhase::Typing;
+                }
             }
         }
     }
