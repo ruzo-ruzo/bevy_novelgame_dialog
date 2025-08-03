@@ -56,7 +56,7 @@ impl Default for RoseStyleUIPlugin {
             box_pos: Vec2::new(0.0, -200.0),
             choice_pos: Vec2::new(0.0, -200.0),
             button_size: Vec2::new(400.0, 100.0),
-            name_plate_size: Vec2::new(400.0, 80.0),
+            name_plate_size: Vec2::new(400.0, 72.0),
             max_button_index: 3,
             font_size: 32.0,
         }
@@ -128,7 +128,7 @@ fn open_message(
             font_color: TextColor(Color::srgb(0.9, 0.9, 0.9)),
         };
         let text_area_x = -config.box_size.x / 2.0 + config.box_pos.x + 80.0;
-        let text_area_y = config.box_size.y / 2.0 + config.box_pos.y + 110.0;
+        let text_area_y = config.box_size.y / 2.0 + config.box_pos.y + 100.0;
         let frame_tac = TextAreaConfig {
             area_name: "Main Area".to_string(),
             text_config: text_conf.clone(),
@@ -137,12 +137,12 @@ fn open_message(
             area_size: Vec2::new(config.box_size.x - 140.0, config.box_size.y - 160.0),
             ..default()
         };
-        let name_area_x = -(config.box_size.x / 2.0) + 110.0;
-        let name_area_y = config.box_size.y / 2.0 - 8.0;
+        let name_area_x = -(config.box_size.x / 2.0) + 130.0;
+        let name_area_y = config.box_size.y / 2.0 - 32.0;
         let name_plate_tac = TextAreaConfig {
             area_name: "Name Area".to_string(),
             area_origin: Vec2::new(name_area_x, name_area_y),
-            area_size: Vec2::new(400.0, 80.0),
+            area_size: Vec2::new(400.0, 72.0),
             text_config: CharConfig {
                 font_color: CssColor::ANTIQUE_WHITE.into(),
                 ..text_conf.clone()
