@@ -43,10 +43,8 @@ fn setup_choice_images(
         border: BorderRect::all(127.0),
         ..default()
     });
-    let writing_slice = SpriteImageMode::Sliced(TextureSlicer {
-        border: BorderRect::axes(198.0, 120.0),
-        center_scale_mode: SliceScaleMode::Tile { stretch_value: 1.0 },
-        sides_scale_mode: SliceScaleMode::Tile { stretch_value: 1.0 },
+    let frame_slice = SpriteImageMode::Sliced(TextureSlicer {
+        border: BorderRect::axes(64.0, 35.0),
         ..default()
     });
     for i in 0..config.max_button_index {
@@ -73,7 +71,7 @@ fn setup_choice_images(
                 config.button_size.x + 250.0,
                 config.button_size.y + 50.0,
             )),
-            image_mode: writing_slice,
+            image_mode: frame_slice,
             ..default()
         },
         Transform::from_xyz(0.0, 0.0, 1.1),

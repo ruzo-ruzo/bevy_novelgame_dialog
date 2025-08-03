@@ -6,7 +6,7 @@ pub(super) struct MainBoxPlugIn;
 impl Plugin for MainBoxPlugIn {
     fn build(&self, app: &mut App) {
         embedded_asset!(app, "assets/textures/ui/plate_base.png");
-        embedded_asset!(app, "assets/textures/ui/square_plate.png");
+        embedded_asset!(app, "assets/textures/ui/rose_plate.png");
         embedded_asset!(app, "assets/textures/ui/waiting.png");
         embedded_asset!(app, "assets/textures/ui/wait_feeding.png");
         app.add_systems(Startup, setup_messageframe)
@@ -49,8 +49,8 @@ fn setup_messageframe(
     });
     commands.spawn((
         Sprite {
-            custom_size: Some(config.box_size),
             image: writing_image_handle,
+            custom_size: Some(config.box_size),
             image_mode: writing_slice,
             ..default()
         },
@@ -70,15 +70,15 @@ fn setup_name_plate(
 ) {
     if !*is_setup {
         let name_plate_image_handle =
-            asset_server.load(ASSETS_PATH.to_owned() + "textures/ui/square_plate.png");
+            asset_server.load(ASSETS_PATH.to_owned() + "textures/ui/rose_plate.png");
         let writing_slice = SpriteImageMode::Sliced(TextureSlicer {
-            border: BorderRect::all(30.0),
+            border: BorderRect::axes(64.0, 35.0),
             ..default()
         });
         for (dbb_entity, DialogBoxBackground { writing_name: name }) in &dbb_query {
             if name == "Main Box" {
                 let name_x = -(config.box_size.x / 2.0) + (config.box_pos.x + 280.0);
-                let name_y = config.box_size.y / 2.0 + (config.box_pos.y + 150.0);
+                let name_y = config.box_size.y / 2.0 + (config.box_pos.y + 142.0);
                 commands.entity(dbb_entity).with_children(|child_builder| {
                     child_builder.spawn((
                         Sprite {
