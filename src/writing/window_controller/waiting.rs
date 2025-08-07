@@ -37,7 +37,7 @@ pub(in crate::writing) fn simple_wait(
     w_icon_query: Query<(Entity, &WaitingIcon)>,
     text_area_query: Query<(Entity, &TextArea, &GlobalTransform, &Sprite, &ChildOf), With<Current>>,
     selected_query: Query<Entity, With<Selected>>,
-    last_data: TextQuery,
+    last_data: CurrentQuery,
     mut bds_reader: EventReader<BdsEvent>,
     type_registry: Res<AppTypeRegistry>,
 ) {
@@ -153,7 +153,7 @@ pub(in crate::writing) fn waiting_icon_setting(
     }
 }
 
-// TextQueryとiconのQueryがTransform取りあってるためWithoutかけてます
+// CurrentQueryとiconのQueryがTransform取りあってるためWithoutかけてます
 #[allow(clippy::type_complexity)]
 pub(in crate::writing) fn settle_wating_icon(
     mut commands: Commands,
@@ -168,7 +168,7 @@ pub(in crate::writing) fn settle_wating_icon(
         ),
     >,
     settle_icon_query: Query<(Entity, &WaitingIcon), With<Settled>>,
-    last_data: TextQuery,
+    last_data: CurrentQuery,
 ) {
     for (mw_entity, ws, wbs, DialogBox { name: db_name }) in &window_query {
         if let WaitBrakerStyle::Input {
@@ -186,7 +186,7 @@ pub(in crate::writing) fn settle_wating_icon(
                             let (_, lc) = initialize_typing_data(&last_data, tb_entity);
                             if *move_flag {
                                 ic_tf.translation =
-                                    Vec3::new(lc.pos.x + config.text_font.font_size, lc.pos.y, 1.);
+                                    Vec3::new(lc.pos.x + config.base_size, lc.pos.y, 1.);
                             }
                         }
                         commands.entity(ic_entity).insert(Settled);
@@ -208,6 +208,7 @@ pub(in crate::writing) fn settle_wating_icon(
 // 文字の表示が終わっていなければ、WaitInputGo内にInputForSkippingを詰めてTextAreaにつけ直します。
 // その後当該TextArea内の文字を強制的に表示し終えます。
 // これをトリガーするInputForSkippingはSimpleWait経由で発行されていることが期待されています。
+// ここで参照しているため、全ての文字は表示し終わった時点でTypingStyle::Putを持つ必要があります。
 #[allow(clippy::type_complexity)]
 pub(in crate::writing) fn skip_typing_or_next(
     mut commands: Commands,

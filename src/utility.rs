@@ -22,17 +22,17 @@ pub(crate) fn find_by_regex<T: Clone, S: AsRef<str>>(s: S, base: &HashMap<String
     reg.and_then(|r| base.get(r)).cloned()
 }
 
-pub(crate) fn choice_font<R: AsRef<[Handle<Font>]>>(
+pub(crate) fn choice_font<R: AsRef<[TextFont]>>(
     list: &R,
     target: char,
     fonts: &Assets<Font>,
-) -> Option<Handle<Font>> {
+) -> Option<TextFont> {
     let finded = list
         .as_ref()
         .iter()
-        .find(|h| {
+        .find(|tf| {
             fonts
-                .get(*h)
+                .get(&tf.font)
                 .map(|f| glyph_exists_in_font(f.clone(), target))
                 .unwrap_or(false)
         })
