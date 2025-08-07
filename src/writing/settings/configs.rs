@@ -6,12 +6,12 @@ use std::collections::HashMap;
 
 #[derive(Component)]
 pub struct TypeTextConfig {
-    pub fonts: Vec<Handle<Font>>,
+    pub text_fonts: Vec<TextFont>,
     pub kerning_by_regulars: HashMap<String, f32>,
     pub size_by_regulars: HashMap<String, f32>,
-    pub text_font: TextFont,
     pub text_color: TextColor,
     pub writing: WritingStyle,
+    pub base_size: f32,
     pub typing_timing: TypingTiming,
     pub layer: RenderLayers,
     pub horizon_alignment: AlignHorizon,
@@ -22,7 +22,7 @@ pub struct TypeTextConfig {
 
 #[derive(Clone)]
 pub struct CharConfig {
-    pub font_paths: Vec<String>,
+    pub font_settings: Vec<FontSettings>,
     pub kerning_by_regulars: HashMap<String, f32>,
     pub size_by_regulars: HashMap<String, f32>,
     pub text_base_size: f32,
@@ -32,7 +32,7 @@ pub struct CharConfig {
 impl Default for CharConfig {
     fn default() -> Self {
         CharConfig {
-            font_paths: vec!["fonts/FiraMono-Regular.ttf".to_string()],
+            font_settings: vec![FontSettings::default()],
             kerning_by_regulars: HashMap::default(),
             size_by_regulars: HashMap::default(),
             text_base_size: 27.0,

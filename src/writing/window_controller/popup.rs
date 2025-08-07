@@ -110,21 +110,23 @@ fn initialize_text_config(
     t_cfg: &TextAreaConfig,
     setup_config: Res<SetupConfig>,
 ) -> TypeTextConfig {
+    let text_font_vec = t_cfg
+        .text_config
+        .font_settings
+        .iter()
+        .map(|f| TextFont {
+            font: asset_server.load(f.path.clone()),
+            font_size: f.size_coefficient,
+            ..default()
+        })
+        .collect::<Vec<_>>();
     TypeTextConfig {
-        fonts: t_cfg
-            .text_config
-            .font_paths
-            .iter()
-            .map(|f| asset_server.load(f.clone()))
-            .collect(),
+        text_fonts: text_font_vec,
         kerning_by_regulars: t_cfg.text_config.kerning_by_regulars.clone(),
         size_by_regulars: t_cfg.text_config.size_by_regulars.clone(),
-        text_font: TextFont {
-            font_size: t_cfg.text_config.text_base_size,
-            ..default()
-        },
         text_color: t_cfg.text_config.font_color,
         writing: t_cfg.writing,
+        base_size: t_cfg.text_config.text_base_size,
         typing_timing: t_cfg.typing_timing,
         layer: RenderLayers::layer(setup_config.render_layer.into()),
         horizon_alignment: t_cfg.horizon_alignment,

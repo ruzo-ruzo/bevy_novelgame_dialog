@@ -96,8 +96,7 @@ impl Plugin for EmbeddedAssetPlugin {
         embedded_asset!(app, "../assets/scripts/basic.csv");
         embedded_asset!(app, "assets/scripts/custom.csv");
         embedded_asset!(app, "assets/fonts/赤薔薇/akabara-cinderella.ttf");
-        embedded_asset!(app, "assets/fonts/网风雅宋/MaoKenWangFengYaSong.ttf");
-        embedded_asset!(app, "assets/fonts/noto/NotoColorEmoji.ttf");
+        embedded_asset!(app, "../assets/fonts/noto/NotoColorEmoji.ttf");
     }
 }
 
@@ -112,16 +111,18 @@ fn open_message(
     mut ow_event: EventWriter<OpenDialog>,
 ) {
     for OpenRoseStyleDialog { script_path: path } in open_message_event.read() {
-        let font_path_vec = [
-            "赤薔薇/akabara-cinderella.ttf",
-            "网风雅宋/MaoKenWangFengYaSong.ttf",
-            "noto/NotoColorEmoji.ttf",
+        let font_settings_vec = [
+            format!("{ASSETS_PATH}fonts/赤薔薇/akabara-cinderella.ttf"),
+            format!("{COMMON_PATH}fonts/noto/NotoColorEmoji.ttf"),
         ]
         .iter()
-        .map(|s| ASSETS_PATH.to_owned() + "fonts/" + s)
+        .map(|s| FontSettings {
+            path: s.to_string(),
+            ..default()
+        })
         .collect::<Vec<_>>();
         let text_conf = CharConfig {
-            font_paths: font_path_vec,
+            font_settings: font_settings_vec,
             kerning_by_regulars: HashMap::from([(" ".to_string(), -0.7)]),
             size_by_regulars: HashMap::from([("[[:alpha:]]".to_string(), 1.2)]),
             text_base_size: config.font_size,

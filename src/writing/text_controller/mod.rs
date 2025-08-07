@@ -42,7 +42,7 @@ pub(super) struct LastChar {
 
 #[derive(SystemParam, Debug)]
 #[allow(clippy::type_complexity)]
-pub(super) struct TextQuery<'w, 's> {
+pub(super) struct CurrentQuery<'w, 's> {
     text: Query<'w, 's, CharData, (With<Current>, With<MessageTextChar>)>,
     line: Query<'w, 's, LineData, (With<Current>, With<MessageTextLine>)>,
 }
@@ -78,7 +78,7 @@ pub(in crate::writing) fn add_new_text(
     mut commands: Commands,
     mut writing_query: Query<(Entity, &DialogBox, &mut LoadedScript, &mut DialogBoxPhase)>,
     text_area_query: CurrentTextAreaQuery,
-    last_data: TextQuery,
+    last_data: CurrentQuery,
     app_type_registry: Res<AppTypeRegistry>,
     mut wrapper: EventWriter<BdsEvent>,
     mut ps_event: EventWriter<FeedWaitingEvent>,
@@ -148,7 +148,7 @@ pub(in crate::writing) fn add_new_text(
 
 // Currentを取ってるので総ざらいする必要はない
 pub(in crate::writing) fn initialize_typing_data(
-    last_data: &TextQuery,
+    last_data: &CurrentQuery,
     text_box_entity: Entity,
 ) -> (Option<Entity>, LastChar) {
     let mut last_line_list = last_data.line.iter();
@@ -192,7 +192,6 @@ fn send_feed_event(
     fw_event.write(FeedWaitingEvent {
         target_box_name: name.to_string(),
         wait_sec: last_char.timer.timer.remaining_secs(),
-        // last_pos: Vec2::new(last_char.pos.x, last_char.pos.y),
     });
     *dbp = DialogBoxPhase::WaitingAction;
 }
@@ -222,17 +221,31 @@ fn add_char(
     ),
 ) -> bool {
     let new_str = String::from(new_word);
-    let font_h = choice_font(&config.fonts, new_word, font_assets);
     let size_coefficient = find_by_regex(new_str.clone(), &config.size_by_regulars).unwrap_or(1.0);
     let kerning_coefficient = find_by_regex(new_str, &config.kerning_by_regulars).unwrap_or(0.0);
-    let true_size = config.text_font.font_size * size_coefficient;
+    let Some(font_text) = choice_font(&config.text_fonts, new_word, font_assets) else {
+        return false;
+    };
+    let Some(font) = &font_assets.get(&font_text.font) else {
+        return false;
+    };
+    let Some(glyph_buffer) = get_glyph_buffer(font, new_word) else {
+        return false;
+    };
+    let Some(positions) = &glyph_buffer.glyph_positions().iter().next() else {
+        return false;
+    };
+    let Some(face) = Face::from_slice(&font.data, 0) else {
+        return false;
+    };
+    let true_size = config.base_size * font_text.font_size * size_coefficient;
     let kerning = true_size * kerning_coefficient;
     let target_x = last_char.pos.x + true_size + kerning;
     if target_x > width {
         false
     } else {
         let text_font = TextFont {
-            font: font_h.clone().unwrap_or_default(),
+            font: font_text.font.clone(),
             font_size: true_size,
             ..Default::default()
         };
@@ -259,18 +272,6 @@ fn add_char(
         };
         let typing_timer = TypingTimer {
             timer: Timer::from_seconds(type_sec, TimerMode::Once),
-        };
-        let Some(font) = &font_assets.get(&font_h.unwrap_or_default()) else {
-            return false;
-        };
-        let Some(glyph_buffer) = get_glyph_buffer(font, new_word) else {
-            return false;
-        };
-        let Some(positions) = &glyph_buffer.glyph_positions().iter().next() else {
-            return false;
-        };
-        let Some(face) = Face::from_slice(&font.data, 0) else {
-            return false;
         };
         let pt_per_height = true_size / face.height() as f32;
         let advance = pt_per_height * positions.x_advance as f32;
@@ -309,7 +310,7 @@ fn add_empty_line(
     tb_ent: Entity,
 ) -> bool {
     last_char.pos.x = 0.;
-    last_char.pos.y -= config.text_font.font_size;
+    last_char.pos.y -= config.base_size;
     if last_char.pos.y < -min_height {
         false
     } else {
@@ -337,6 +338,7 @@ fn add_empty_line(
     }
 }
 
+// Todo:位置を自由にラインどりできるようにしたい
 pub(in crate::writing) fn settle_lines(
     dialogbox_query: Query<(Entity, &DialogBoxPhase), With<DialogBox>>,
     mut text_lines: Query<(&MessageTextLine, &mut Transform), Without<MessageTextChar>>,

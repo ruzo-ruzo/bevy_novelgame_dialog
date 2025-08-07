@@ -13,7 +13,7 @@ pub(in crate::writing) fn change_font_size(
     for event_wrapper in events.read() {
         if let Some(ChangeFontSize { size: s }) = event_wrapper.get::<ChangeFontSize>() {
             if let Ok(mut config) = ta_query.single_mut() {
-                config.text_font.font_size = s;
+                config.base_size = s;
             }
         }
     }

@@ -8,6 +8,21 @@ pub struct WaitingIcon {
     pub wait_for: Vec<WaitTarget>,
 }
 
+#[derive(Clone)]
+pub struct FontSettings {
+    pub path: String,
+    pub size_coefficient: f32,
+}
+
+impl Default for FontSettings {
+    fn default() -> Self {
+        Self {
+            path: "fonts/FiraMono-Regular.ttf".to_string(),
+            size_coefficient: 1.0,
+        }
+    }
+}
+
 #[derive(Component, Debug, PartialEq)]
 pub enum WaitTarget {
     Feeding,
