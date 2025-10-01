@@ -1,13 +1,13 @@
 use super::*;
 use crate::read_script::split_path_and_section;
-use bevy::render::view::{RenderLayers, Visibility::*};
+use bevy::camera::visibility::{RenderLayers, Visibility::*};
 
 pub(in crate::writing) fn open_window(
     mut commands: Commands,
     bg_query: Query<(Entity, &DialogBoxBackground)>,
     db_query: Query<Entity, (With<Current>, With<DialogBox>)>,
     mut tf_query: Query<&mut Transform>,
-    mut ow_event: EventReader<OpenDialog>,
+    mut ow_event: MessageReader<OpenDialog>,
     asset_server: Res<AssetServer>,
     setup_config: Res<SetupConfig>,
 ) {
@@ -80,12 +80,12 @@ pub(in crate::writing) fn open_window(
             };
             let ta_sprite = (
                 Sprite {
-                    anchor: Anchor::TopLeft,
                     color: Color::WHITE.with_alpha(0.0),
                     // color: Color::BLACK.with_a(0.5),
                     custom_size: Some(t_cfg.area_size),
                     ..default()
                 },
+                Anchor::TOP_LEFT,
                 Transform::from_translation(t_cfg.area_origin.extend(0.0)),
                 // transform: Transform::from_translation(t_cfg.area_origin.extend(10.0)),
             );

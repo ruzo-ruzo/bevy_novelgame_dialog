@@ -5,7 +5,7 @@ use crate::writing::settings::configs::*;
 use crate::writing::settings::params::*;
 use bevy::prelude::*;
 
-#[derive(Event)]
+#[derive(Message)]
 pub struct OpenDialog {
     pub writing_name: String,
     pub position: Vec2,
@@ -44,7 +44,7 @@ impl Default for OpenDialog {
     }
 }
 
-#[derive(Event, Debug)]
+#[derive(Message, Debug)]
 pub struct ButtonIsSelected {
     pub writing_name: String,
     pub text_area_name: String,
@@ -52,13 +52,13 @@ pub struct ButtonIsSelected {
     pub select_number: usize,
 }
 
-#[derive(Event)]
+#[derive(Message)]
 pub struct ButtonIsPushed {
     pub writing_name: String,
     pub text_area_name: String,
 }
 
-#[derive(Event)]
+#[derive(Message)]
 pub struct FinisClosingBox {
     pub writing_name: String,
 }

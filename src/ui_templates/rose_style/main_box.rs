@@ -1,5 +1,5 @@
 use super::*;
-use bevy::render::view::RenderLayers;
+use bevy::camera::visibility::RenderLayers;
 
 pub(super) struct MainBoxPlugIn;
 

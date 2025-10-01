@@ -49,7 +49,7 @@ fn monitor_db_state(dbs_query: Query<(&DialogBox, &DialogBoxPhase), Changed<Dial
     }
 }
 
-fn monitor_bds_event(mut events: EventReader<BdsEvent>) {
+fn monitor_bds_event(mut events: MessageReader<BdsEvent>) {
     for event_wrapper in events.read() {
         info!("Throw Event: {:?}", &event_wrapper.value);
     }

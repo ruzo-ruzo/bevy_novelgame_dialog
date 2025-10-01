@@ -1,6 +1,6 @@
 use super::params::*;
 use bevy::{
-    color::palettes::css as CssColor, prelude::*, render::view::RenderLayers, sprite::Anchor,
+    camera::visibility::RenderLayers, color::palettes::css as CssColor, prelude::*, sprite::Anchor,
 };
 use std::collections::HashMap;
 
@@ -119,7 +119,7 @@ impl Default for ChoiceBoxConfig {
             wait_to_sink: 0.0,
             select_vector: SelectVector::Vertical,
             background_scaling_per_button: Vec2::new(0., 100.),
-            background_scaling_anchor: Anchor::TopLeft,
+            background_scaling_anchor: Anchor::TOP_LEFT,
         }
     }
 }

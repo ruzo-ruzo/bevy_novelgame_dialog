@@ -84,7 +84,7 @@ impl Plugin for RoseStyleUIPlugin {
             max_button_index: self.max_button_index,
             font_size: self.font_size,
         })
-        .add_event::<OpenRoseStyleDialog>()
+        .add_message::<OpenRoseStyleDialog>()
         .add_systems(Update, open_message);
     }
 }
@@ -100,15 +100,15 @@ impl Plugin for EmbeddedAssetPlugin {
     }
 }
 
-#[derive(Event)]
+#[derive(Message)]
 pub struct OpenRoseStyleDialog {
     pub script_path: String,
 }
 
 fn open_message(
-    mut open_message_event: EventReader<OpenRoseStyleDialog>,
+    mut open_message_event: MessageReader<OpenRoseStyleDialog>,
     config: Res<TemplateSetupConfig>,
-    mut ow_event: EventWriter<OpenDialog>,
+    mut ow_event: MessageWriter<OpenDialog>,
 ) {
     for OpenRoseStyleDialog { script_path: path } in open_message_event.read() {
         let font_settings_vec = [
@@ -194,7 +194,7 @@ fn open_message(
                 choice_box_name: "Choice Box".to_string(),
                 button_text_areas: tac_list,
                 background_scaling_per_button: Vec2::new(0.0, config.button_size.y + 40.0),
-                background_scaling_anchor: Anchor::TopCenter,
+                background_scaling_anchor: Anchor::TOP_CENTER,
                 ..default()
             },
             ..default()

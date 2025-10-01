@@ -1,6 +1,6 @@
 use bevy::{
+    camera::{visibility::RenderLayers, ClearColorConfig},
     prelude::*,
-    render::{camera::ClearColorConfig, view::visibility::RenderLayers},
 };
 
 #[derive(Component, Debug)]

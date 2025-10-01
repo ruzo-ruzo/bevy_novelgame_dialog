@@ -1,5 +1,5 @@
 use super::*;
-use bevy::render::view::RenderLayers;
+use bevy::camera::visibility::RenderLayers;
 
 pub(super) struct ChoiceBoxPlugIn;
 
@@ -122,7 +122,7 @@ fn move_cursor(
     mut cursor_query: Query<(Entity, &mut Visibility), With<ChoiceCursor>>,
     button_query: Query<(Entity, &ChoiceButton)>,
     mut tf_query: Query<&mut Transform>,
-    mut events: EventReader<ButtonIsSelected>,
+    mut events: MessageReader<ButtonIsSelected>,
 ) {
     for se in events.read() {
         let cb_opt = button_query
@@ -146,7 +146,7 @@ fn move_cursor(
 fn reset_images(
     mut cursor_query: Query<&mut Visibility, With<ChoiceCursor>>,
     mut pushed_query: Query<&mut Visibility, (With<PushedButton>, Without<ChoiceCursor>)>,
-    mut events: EventReader<FinisClosingBox>,
+    mut events: MessageReader<FinisClosingBox>,
 ) {
     for fcb in events.read() {
         if fcb.writing_name == *"Choice Box" {
@@ -163,7 +163,7 @@ fn reset_images(
 fn button_clicked(
     mut pushed_query: Query<(&mut Transform, &mut Visibility), With<PushedButton>>,
     button_query: Query<(&Transform, &ChoiceButton), Without<PushedButton>>,
-    mut events: EventReader<ButtonIsPushed>,
+    mut events: MessageReader<ButtonIsPushed>,
 ) {
     for gse in events.read() {
         if gse.writing_name == *"Choice Box" {

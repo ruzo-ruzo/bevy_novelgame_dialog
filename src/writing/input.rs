@@ -36,8 +36,8 @@ pub(in crate::writing) fn go_selected(
     keys: Res<ButtonInput<KeyCode>>,
     mouse_buttons: Res<ButtonInput<MouseButton>>,
     touches: Res<Touches>,
-    mut bds_event: EventWriter<BdsEvent>,
-    mut go_event: EventWriter<ButtonIsPushed>,
+    mut bds_event: MessageWriter<BdsEvent>,
+    mut go_event: MessageWriter<ButtonIsPushed>,
     gamepads: Query<&Gamepad>,
     type_registry: Res<AppTypeRegistry>,
 ) {
@@ -108,7 +108,7 @@ pub(in crate::writing) fn shift_selected(
     camera_query: Query<(&Camera, &GlobalTransform), With<DialogBoxCamera>>,
     keys: Res<ButtonInput<KeyCode>>,
     gamepads: Query<&Gamepad>,
-    mut select_event: EventWriter<ButtonIsSelected>,
+    mut select_event: MessageWriter<ButtonIsSelected>,
 ) {
     let mut next_select_opt: Option<Entity> = None;
     let pointed_opt = camera_query

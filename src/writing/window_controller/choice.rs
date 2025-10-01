@@ -1,6 +1,6 @@
 use super::*;
 use crate::writing::*;
-use bevy::render::view::RenderLayers;
+use bevy::camera::visibility::RenderLayers;
 
 // Todo: 名前の重複を防ぐ機構を入れた方がいいかもしれない
 #[derive(Component)]
@@ -42,9 +42,9 @@ pub(in crate::writing) fn open_choice_box(
     bg_query: Query<(Entity, &DialogBoxBackground)>,
     mut sp_query: Query<&mut Sprite>,
     mut tf_query: Query<&mut Transform>,
-    mut events: EventReader<BdsEvent>,
+    mut events: MessageReader<BdsEvent>,
     setup_config: Res<SetupConfig>,
-    mut ow_event: EventWriter<OpenDialog>,
+    mut ow_event: MessageWriter<OpenDialog>,
 ) {
     for event_wrapper in events.read() {
         if let Some(SetupChoice { target_list: tl }) = event_wrapper.get::<SetupChoice>() {
@@ -147,19 +147,20 @@ pub(in crate::writing) fn open_choice_box(
 fn get_slide_direction(anchor: Anchor) -> (f32, f32) {
     let mut x_direction = 0.0;
     let mut y_direction = 0.0;
-    if anchor == Anchor::TopLeft || anchor == Anchor::TopCenter || anchor == Anchor::TopRight {
+    if anchor == Anchor::TOP_LEFT || anchor == Anchor::TOP_CENTER || anchor == Anchor::TOP_RIGHT {
         y_direction = 1.0;
-    } else if anchor == Anchor::BottomLeft
-        || anchor == Anchor::BottomCenter
-        || anchor == Anchor::BottomRight
+    } else if anchor == Anchor::BOTTOM_LEFT
+        || anchor == Anchor::BOTTOM_CENTER
+        || anchor == Anchor::BOTTOM_RIGHT
     {
         y_direction = -1.0;
     }
-    if anchor == Anchor::TopLeft || anchor == Anchor::CenterLeft || anchor == Anchor::BottomLeft {
+    if anchor == Anchor::TOP_LEFT || anchor == Anchor::CENTER_LEFT || anchor == Anchor::BOTTOM_LEFT
+    {
         x_direction = -1.0;
-    } else if anchor == Anchor::TopRight
-        || anchor == Anchor::CenterRight
-        || anchor == Anchor::BottomRight
+    } else if anchor == Anchor::TOP_RIGHT
+        || anchor == Anchor::CENTER_RIGHT
+        || anchor == Anchor::BOTTOM_RIGHT
     {
         x_direction = 1.0;
     }
@@ -235,7 +236,7 @@ pub(in crate::writing) fn close_choice_phase(
     mut commands: Commands,
     cbs_query: Query<&ChoiceBoxState>,
     mut db_query: Query<(Entity, &DialogBox, &mut DialogBoxPhase)>,
-    mut events: EventReader<BdsEvent>,
+    mut events: MessageReader<BdsEvent>,
     app_type_registry: Res<AppTypeRegistry>,
 ) {
     for event_wrapper in events.read() {
@@ -246,7 +247,7 @@ pub(in crate::writing) fn close_choice_phase(
         {
             if let Ok(next) = read_ron(&app_type_registry, ce) {
                 commands.queue(|w: &mut World| {
-                    w.send_event(BdsEvent { value: next });
+                    w.write_message(BdsEvent { value: next });
                 });
             }
             if let Some(cbs) = cbs_query.iter().find(|x| x.choice_box_name == cb_name) {
@@ -258,7 +259,7 @@ pub(in crate::writing) fn close_choice_phase(
                             }),
                         };
                         commands.queue(|w: &mut World| {
-                            w.send_event(close);
+                            w.write_message(close);
                         });
                         commands.entity(db_entity).insert(Pending {
                             name: "Waiting Sink".to_string(),
