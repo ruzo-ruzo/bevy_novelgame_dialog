@@ -58,7 +58,7 @@ pub(in crate::writing) fn go_selected(
             .filter_map(|t| camera_query.single().ok().map(|c| (c, t)))
             .filter_map(|(c, t)| c.0.viewport_to_world_2d(c.1, t.position()).ok());
         let is_selected = selected_query.single().is_ok_and(|e| e == target_entity);
-        let is_pointed = pointed_opt.is_some_and(|x| (wig.area.contains(x)));
+        let is_pointed = pointed_opt.is_some_and(|x| wig.area.contains(x));
         let gamepad = gamepads.iter().next();
         if (keys.any_just_pressed([KeyCode::Space, KeyCode::Enter, KeyCode::NumpadEnter])
             && is_selected)
@@ -123,7 +123,7 @@ pub(in crate::writing) fn shift_selected(
         })
         .and_then(|(c, p)| c.0.viewport_to_world_2d(c.1, p).ok());
     for (target_entity, _, _, wig, _) in &selective_query {
-        if pointed_opt.is_some_and(|x| (wig.area.contains(x))) {
+        if pointed_opt.is_some_and(|x| wig.area.contains(x)) {
             next_select_opt = Some(target_entity);
         }
     }
