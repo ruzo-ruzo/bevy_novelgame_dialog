@@ -23,7 +23,7 @@ pub(in crate::writing) fn trigger_type_animation(
     time: Res<Time>,
 ) {
     for (entity, mut timer, mut tf, w_style, mut visibility) in &mut untriggered {
-        if timer.timer.tick(time.delta()).finished() {
+        if timer.timer.tick(time.delta()).is_finished() {
             match w_style {
                 WritingStyle::Wipe { sec: s } => {
                     tf.scale = Vec3::new(0.0, 1.0, 1.0);

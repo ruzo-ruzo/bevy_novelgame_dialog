@@ -1,5 +1,5 @@
 use super::super::*;
-use bevy::render::view::RenderLayers;
+use bevy::camera::visibility::RenderLayers;
 
 #[derive(Component)]
 pub(in crate::writing) struct Settled;
@@ -38,7 +38,7 @@ pub(in crate::writing) fn simple_wait(
     text_area_query: Query<(Entity, &TextArea, &GlobalTransform, &Sprite, &ChildOf), With<Current>>,
     selected_query: Query<Entity, With<Selected>>,
     last_data: CurrentQuery,
-    mut bds_reader: EventReader<BdsEvent>,
+    mut bds_reader: MessageReader<BdsEvent>,
     type_registry: Res<AppTypeRegistry>,
 ) {
     for event_wrapper in bds_reader.read() {
@@ -102,7 +102,7 @@ pub(in crate::writing) fn restart_typing(
     mut writing_query: Query<(&DialogBox, &mut DialogBoxPhase)>,
     text_area_query: Query<&TextArea>,
     mut icon_query: Query<(Entity, &mut Visibility, &mut WaitingIcon)>,
-    mut bds_reader: EventReader<BdsEvent>,
+    mut bds_reader: MessageReader<BdsEvent>,
 ) {
     for event_wrapper in bds_reader.read() {
         if let Some(BreakWait {
@@ -234,7 +234,7 @@ pub(in crate::writing) fn skip_typing_or_next(
             Without<MessageTextChar>,
         ),
     >,
-    mut bds_reader: EventReader<BdsEvent>,
+    mut bds_reader: MessageReader<BdsEvent>,
     type_registry: Res<AppTypeRegistry>,
 ) {
     for event_wrapper in bds_reader.read() {
@@ -274,7 +274,7 @@ pub(in crate::writing) fn skip_typing_or_next(
                     }
                     if let Ok(ref_value) = read_ron(&type_registry, ron.clone()) {
                         commands.queue(|w: &mut World| {
-                            w.send_event(BdsEvent { value: ref_value });
+                            w.write_message(BdsEvent { value: ref_value });
                         })
                     }
                 } else {
@@ -318,7 +318,7 @@ pub(in crate::writing) fn skip_feeding(
     mut writing_query: Query<(&DialogBox, &mut DialogBoxPhase), With<Current>>,
     text_area_query: Query<(Entity, &TextArea)>,
     line_query: Query<(Entity, &ChildOf), With<MessageTextLine>>,
-    mut bds_reader: EventReader<BdsEvent>,
+    mut bds_reader: MessageReader<BdsEvent>,
 ) {
     for event_wrapper in bds_reader.read() {
         if let Some(InputForSkipping {

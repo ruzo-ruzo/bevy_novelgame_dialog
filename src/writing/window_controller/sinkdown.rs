@@ -15,7 +15,7 @@ pub(in crate::writing) struct WaitSinkingTrigger {
     pub timer: Timer,
 }
 
-#[derive(Reflect, Default, Event)]
+#[derive(Reflect, Default, Message)]
 pub(in crate::writing) struct GoSinking {
     pub writing_name: String,
     pub sink_type: SinkDownType,
@@ -28,7 +28,7 @@ pub(in crate::writing) fn setup_window_sink(
     text_box_query: Query<(Entity, &TextArea, &GlobalTransform, &Sprite), With<Current>>,
     mut db_query: Query<(Entity, &DialogBox, &mut DialogBoxPhase, &WaitBrakerStyle), With<Current>>,
     parents: Query<&ChildOf>,
-    mut events: EventReader<BdsEvent>,
+    mut events: MessageReader<BdsEvent>,
     type_registry: Res<AppTypeRegistry>,
 ) {
     for event_wrapper in events.read() {
@@ -80,8 +80,8 @@ pub(in crate::writing) fn setup_window_sink(
 }
 
 pub(in crate::writing) fn trigger_window_sink_by_event(
-    mut bds_reader: EventReader<BdsEvent>,
-    mut gs_writer: EventWriter<GoSinking>,
+    mut bds_reader: MessageReader<BdsEvent>,
+    mut gs_writer: MessageWriter<GoSinking>,
 ) {
     for event_wrapper in bds_reader.read() {
         if let Some(gs @ GoSinking { .. }) = event_wrapper.get::<GoSinking>() {
@@ -94,10 +94,10 @@ pub(in crate::writing) fn trigger_window_sink_by_time(
     mut commands: Commands,
     mut db_query: Query<(Entity, &DialogBox, &mut WaitSinkingTrigger)>,
     time: Res<Time>,
-    mut events: EventWriter<GoSinking>,
+    mut events: MessageWriter<GoSinking>,
 ) {
     for (entity, db, mut wst) in &mut db_query {
-        if wst.timer.tick(time.delta()).finished() {
+        if wst.timer.tick(time.delta()).is_finished() {
             events.write(GoSinking {
                 writing_name: db.name.clone(),
                 sink_type: wst.sink_type,
@@ -110,7 +110,7 @@ pub(in crate::writing) fn trigger_window_sink_by_time(
 pub(in crate::writing) fn start_window_sink(
     mut commands: Commands,
     mut db_query: Query<(Entity, &DialogBox, &mut DialogBoxPhase)>,
-    mut events: EventReader<GoSinking>,
+    mut events: MessageReader<GoSinking>,
 ) {
     for GoSinking {
         writing_name: db_name,
@@ -165,7 +165,7 @@ pub(in crate::writing) fn despawn_writing(
     ta_query: Query<Entity, With<TextArea>>,
     ch_query: Query<&Children>,
     instant_query: Query<&Instant>,
-    mut event: EventWriter<FinisClosingBox>,
+    mut event: MessageWriter<FinisClosingBox>,
 ) {
     for (db_entity, db) in &db_query {
         if let Ok(tb_children) = ch_query.get(db_entity) {

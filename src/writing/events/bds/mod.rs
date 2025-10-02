@@ -8,7 +8,7 @@ use crate::writing::window_controller::*;
 use bevy::prelude::*;
 
 // Reflect登録必須。逆にEventは基本要らない
-#[derive(Event)]
+#[derive(Message)]
 pub struct BdsEvent {
     pub value: Box<dyn PartialReflect>,
 }
@@ -38,7 +38,7 @@ pub struct LoadBds {
 }
 
 pub(in crate::writing) fn load_bds(
-    mut events: EventReader<BdsEvent>,
+    mut events: MessageReader<BdsEvent>,
     mut db_query: Query<(&DialogBox, &mut LoadedScript)>,
     asset_server: Res<AssetServer>,
 ) {
@@ -77,14 +77,14 @@ pub struct SimpleStringSignal {
     pub signal: String,
 }
 
-#[derive(Event, Default, Debug)]
+#[derive(Message, Default, Debug)]
 pub struct BdsSignal {
     pub signal: String,
 }
 
 pub(in crate::writing) fn send_bds_signal(
-    mut bds_events: EventReader<BdsEvent>,
-    mut signal_events: EventWriter<BdsSignal>,
+    mut bds_events: MessageReader<BdsEvent>,
+    mut signal_events: MessageWriter<BdsSignal>,
 ) {
     for event_wrapper in bds_events.read() {
         if let Some(SimpleStringSignal {
@@ -110,7 +110,7 @@ pub(crate) fn change_current_text_area(
     mut commands: Commands,
     db_query: Query<&DialogBox>,
     ta_query: Query<(Entity, &TextArea, &ChildOf)>,
-    mut events: EventReader<BdsEvent>,
+    mut events: MessageReader<BdsEvent>,
 ) {
     for event_wrapper in events.read() {
         if let Some(ChangeCurrentTextArea {
@@ -142,7 +142,7 @@ pub(crate) fn change_current_text_area_in_current_box(
     mut commands: Commands,
     db_query: Query<Entity, (With<DialogBox>, With<Current>)>,
     ta_query: Query<(Entity, &TextArea, &ChildOf)>,
-    mut events: EventReader<BdsEvent>,
+    mut events: MessageReader<BdsEvent>,
 ) {
     for event_wrapper in events.read() {
         if let Some(ChangeCurrentTextAreaInCurrentBox {
@@ -172,7 +172,7 @@ pub struct ChangeCurrentDialogBox {
 pub(crate) fn change_current_writing(
     mut commands: Commands,
     db_query: Query<(Entity, &DialogBox)>,
-    mut events: EventReader<BdsEvent>,
+    mut events: MessageReader<BdsEvent>,
 ) {
     for event_wrapper in events.read() {
         if let Some(ChangeCurrentDialogBox {

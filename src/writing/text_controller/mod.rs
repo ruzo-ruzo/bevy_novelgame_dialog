@@ -1,7 +1,7 @@
 use bevy::{
+    camera::visibility::{RenderLayers, Visibility},
     ecs::system::SystemParam,
     prelude::*,
-    render::view::{RenderLayers, Visibility},
     sprite::Anchor,
 };
 use rustybuzz::Face;
@@ -80,8 +80,8 @@ pub(in crate::writing) fn add_new_text(
     text_area_query: CurrentTextAreaQuery,
     last_data: CurrentQuery,
     app_type_registry: Res<AppTypeRegistry>,
-    mut wrapper: EventWriter<BdsEvent>,
-    mut ps_event: EventWriter<FeedWaitingEvent>,
+    mut wrapper: MessageWriter<BdsEvent>,
+    mut ps_event: MessageWriter<FeedWaitingEvent>,
     fonts_res: Res<Assets<Font>>,
     mut pending: Local<Option<Order>>,
     mut in_cr: Local<bool>,
@@ -184,7 +184,7 @@ pub(in crate::writing) fn initialize_typing_data(
 }
 
 fn send_feed_event(
-    fw_event: &mut EventWriter<FeedWaitingEvent>,
+    fw_event: &mut MessageWriter<FeedWaitingEvent>,
     name: &str,
     last_char: &LastChar,
     dbp: &mut DialogBoxPhase,
@@ -253,7 +253,7 @@ fn add_char(
             Text2d::new(new_word.to_string()),
             Transform::from_translation(Vec3::new(last_char.pos.x, 0.0, 0.0)),
             Visibility::Hidden,
-            Anchor::BottomLeft,
+            Anchor::BOTTOM_LEFT,
             text_font,
             config.text_color,
         );
@@ -315,10 +315,8 @@ fn add_empty_line(
         false
     } else {
         let sprite_bundle = (
-            Sprite {
-                anchor: Anchor::BottomLeft,
-                ..default()
-            },
+            Sprite::default(),
+            Anchor::BOTTOM_LEFT,
             Transform::from_translation(Vec3::new(0., last_char.pos.y, config.pos_z)),
         );
         let new_line = (

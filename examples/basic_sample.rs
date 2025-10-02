@@ -27,7 +27,7 @@ mod message_controler {
     }
 
     fn start_message(
-        mut open_message_event: EventWriter<OpenRoseStyleDialog>,
+        mut open_message_event: MessageWriter<OpenRoseStyleDialog>,
         mut is_started: Local<bool>,
     ) {
         if !*is_started {
@@ -57,7 +57,7 @@ mod models_controller {
 
     mod room {
         use super::*;
-        use bevy::pbr::CascadeShadowConfigBuilder;
+        use bevy::light::CascadeShadowConfigBuilder;
 
         pub struct RoomPlugin;
         impl Plugin for RoomPlugin {
@@ -257,7 +257,7 @@ mod models_controller {
                 With<Rabit>,
             >,
             animations: Res<RabitAnimations>,
-            mut signal_events: EventReader<BdsSignal>,
+            mut signal_events: MessageReader<BdsSignal>,
         ) {
             let time = Duration::from_secs_f32(TRASITION_TIME);
             for BdsSignal { signal: sig } in signal_events.read() {
@@ -433,7 +433,7 @@ mod models_controller {
                 With<Kid>,
             >,
             animations: Res<KidAnimations>,
-            mut signal_events: EventReader<BdsSignal>,
+            mut signal_events: MessageReader<BdsSignal>,
         ) {
             let time = Duration::from_secs_f32(TRASITION_TIME);
             for BdsSignal { signal: sig } in signal_events.read() {

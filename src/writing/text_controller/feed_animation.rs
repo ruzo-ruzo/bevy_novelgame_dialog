@@ -1,13 +1,13 @@
 use super::super::window_controller::waiting::*;
 use super::super::*;
 
-#[derive(Event)]
+#[derive(Message)]
 pub(in crate::writing) struct FeedWaitingEvent {
     pub target_box_name: String,
     pub wait_sec: f32,
 }
 
-#[derive(Event)]
+#[derive(Message)]
 pub(in crate::writing) struct StartFeedingEvent {
     pub target_box_name: String,
     pub target_area_name: String,
@@ -33,7 +33,7 @@ pub(in crate::writing) fn setup_feed_starter(
     writing_query: Query<(Entity, &WaitBrakerStyle, &DialogBox)>,
     text_box_query: Query<(Entity, &TextArea, &ChildOf, &GlobalTransform, &Sprite), With<Current>>,
     w_icon_query: Query<(Entity, &WaitingIcon)>,
-    mut waitting_event: EventReader<FeedWaitingEvent>,
+    mut waitting_event: MessageReader<FeedWaitingEvent>,
     type_registry: Res<AppTypeRegistry>,
 ) {
     for event in waitting_event.read() {
@@ -95,8 +95,8 @@ pub(in crate::writing) fn trigger_feeding_by_event(
     mut writing_query: Query<(&DialogBox, &mut DialogBoxPhase)>,
     text_area_query: Query<(Entity, &TextArea, &FeedingStyle), With<Current>>,
     mut icon_query: Query<(Entity, &mut Visibility), With<WaitingIcon>>,
-    mut start_feeding_event: EventWriter<StartFeedingEvent>,
-    mut events: EventReader<BdsEvent>,
+    mut start_feeding_event: MessageWriter<StartFeedingEvent>,
+    mut events: MessageReader<BdsEvent>,
 ) {
     for event_wrapper in events.read() {
         if let Some(InputForFeeding {
@@ -139,7 +139,7 @@ pub(in crate::writing) fn trigger_feeding_by_time(
     >,
     mut line_query: Query<Entity, With<MessageTextLine>>,
     parent_query: Query<&ChildOf>,
-    mut start_feeding_event: EventWriter<StartFeedingEvent>,
+    mut start_feeding_event: MessageWriter<StartFeedingEvent>,
     time: Res<Time>,
 ) {
     for (db, mut dbp) in &mut writing_query {
@@ -147,7 +147,7 @@ pub(in crate::writing) fn trigger_feeding_by_time(
             *dbp = DialogBoxPhase::Typing;
         }
         for (ta_entity, ta, fs, mut wft) in &mut text_area_query {
-            if wft.timer.tick(time.delta()).finished() {
+            if wft.timer.tick(time.delta()).is_finished() {
                 for l_entity in &mut line_query {
                     if parent_query.get(l_entity).ok().map(|x| x.parent()) == Some(ta_entity) {
                         commands.entity(l_entity).insert(*fs);
@@ -169,7 +169,7 @@ pub(in crate::writing) fn start_feeding(
     mut window_query: Query<(&DialogBox, &mut DialogBoxPhase, &WaitBrakerStyle)>,
     text_box_query: Query<(Entity, &TextArea, &GlobalTransform, &Sprite)>,
     line_query: Query<(Entity, &FeedingStyle, &ChildOf), With<MessageTextLine>>,
-    mut start_feeding_event: EventReader<StartFeedingEvent>,
+    mut start_feeding_event: MessageReader<StartFeedingEvent>,
     type_registry: Res<AppTypeRegistry>,
 ) {
     for sf in start_feeding_event.read() {

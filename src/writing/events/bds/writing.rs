@@ -7,7 +7,7 @@ pub struct ChangeFontSize {
 }
 
 pub(in crate::writing) fn change_font_size(
-    mut events: EventReader<BdsEvent>,
+    mut events: MessageReader<BdsEvent>,
     mut ta_query: Query<&mut TypeTextConfig, (With<Current>, With<TextArea>)>,
 ) {
     for event_wrapper in events.read() {
@@ -36,7 +36,7 @@ pub(in crate::writing) fn force_feeding_current_box(
     mut commands: Commands,
     mut writing_query: Query<(Entity, &DialogBox, &mut DialogBoxPhase), With<Current>>,
     text_area_query: Query<(&TextArea, &ChildOf)>,
-    mut events: EventReader<BdsEvent>,
+    mut events: MessageReader<BdsEvent>,
 ) {
     for event_wrapper in events.read() {
         if event_wrapper.get::<ForceFeedingCurrentBox>().is_some() {
@@ -48,7 +48,7 @@ pub(in crate::writing) fn force_feeding_current_box(
                             text_area_name: ta.name.clone(),
                         };
                         commands.queue(|w: &mut World| {
-                            w.send_event(BdsEvent {
+                            w.write_message(BdsEvent {
                                 value: Box::new(iff),
                             });
                         });
