@@ -27,7 +27,7 @@ pub(crate) struct BMWScript {
     pub script: String,
 }
 
-#[derive(Default)]
+#[derive(Default, TypePath)]
 pub(crate) struct BMWScriptLoader;
 
 #[non_exhaustive]
@@ -68,7 +68,7 @@ pub(crate) struct BMWTemplate {
     pub template: String,
 }
 
-#[derive(Default)]
+#[derive(Default, TypePath)]
 pub(crate) struct BMWTemplateLoader;
 
 #[non_exhaustive]

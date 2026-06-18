@@ -62,7 +62,7 @@ mod models_controller {
         pub struct RoomPlugin;
         impl Plugin for RoomPlugin {
             fn build(&self, app: &mut App) {
-                app.insert_resource(AmbientLight {
+                app.insert_resource(GlobalAmbientLight {
                     color: Color::WHITE,
                     brightness: 0.0,
                     ..default()

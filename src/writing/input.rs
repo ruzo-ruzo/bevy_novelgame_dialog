@@ -43,14 +43,12 @@ pub(in crate::writing) fn go_selected(
 ) {
     let pointed_opt = camera_query
         .single()
-        .ok()
-        .and_then(|x| {
+        .ok().zip(
             window_query
                 .single()
                 .ok()
                 .and_then(|y| y.cursor_position())
-                .map(|y| (x, y))
-        })
+        )
         .and_then(|(c, p)| c.0.viewport_to_world_2d(c.1, p).ok());
     for (target_entity, wig, ta, ta_parent) in &target_query {
         let mut touched_position_list = touches
@@ -113,14 +111,12 @@ pub(in crate::writing) fn shift_selected(
     let mut next_select_opt: Option<Entity> = None;
     let pointed_opt = camera_query
         .single()
-        .ok()
-        .and_then(|x| {
+        .ok().zip(
             window_query
                 .single()
                 .ok()
                 .and_then(|y| y.cursor_position())
-                .map(|y| (x, y))
-        })
+        )
         .and_then(|(c, p)| c.0.viewport_to_world_2d(c.1, p).ok());
     for (target_entity, _, _, wig, _) in &selective_query {
         if pointed_opt.is_some_and(|x| wig.area.contains(x)) {
