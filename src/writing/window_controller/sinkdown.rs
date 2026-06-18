@@ -174,7 +174,7 @@ pub(in crate::writing) fn despawn_writing(
                     if let Ok(ta_children) = ch_query.get(ta_entity) {
                         for ta_childe in ta_children {
                             if w_icon_query.get(*ta_childe).is_ok() {
-                                commands.entity(ta_entity).remove_children(&[*ta_childe]);
+                                commands.entity(ta_entity).detach_children(&[*ta_childe]);
                             } else {
                                 commands.entity(*ta_childe).despawn();
                             }
