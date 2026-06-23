@@ -2,27 +2,27 @@ use super::*;
 use crate::writing::*;
 
 #[derive(Component, Debug)]
-pub(in crate::writing) struct ScalingDown {
+pub(super) struct ScalingDown {
     pub sub_per_sec: f32,
 }
 
 #[derive(Component)]
-pub(in crate::writing) struct Despawning;
+pub(super) struct Despawning;
 
 #[derive(Component, Debug)]
-pub(in crate::writing) struct WaitSinkingTrigger {
+pub(super) struct WaitSinkingTrigger {
     pub sink_type: SinkDownType,
     pub timer: Timer,
 }
 
 #[derive(Reflect, Default, Message)]
-pub(in crate::writing) struct GoSinking {
+pub(super) struct GoSinking {
     pub writing_name: String,
     pub sink_type: SinkDownType,
 }
 
 #[allow(clippy::type_complexity)]
-pub(in crate::writing) fn setup_window_sink(
+pub(super) fn setup_window_sink(
     mut commands: Commands,
     text_query: Query<(Entity, &TypingTimer), (With<Current>, With<MessageTextChar>)>,
     text_box_query: Query<(Entity, &TextArea, &GlobalTransform, &Sprite), With<Current>>,
@@ -79,7 +79,7 @@ pub(in crate::writing) fn setup_window_sink(
     }
 }
 
-pub(in crate::writing) fn trigger_window_sink_by_event(
+pub(super) fn trigger_window_sink_by_event(
     mut bds_reader: MessageReader<BdsEvent>,
     mut gs_writer: MessageWriter<GoSinking>,
 ) {
@@ -90,7 +90,7 @@ pub(in crate::writing) fn trigger_window_sink_by_event(
     }
 }
 
-pub(in crate::writing) fn trigger_window_sink_by_time(
+pub(super) fn trigger_window_sink_by_time(
     mut commands: Commands,
     mut db_query: Query<(Entity, &DialogBox, &mut WaitSinkingTrigger)>,
     time: Res<Time>,
@@ -107,7 +107,7 @@ pub(in crate::writing) fn trigger_window_sink_by_time(
     }
 }
 
-pub(in crate::writing) fn start_window_sink(
+pub(super) fn start_window_sink(
     mut commands: Commands,
     mut db_query: Query<(Entity, &DialogBox, &mut DialogBoxPhase)>,
     mut events: MessageReader<GoSinking>,
@@ -137,7 +137,7 @@ pub(in crate::writing) fn start_window_sink(
 }
 
 // Todo: テキストが素っ頓狂な方向へ飛んでくの直したい
-pub(in crate::writing) fn scaling_down(
+pub(super) fn scaling_down(
     mut commands: Commands,
     mut db_query: Query<(Entity, &mut Transform, &ScalingDown)>,
     time: Res<Time>,
@@ -158,7 +158,7 @@ pub(in crate::writing) fn scaling_down(
 
 // waiting iconだけ残すんじゃなくてlineとかだけ消す？
 // （line以外の候補洗わないとだが。SelectedとかCurrentとか）
-pub(in crate::writing) fn despawn_writing(
+pub(super) fn despawn_writing(
     mut commands: Commands,
     db_query: Query<(Entity, &DialogBox), With<Despawning>>,
     w_icon_query: Query<&WaitingIcon>,
@@ -199,7 +199,7 @@ pub(in crate::writing) fn despawn_writing(
 }
 
 #[allow(clippy::type_complexity)]
-pub(in crate::writing) fn remove_pending(
+pub(super) fn remove_pending(
     mut commands: Commands,
     mut pending_query: Query<(Entity, &mut DialogBoxPhase, &Pending), With<DialogBox>>,
     current_db_query: Query<&Current, (With<DialogBox>, Without<Pending>)>,

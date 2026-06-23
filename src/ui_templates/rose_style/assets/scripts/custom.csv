@@ -1,11 +1,11 @@
 "\[\^close\]","[close scale: 0.8]"
 "\*(?<t>.*?)\*","<script>{
-    ""bevy_novelgame_dialog::writing::events::bds::writing::ChangeFontSize"": (
+    ""bevy_novelgame_dialog::writing::extensions::bds::writing::ChangeFontSize"": (
         size: 35.0,
 ),}</script>
 $t
 <script>{
-    ""bevy_novelgame_dialog::writing::events::bds::writing::ChangeFontSize"": (
+    ""bevy_novelgame_dialog::writing::extensions::bds::writing::ChangeFontSize"": (
         size: 27.0,
 )}</script>"
 "\((?<jump>.*?)\)\r\n","(scripts/${jump}?writing=Main Box)

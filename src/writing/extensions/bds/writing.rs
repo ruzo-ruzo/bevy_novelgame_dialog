@@ -6,7 +6,7 @@ pub struct ChangeFontSize {
     pub size: f32,
 }
 
-pub(in crate::writing) fn change_font_size(
+pub(in super::super) fn change_font_size(
     mut events: MessageReader<BdsEvent>,
     mut ta_query: Query<&mut TypeTextConfig, (With<Current>, With<TextArea>)>,
 ) {
@@ -32,7 +32,7 @@ pub struct InputForFeeding {
 #[derive(Reflect, Default, Debug)]
 pub struct ForceFeedingCurrentBox;
 
-pub(in crate::writing) fn force_feeding_current_box(
+pub(in super::super) fn force_feeding_current_box(
     mut commands: Commands,
     mut writing_query: Query<(Entity, &DialogBox, &mut DialogBoxPhase), With<Current>>,
     text_area_query: Query<(&TextArea, &ChildOf)>,

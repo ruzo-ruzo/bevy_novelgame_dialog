@@ -2,33 +2,25 @@ use super::super::*;
 use bevy::camera::visibility::RenderLayers;
 
 #[derive(Component)]
-pub(in crate::writing) struct Settled;
+pub(super) struct Settled;
 
 #[derive(Reflect, Default)]
-pub(in crate::writing) struct BreakWait {
+pub(super) struct BreakWait {
     pub writing_name: String,
     pub text_area_name: String,
 }
 
 #[derive(Reflect, Default, Clone)]
-pub(in crate::writing) struct InputForSkipping {
+pub(super) struct InputForSkipping {
     pub next_event_ron: String,
     pub writing_name: String,
     pub text_area_name: String,
 }
 
-pub(crate) struct MakeWigConfig<'a, S: AsRef<str>> {
-    pub dialog_box_name: S,
-    pub text_area_name: S,
-    pub waiter_name: S,
-    pub ron: S,
-    pub type_registry: &'a AppTypeRegistry,
-}
-
 // SimpleWaitが発行された時のCurrentのTextAreaにBreakWaitを詰めたWaitInputGoを設定します。
 // SimpleWaitが飛んでる間にCurrentのTextAreaが変更されていない事を期待しています。
 #[allow(clippy::type_complexity)]
-pub(in crate::writing) fn simple_wait(
+pub(super) fn simple_wait(
     mut commands: Commands,
     mut dialog_query: Query<
         (Entity, &mut DialogBoxPhase, &DialogBox, &WaitBrakerStyle),
@@ -97,7 +89,7 @@ pub(in crate::writing) fn simple_wait(
     }
 }
 
-pub(in crate::writing) fn restart_typing(
+pub(super) fn restart_typing(
     mut commands: Commands,
     mut writing_query: Query<(&DialogBox, &mut DialogBoxPhase)>,
     text_area_query: Query<&TextArea>,
@@ -132,7 +124,7 @@ pub(in crate::writing) fn restart_typing(
     }
 }
 
-pub(in crate::writing) fn waiting_icon_setting(
+pub(super) fn waiting_icon_setting(
     mut commands: Commands,
     w_icon_query: Query<(Entity, &WaitingIcon), Without<WritingStyle>>,
     wbs_query: Query<(&RenderLayers, &WaitBrakerStyle, &DialogBox)>,
@@ -155,7 +147,7 @@ pub(in crate::writing) fn waiting_icon_setting(
 
 // CurrentQueryとiconのQueryがTransform取りあってるためWithoutかけてます
 #[allow(clippy::type_complexity)]
-pub(in crate::writing) fn settle_wating_icon(
+pub(super) fn settle_wating_icon(
     mut commands: Commands,
     window_query: Query<(Entity, &DialogBoxPhase, &WaitBrakerStyle, &DialogBox)>,
     text_box_query: Query<(Entity, &ChildOf, &TypeTextConfig), (With<TextArea>, With<Current>)>,
@@ -184,6 +176,9 @@ pub(in crate::writing) fn settle_wating_icon(
                             .find(|(_, p, _)| p.parent() == mw_entity)
                         {
                             let (_, lc) = initialize_typing_data(&last_data, tb_entity);
+                            if lc.entity.is_none() {
+                                return;
+                            }
                             if *move_flag {
                                 ic_tf.translation =
                                     Vec3::new(lc.pos.x + config.base_size, lc.pos.y, 1.);
@@ -210,7 +205,7 @@ pub(in crate::writing) fn settle_wating_icon(
 // これをトリガーするInputForSkippingはSimpleWait経由で発行されていることが期待されています。
 // ここで参照しているため、全ての文字は表示し終わった時点でTypingStyle::Putを持つ必要があります。
 #[allow(clippy::type_complexity)]
-pub(in crate::writing) fn skip_typing_or_next(
+pub(super) fn skip_typing_or_next(
     mut commands: Commands,
     mut waiting_text_query: Query<
         (

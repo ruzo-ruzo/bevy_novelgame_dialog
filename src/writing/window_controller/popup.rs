@@ -2,7 +2,28 @@ use super::*;
 use crate::read_script::split_path_and_section;
 use bevy::camera::visibility::{RenderLayers, Visibility::*};
 
-pub(in crate::writing) fn open_window(
+#[derive(Bundle)]
+pub(super) struct DialogBoxBundle {
+    pub writing: DialogBox,
+    pub state: DialogBoxPhase,
+    pub waitting: WaitBrakerStyle,
+    pub script: LoadedScript,
+    pub popup_type: PopupType,
+}
+
+#[derive(Bundle)]
+pub(super) struct TextAreaBundle {
+    pub text_area: TextArea,
+    pub feeding: FeedingStyle,
+    pub config: TypeTextConfig,
+}
+
+#[derive(Component)]
+pub(super) struct ScalingUp {
+    pub add_per_sec: f32,
+}
+
+pub(super) fn open_window(
     mut commands: Commands,
     bg_query: Query<(Entity, &DialogBoxBackground)>,
     db_query: Query<Entity, (With<Current>, With<DialogBox>)>,
@@ -136,13 +157,8 @@ fn initialize_text_config(
     }
 }
 
-#[derive(Component)]
-pub(in crate::writing) struct ScalingUp {
-    pub add_per_sec: f32,
-}
-
 #[allow(clippy::type_complexity)]
-pub(in crate::writing) fn window_popper(
+pub(super) fn window_popper(
     mut commands: Commands,
     mut db_query: Query<
         (
@@ -171,7 +187,7 @@ pub(in crate::writing) fn window_popper(
     }
 }
 
-pub(in crate::writing) fn scaling_up(
+pub(super) fn scaling_up(
     mut commands: Commands,
     mut db_query: Query<(Entity, &mut Transform, &ScalingUp, &mut DialogBoxPhase)>,
     time: Res<Time>,

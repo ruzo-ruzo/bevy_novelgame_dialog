@@ -53,7 +53,7 @@ pub enum SinkDownType {
 pub enum TypingTiming {
     ByChar { sec: f32 },
     ByLine { sec: f32 },
-    ByPage,
+    AllPage,
 }
 
 #[derive(Component, Default, Debug, Clone, Copy, PartialEq)]

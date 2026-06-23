@@ -1,6 +1,3 @@
-pub mod bds;
-pub use bds::*;
-
 use crate::writing::settings::configs::*;
 use crate::writing::settings::params::*;
 use bevy::prelude::*;
@@ -44,6 +41,8 @@ impl Default for OpenDialog {
     }
 }
 
+// これなんでこんな項目あるんだっけ？
+#[allow(dead_code)]
 #[derive(Message, Debug)]
 pub struct ButtonIsSelected {
     pub writing_name: String,

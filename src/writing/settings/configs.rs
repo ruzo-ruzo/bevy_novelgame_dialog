@@ -90,7 +90,7 @@ impl Default for ChoiceBoxConfig {
     fn default() -> Self {
         let basic_text_area = TextAreaConfig {
             writing: WritingStyle::Put,
-            typing_timing: TypingTiming::ByPage,
+            typing_timing: TypingTiming::AllPage,
             horizon_alignment: AlignHorizon::Center,
             vertical_alignment: AlignVertical::Center,
             ..default()

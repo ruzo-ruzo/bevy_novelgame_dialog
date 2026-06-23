@@ -5,6 +5,7 @@ fn main() {
     App::new()
         .add_plugins((
             DefaultPlugins,
+            bevy_novelgame_dialog::prelude::DebugTextAreaPlugin,
             message_controler::MessageControllerPlugin,
             models_controller::ModelsControllerPlugin,
         ))

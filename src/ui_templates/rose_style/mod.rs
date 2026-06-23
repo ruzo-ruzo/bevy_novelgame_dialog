@@ -150,7 +150,7 @@ fn open_message(
             },
             feeding: FeedingStyle::Rid,
             writing: WritingStyle::Put,
-            typing_timing: TypingTiming::ByPage,
+            typing_timing: TypingTiming::AllPage,
             vertical_alignment: AlignVertical::Center,
             ..default()
         };
@@ -161,7 +161,7 @@ fn open_message(
             },
             area_size: Vec2::new(config.button_size.x - 40.0, config.button_size.y),
             writing: WritingStyle::Put,
-            typing_timing: TypingTiming::ByPage,
+            typing_timing: TypingTiming::AllPage,
             horizon_alignment: AlignHorizon::Center,
             vertical_alignment: AlignVertical::Center,
             ..default()
