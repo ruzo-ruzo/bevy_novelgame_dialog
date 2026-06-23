@@ -1,11 +1,4 @@
-pub mod writing;
-pub use writing::*;
-
-use crate::read_script::*;
-use crate::writing::settings::configs::*;
-use crate::writing::settings::params::*;
-use crate::writing::window_controller::*;
-use bevy::prelude::*;
+use super::*;
 
 // Reflect登録必須。逆にEventは基本要らない
 #[derive(Message)]
@@ -37,7 +30,7 @@ pub struct LoadBds {
     pub target_name: String,
 }
 
-pub(in crate::writing) fn load_bds(
+pub(in super::super) fn load_bds(
     mut events: MessageReader<BdsEvent>,
     mut db_query: Query<(&DialogBox, &mut LoadedScript)>,
     asset_server: Res<AssetServer>,
@@ -82,7 +75,7 @@ pub struct BdsSignal {
     pub signal: String,
 }
 
-pub(in crate::writing) fn send_bds_signal(
+pub(in super::super) fn send_bds_signal(
     mut bds_events: MessageReader<BdsEvent>,
     mut signal_events: MessageWriter<BdsSignal>,
 ) {
@@ -106,7 +99,7 @@ pub struct ChangeCurrentTextArea {
     next_current_text_area_name: String,
 }
 
-pub(crate) fn change_current_text_area(
+pub(in super::super) fn change_current_text_area(
     mut commands: Commands,
     db_query: Query<&DialogBox>,
     ta_query: Query<(Entity, &TextArea, &ChildOf)>,
@@ -138,7 +131,7 @@ pub struct ChangeCurrentTextAreaInCurrentBox {
     next_current_text_area_name: String,
 }
 
-pub(crate) fn change_current_text_area_in_current_box(
+pub(in super::super) fn change_current_text_area_in_current_box(
     mut commands: Commands,
     db_query: Query<Entity, (With<DialogBox>, With<Current>)>,
     ta_query: Query<(Entity, &TextArea, &ChildOf)>,
@@ -169,7 +162,7 @@ pub struct ChangeCurrentDialogBox {
     next_current_writing_name: String,
 }
 
-pub(crate) fn change_current_writing(
+pub(in super::super) fn change_current_writing(
     mut commands: Commands,
     db_query: Query<(Entity, &DialogBox)>,
     mut events: MessageReader<BdsEvent>,

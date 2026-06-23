@@ -11,7 +11,7 @@ impl Plugin for DebugTextAreaPlugin {
         app.add_systems(Update, monitor_db_state);
         app.add_systems(Update, monitor_bds_event);
         app.add_systems(Update, too_many_selected);
-        // app.add_systems(Update, loaded_orders);
+        app.add_systems(Update, loaded_orders);
         app.add_systems(Update, too_many_current_writing);
     }
 }
@@ -29,17 +29,14 @@ fn loaded_orders(ls_query: Query<&LoadedScript, Added<LoadedScript>>) {
 fn too_many_selected(ta_query: Query<&TextArea, (With<Selected>, Without<Pending>)>) {
     let selected_num = ta_query.iter().len();
     if selected_num > 1 {
-        error!(
-            "there are {:?} non pending selected text areas.",
-            selected_num
-        );
+        error!("there are {selected_num:?} non pending selected text areas.");
     }
 }
 
 fn too_many_current_writing(ta_query: Query<&DialogBox, With<Current>>) {
     let current_num = ta_query.iter().len();
     if current_num > 1 {
-        error!("there are {:?} current dialog boxes.", current_num);
+        error!("there are {current_num:?} current dialog boxes.");
     }
 }
 

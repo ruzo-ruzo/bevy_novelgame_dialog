@@ -1,6 +1,5 @@
-use bevy::prelude::*;
-
-use super::super::*;
+use crate::writing::text_controller::*;
+use crate::writing::*;
 
 #[derive(Component, Debug)]
 pub(in crate::writing) enum TypingStyle {
@@ -8,7 +7,7 @@ pub(in crate::writing) enum TypingStyle {
     Typed,
 }
 
-pub(in crate::writing) fn trigger_type_animation(
+pub(super) fn trigger_type_animation(
     mut commands: Commands,
     mut untriggered: Query<
         (
@@ -40,7 +39,7 @@ pub(in crate::writing) fn trigger_type_animation(
     }
 }
 
-pub(in crate::writing) fn text_wipe(
+pub(super) fn text_wipe(
     mut commands: Commands,
     mut target: Query<(Entity, &TypingStyle, &mut Transform)>,
     time: Res<Time>,

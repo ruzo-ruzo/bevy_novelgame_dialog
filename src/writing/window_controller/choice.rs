@@ -4,7 +4,7 @@ use bevy::camera::visibility::RenderLayers;
 
 // Todo: 名前の重複を防ぐ機構を入れた方がいいかもしれない
 #[derive(Component)]
-pub(in crate::writing) struct ChoiceBoxState {
+pub(super) struct ChoiceBoxState {
     main_writing_name: String,
     text_area_names: Vec<String>,
     choice_box_name: String,
@@ -15,22 +15,23 @@ pub(in crate::writing) struct ChoiceBoxState {
     background_scaling_anchor: Anchor,
 }
 
+// bdsのparse時に直で使っているためcrate全体が公開範囲
 #[derive(Event, Default, Reflect)]
-pub(in crate::writing) struct SetupChoice {
+pub(crate) struct SetupChoice {
     target_list: Vec<(String, String)>,
 }
 
 #[derive(Reflect, Default)]
-pub(in crate::writing) struct ChoosenEvent {
+pub(super) struct ChoosenEvent {
     pub choosen_event: String,
     pub choice_box_name: String,
 }
 
 #[derive(Component)]
-pub(in crate::writing) struct Choosable;
+pub(super) struct Choosable;
 
 #[allow(clippy::type_complexity)]
-pub(in crate::writing) fn open_choice_box(
+pub(super) fn open_choice_box(
     mut commands: Commands,
     mut db_query: Query<
         (&ChoiceBoxConfig, &mut DialogBoxPhase, &Children, &DialogBox),
@@ -173,7 +174,7 @@ fn make_choice_order(
     text_area_names: &[String],
 ) -> Option<Vec<Order>> {
     let header = r#"<script>{
-        "bevy_novelgame_dialog::writing::events::bds::ChangeCurrentTextArea": 
+        "bevy_novelgame_dialog::writing::extensions::bds::messages::ChangeCurrentTextArea": 
         (target_writing_name: ""#;
     let midpoint = r#"",  next_current_text_area_name: ""#;
     let footer = r#"",),}</script>"#;
@@ -185,7 +186,7 @@ fn make_choice_order(
     Some(parse_script(&script, &[""], ""))
 }
 
-pub(in crate::writing) fn setup_choice(
+pub(super) fn setup_choice(
     mut commands: Commands,
     cb_query: Query<(Entity, &ChoiceBoxState, &Children, &DialogBoxPhase), With<Current>>,
     ta_query: Query<(Entity, &TextArea, &GlobalTransform, &Sprite), Without<Selective>>,
@@ -232,7 +233,7 @@ fn get_rect(tf: &GlobalTransform, sp: &Sprite) -> Rect {
     Rect::from_corners(bottom_left, top_right)
 }
 
-pub(in crate::writing) fn close_choice_phase(
+pub(super) fn close_choice_phase(
     mut commands: Commands,
     cbs_query: Query<&ChoiceBoxState>,
     mut db_query: Query<(Entity, &DialogBox, &mut DialogBoxPhase)>,
@@ -272,7 +273,7 @@ pub(in crate::writing) fn close_choice_phase(
     }
 }
 
-pub(in crate::writing) fn reinstatement_external_entities(
+pub(super) fn reinstatement_external_entities(
     mut commands: Commands,
     cbs_query: Query<(Entity, &ChoiceBoxState), With<Choosable>>,
     cb_query: Query<(Entity, &ChoiceButton)>,
