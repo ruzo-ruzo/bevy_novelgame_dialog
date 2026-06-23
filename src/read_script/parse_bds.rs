@@ -464,7 +464,7 @@ mod parse_bds_tests {
 
     #[test]
     fn test_choice() {
-        let ron = "{\"bevy_novelgame_dialog::writing::window_controller::choice::SetupChoice\": (target_list: [(\"efg\", \"{\\\"bevy_novelgame_dialog::writing::extensions::bds::LoadBds\\\": (path: \\\"abc\\\",target_name: \\\"def\\\",),}\"),(\"nop\", \"{\\\"bevy_novelgame_dialog::writing::extensions::bds::LoadBds\\\": (path: \\\"hij\\\",target_name: \\\"klm\\\",),}\"),],),}";
+        let ron = "{\"bevy_novelgame_dialog::writing::window_controller::choice::SetupChoice\": (target_list: [(\"efg\", \"{\\\"bevy_novelgame_dialog::writing::extensions::bds::messages::LoadBds\\\": (path: \\\"abc\\\",target_name: \\\"def\\\",),}\"),(\"nop\", \"{\\\"bevy_novelgame_dialog::writing::extensions::bds::messages::LoadBds\\\": (path: \\\"hij\\\",target_name: \\\"klm\\\",),}\"),],),}";
         let link = ParsedOrder::OrderWrapper(Order::ThroghEvent {
             ron: ron.to_string(),
         });
